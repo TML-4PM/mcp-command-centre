@@ -12,7 +12,7 @@ interface SystemHealthOverviewProps {
 
 const SystemHealthOverview = ({ systemHealth, lambdas }: SystemHealthOverviewProps) => {
   const getStatusColor = (status: string) => {
-    return status === 'healthy' ? 'text-green-400' : 'text-red-400';
+    return status === 'healthy' ? 'text-success' : 'text-destructive';
   };
 
   const healthyCount = Object.values(systemHealth).filter(s => s === 'healthy').length;

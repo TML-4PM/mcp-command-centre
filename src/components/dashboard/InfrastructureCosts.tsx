@@ -63,12 +63,12 @@ const InfrastructureCosts = ({ infrastructure }: InfrastructureCostsProps) => {
         </div>
 
         {infrastructure.errors_last_24h > 0 && (
-          <div className="flex items-center justify-between p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/10 border border-destructive/30">
             <div>
-              <div className="text-sm font-medium text-red-400">Errors</div>
-              <div className="text-xs text-red-300/70">Last 24h</div>
+              <div className="text-sm font-medium text-destructive">Errors</div>
+              <div className="text-xs text-destructive/70">Last 24h</div>
             </div>
-            <div className="text-lg font-semibold text-red-400">
+            <div className="text-lg font-semibold text-destructive">
               {infrastructure.errors_last_24h}
             </div>
           </div>

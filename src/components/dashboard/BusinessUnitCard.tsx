@@ -6,19 +6,19 @@ interface BusinessUnitCardProps {
 
 const BusinessUnitCard = ({ name, status, health }: BusinessUnitCardProps) => {
   const getHealthColor = (health: number) => {
-    if (health >= 80) return 'text-green-400';
-    if (health >= 50) return 'text-yellow-400';
-    return 'text-red-400';
+    if (health >= 80) return 'text-success';
+    if (health >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
+        return 'bg-success/20 text-success border-success/30';
       case 'slow':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+        return 'bg-warning/20 text-warning border-warning/30';
       case 'stalled':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
+        return 'bg-destructive/20 text-destructive border-destructive/30';
       default:
         return 'bg-muted text-muted-foreground border-border';
     }

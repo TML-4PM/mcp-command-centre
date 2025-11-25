@@ -15,23 +15,23 @@ const AlertsPanel = ({ alerts }: AlertsPanelProps) => {
     switch (level) {
       case 'warning':
         return {
-          border: 'border-yellow-500/30',
-          bg: 'bg-yellow-500/10',
-          text: 'text-yellow-400',
+          border: 'border-warning/30',
+          bg: 'bg-warning/10',
+          text: 'text-warning',
           icon: AlertCircle,
         };
       case 'info':
         return {
-          border: 'border-blue-500/30',
-          bg: 'bg-blue-500/10',
-          text: 'text-blue-400',
+          border: 'border-info/30',
+          bg: 'bg-info/10',
+          text: 'text-info',
           icon: Info,
         };
       case 'error':
         return {
-          border: 'border-red-500/30',
-          bg: 'bg-red-500/10',
-          text: 'text-red-400',
+          border: 'border-destructive/30',
+          bg: 'bg-destructive/10',
+          text: 'text-destructive',
           icon: AlertCircle,
         };
       default:
