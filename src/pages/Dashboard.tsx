@@ -9,6 +9,10 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import DateRangePicker from "@/components/dashboard/DateRangePicker";
 import StatCard from "@/components/dashboard/StatCard";
+import SystemHealthOverview from "@/components/dashboard/SystemHealthOverview";
+import BusinessUnitCard from "@/components/dashboard/BusinessUnitCard";
+import InfrastructureCosts from "@/components/dashboard/InfrastructureCosts";
+import AlertsPanel from "@/components/dashboard/AlertsPanel";
 
 interface SystemHealth {
   [key: string]: {
@@ -31,19 +35,24 @@ const Dashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [chartData, setChartData] = useState<Array<{ date: string; conversations: number; codeBlocks: number }>>([]);
   const [activities, setActivities] = useState<Array<{ id: string; type: 'conversation' | 'code' | 'system'; title: string; timestamp: Date; metadata?: string }>>([]);
+  const [lambdaData, setLambdaData] = useState<any>(null);
+  const [lambdaLoading, setLambdaLoading] = useState(true);
 
   useEffect(() => {
     fetchMetrics();
     checkHealth();
     generateChartData();
     fetchRecentActivity();
+    fetchLambdaData();
     
     const metricsInterval = setInterval(fetchMetrics, 60000);
     const healthInterval = setInterval(checkHealth, 60000);
+    const lambdaInterval = setInterval(fetchLambdaData, 60000);
     
     return () => {
       clearInterval(metricsInterval);
       clearInterval(healthInterval);
+      clearInterval(lambdaInterval);
     };
   }, []);
 
@@ -61,6 +70,18 @@ const Dashboard = () => {
       });
     }
     setChartData(data);
+  };
+
+  const fetchLambdaData = async () => {
+    try {
+      const response = await fetch('https://32sux667kmm23wh3bjjjh4y6fa0afinn.lambda-url.ap-southeast-2.on.aws/');
+      const data = await response.json();
+      setLambdaData(data);
+      setLambdaLoading(false);
+    } catch (error) {
+      console.error('Lambda fetch failed:', error);
+      setLambdaLoading(false);
+    }
   };
 
   const fetchRecentActivity = async () => {
@@ -88,7 +109,7 @@ const Dashboard = () => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([fetchMetrics(), checkHealth(), fetchRecentActivity()]);
+    await Promise.all([fetchMetrics(), checkHealth(), fetchRecentActivity(), fetchLambdaData()]);
     generateChartData();
     toast({
       title: "Dashboard Refreshed",
@@ -215,6 +236,34 @@ const Dashboard = () => {
       </div>
 
       <QuickActions />
+
+      {lambdaData && (
+        <>
+          <SystemHealthOverview 
+            systemHealth={lambdaData.system_health} 
+            lambdas={lambdaData.lambdas}
+          />
+
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Business Units</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {lambdaData.business_units.map((unit: any) => (
+                <BusinessUnitCard
+                  key={unit.name}
+                  name={unit.name}
+                  status={unit.status}
+                  health={unit.health}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <InfrastructureCosts infrastructure={lambdaData.infrastructure} />
+            <AlertsPanel alerts={lambdaData.alerts} />
+          </div>
+        </>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ActivityChart data={chartData} />
