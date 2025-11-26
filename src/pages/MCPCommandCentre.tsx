@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, Info } from "lucide-react";
+import BusinessUnitDetailSheet from "@/components/dashboard/BusinessUnitDetailSheet";
 
 interface SystemHealth {
   github: string;
@@ -40,6 +41,7 @@ interface DashboardData {
 const MCPCommandCentre = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<BusinessUnit | null>(null);
 
   const fetchData = async () => {
     try {
@@ -175,7 +177,8 @@ const MCPCommandCentre = () => {
             {data.business_units.map((unit) => (
               <div
                 key={unit.name}
-                className="glass p-6 rounded-lg border border-border"
+                onClick={() => setSelectedUnit(unit)}
+                className="glass p-6 rounded-lg border border-border hover:border-primary/50 transition-all cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-lg">{unit.name}</h3>
@@ -290,6 +293,13 @@ const MCPCommandCentre = () => {
           Last updated: {lastUpdated ? lastUpdated.toLocaleString() : "..."}
         </footer>
       </div>
+
+      {/* Business Unit Detail Sheet */}
+      <BusinessUnitDetailSheet 
+        unit={selectedUnit}
+        onClose={() => setSelectedUnit(null)}
+        alerts={data.alerts}
+      />
     </div>
   );
 };
