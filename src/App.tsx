@@ -9,6 +9,7 @@ import Search from "./pages/Search";
 import Commands from "./pages/Commands";
 import Portfolio from "./pages/Portfolio";
 import Tasks from "./pages/Tasks";
+import Outreach from "./pages/Outreach";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/commands" element={<Commands />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/outreach" element={<Outreach />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
