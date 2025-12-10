@@ -2,58 +2,63 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/lib/supabase';
-import { Database, Play, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-interface QueryResult {
-  data: any[] | null;
-  error: string | null;
-}
-
-export default function SQLQueryWidget() {
+export function SQLQueryWidget() {
   const [query, setQuery] = useState('');
-  const [result, setResult] = useState<QueryResult | null>(null);
+  const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const SUPABASE_URL = "https://lzfgigiyqpuuxslsygjt.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDQxNzQ2OSwiZXhwIjoyMDU5OTkzNDY5fQ.B6SMaQNb8tER_vqrqkmjNW2BFjcoIowulQOREtRcD8Q";
 
   const executeQuery = async () => {
-    if (!query.trim()) return;
-    
     setLoading(true);
-    setResult(null);
-    
+    setError(null);
+    setResults(null);
+
     try {
-      const { data, error } = await supabase.rpc('execute_sql', { 
-        sql_query: query 
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/execute_sql`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query, params: [] })
       });
+
+      const data = await response.json();
       
-      if (error) {
-        setResult({ data: null, error: error.message });
-      } else {
-        setResult({ data, error: null });
+      if (!response.ok) {
+        throw new Error(data.message || 'Query failed');
       }
-    } catch (err: any) {
-      setResult({ data: null, error: err.message });
+
+      setResults(data);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const quickQueries = [
-    { label: 'List Tables', query: "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'" },
-    { label: 'Count Projects', query: 'SELECT COUNT(*) as count FROM projects' },
-    { label: 'Recent Tasks', query: 'SELECT * FROM tasks ORDER BY created_at DESC LIMIT 5' },
+    { label: 'Active Projects', query: 'SELECT * FROM holowog_projects WHERE status = \'active\'' },
+    { label: 'Recent Tasks', query: 'SELECT * FROM run_queue ORDER BY created_at DESC LIMIT 10' },
+    { label: 'Project Count', query: 'SELECT COUNT(*) FROM holowog_projects' },
+    { label: 'Recent SQL Logs', query: 'SELECT * FROM sql_execution_log ORDER BY executed_at DESC LIMIT 10' }
   ];
 
   return (
-    <Card className="w-full">
+    <Card className="col-span-2">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Database className="h-5 w-5" />
-          SQL Query Console
+          <span>🔍</span> SQL Query Console
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           {quickQueries.map((q) => (
             <Button
               key={q.label}
@@ -65,37 +70,37 @@ export default function SQLQueryWidget() {
             </Button>
           ))}
         </div>
-        
+
         <Textarea
-          placeholder="Enter SQL query..."
+          placeholder="Enter SQL query (SELECT, INSERT, UPDATE, DELETE only)..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="font-mono text-sm min-h-[100px]"
+          rows={4}
+          className="font-mono text-sm"
         />
-        
+
         <Button 
           onClick={executeQuery} 
-          disabled={loading || !query.trim()}
+          disabled={loading || !query}
           className="w-full"
         >
-          <Play className="h-4 w-4 mr-2" />
           {loading ? 'Executing...' : 'Execute Query'}
         </Button>
-        
-        {result && (
-          <div className="mt-4">
-            {result.error ? (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2">
-                <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                <p className="text-sm text-destructive">{result.error}</p>
-              </div>
-            ) : (
-              <div className="overflow-auto max-h-[300px] border rounded-md">
-                <pre className="p-3 text-xs font-mono">
-                  {JSON.stringify(result.data, null, 2)}
-                </pre>
-              </div>
-            )}
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {results && (
+          <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
+            <div className="text-sm font-medium mb-2">
+              Results ({Array.isArray(results) ? results.length : 0} rows)
+            </div>
+            <pre className="text-xs overflow-auto max-h-96">
+              {JSON.stringify(results, null, 2)}
+            </pre>
           </div>
         )}
       </CardContent>

@@ -1,108 +1,126 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
-import { Database, FolderKanban, CheckSquare, Clock, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
-interface Stats {
-  projects: number;
-  tasks: number;
-  queries: number;
-  lastQuery: string | null;
-}
-
-export default function DatabaseStatsWidget() {
-  const [stats, setStats] = useState<Stats>({
+export function DatabaseStatsWidget() {
+  const [stats, setStats] = useState({
     projects: 0,
     tasks: 0,
     queries: 0,
     lastQuery: null
   });
-  const [loading, setLoading] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const fetchStats = async () => {
-    setLoading(true);
-    try {
-      const [projectsRes, tasksRes, queriesRes] = await Promise.all([
-        supabase.from('projects').select('*', { count: 'exact', head: true }),
-        supabase.from('tasks').select('*', { count: 'exact', head: true }),
-        supabase.from('query_history').select('*', { count: 'exact', head: true })
-      ]);
-
-      const { data: lastQueryData } = await supabase
-        .from('query_history')
-        .select('query')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      setStats({
-        projects: projectsRes.count || 0,
-        tasks: tasksRes.count || 0,
-        queries: queriesRes.count || 0,
-        lastQuery: lastQueryData?.query || null
-      });
-      setLastRefresh(new Date());
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const SUPABASE_URL = "https://lzfgigiyqpuuxslsygjt.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDQxNzQ2OSwiZXhwIjoyMDU5OTkzNDY5fQ.B6SMaQNb8tER_vqrqkmjNW2BFjcoIowulQOREtRcD8Q";
 
   useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const projectsResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/execute_sql`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            query: 'SELECT COUNT(*) as count FROM holowog_projects',
+            params: []
+          })
+        });
+        const projectsData = await projectsResp.json();
+
+        const tasksResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/execute_sql`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            query: 'SELECT COUNT(*) as count FROM run_queue',
+            params: []
+          })
+        });
+        const tasksData = await tasksResp.json();
+
+        const queriesResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/execute_sql`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            query: 'SELECT COUNT(*) as count FROM sql_execution_log',
+            params: []
+          })
+        });
+        const queriesData = await queriesResp.json();
+
+        const lastQueryResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/execute_sql`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            query: 'SELECT query, executed_at FROM sql_execution_log ORDER BY executed_at DESC LIMIT 1',
+            params: []
+          })
+        });
+        const lastQueryData = await lastQueryResp.json();
+
+        setStats({
+          projects: projectsData[0]?.count || 0,
+          tasks: tasksData[0]?.count || 0,
+          queries: queriesData[0]?.count || 0,
+          lastQuery: lastQueryData[0] || null
+        });
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      }
+    };
+
     fetchStats();
-    const interval = setInterval(fetchStats, 30000); // Refresh every 30s
+    const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const statItems = [
-    { label: 'Projects', value: stats.projects, icon: FolderKanban, color: 'text-blue-500' },
-    { label: 'Tasks', value: stats.tasks, icon: CheckSquare, color: 'text-green-500' },
-    { label: 'Queries', value: stats.queries, icon: Database, color: 'text-purple-500' },
-  ];
-
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card>
+      <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Database className="h-5 w-5" />
-          Database Stats
+          <span>📊</span> Database Stats
         </CardTitle>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={fetchStats}
-          disabled={loading}
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-3 gap-4">
-          {statItems.map((item) => (
-            <div key={item.label} className="text-center p-3 bg-muted/50 rounded-lg">
-              <item.icon className={`h-6 w-6 mx-auto mb-1 ${item.color}`} />
-              <p className="text-2xl font-bold">{loading ? '-' : item.value}</p>
-              <p className="text-xs text-muted-foreground">{item.label}</p>
-            </div>
-          ))}
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600">{stats.projects}</div>
+            <div className="text-sm text-muted-foreground">Projects</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-green-600">{stats.tasks}</div>
+            <div className="text-sm text-muted-foreground">Tasks</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-purple-600">{stats.queries}</div>
+            <div className="text-sm text-muted-foreground">Queries</div>
+          </div>
         </div>
         
         {stats.lastQuery && (
-          <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground mb-1">Last Query:</p>
-            <code className="text-xs bg-muted p-2 rounded block truncate">
-              {stats.lastQuery}
-            </code>
+          <div className="border-t pt-4 mt-4">
+            <div className="text-xs text-muted-foreground mb-1">Last Query:</div>
+            <div className="text-sm font-mono bg-slate-50 dark:bg-slate-900 p-2 rounded">
+              {stats.lastQuery.query.substring(0, 50)}...
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {new Date(stats.lastQuery.executed_at).toLocaleString()}
+            </div>
           </div>
         )}
-        
-        <div className="flex items-center justify-end text-xs text-muted-foreground">
-          <Clock className="h-3 w-3 mr-1" />
-          Last refresh: {lastRefresh.toLocaleTimeString()}
-        </div>
       </CardContent>
     </Card>
   );
