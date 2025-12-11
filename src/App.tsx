@@ -11,6 +11,8 @@ import Portfolio from "./pages/Portfolio";
 import Tasks from "./pages/Tasks";
 import Outreach from "./pages/Outreach";
 import NotFound from "./pages/NotFound";
+import { SQLQueryWidget } from '@/components/SQLQueryWidget';
+import { DatabaseStatsWidget } from '@/components/DatabaseStatsWidget';
 
 const queryClient = new QueryClient();
 
