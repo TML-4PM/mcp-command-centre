@@ -87,10 +87,153 @@ const WorkerDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedDivisions, setExpandedDivisions] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'grid' | 'org' | 'list'>('grid');
+  const [dataSource, setDataSource] = useState<'mock' | 'supabase'>('mock');
+  const [supabaseWorkerCount, setSupabaseWorkerCount] = useState<number>(0);
 
   useEffect(() => {
-    generateNeuralEnnead();
+    loadWorkerData();
   }, []);
+
+  // Try to load from Supabase first, fall back to mock data
+  const loadWorkerData = async () => {
+    setIsLoading(true);
+
+    try {
+      // Check for workers table
+      const { data: workersData, error: workersError, count: workersCount } = await supabase
+        .from('workers')
+        .select('*', { count: 'exact' })
+        .limit(100);
+
+      if (!workersError && workersData && workersData.length > 0) {
+        toast({
+          title: "Loaded from Supabase",
+          description: `Found ${workersCount || workersData.length} workers in database`,
+        });
+        setDataSource('supabase');
+        setSupabaseWorkerCount(workersCount || workersData.length);
+        // Transform Supabase data to division structure
+        transformSupabaseToNeuralEnnead(workersData);
+        return;
+      }
+
+      // Check for roles table as fallback
+      const { data: rolesData, error: rolesError, count: rolesCount } = await supabase
+        .from('roles')
+        .select('*', { count: 'exact' })
+        .limit(100);
+
+      if (!rolesError && rolesData && rolesData.length > 0) {
+        toast({
+          title: "Loaded from Supabase",
+          description: `Found ${rolesCount || rolesData.length} roles in database`,
+        });
+        setDataSource('supabase');
+        setSupabaseWorkerCount(rolesCount || rolesData.length);
+        transformSupabaseToNeuralEnnead(rolesData);
+        return;
+      }
+
+      // Fall back to mock data
+      console.log('No worker/roles data in Supabase, using mock data');
+      generateNeuralEnnead();
+    } catch (error) {
+      console.error('Error loading worker data:', error);
+      generateNeuralEnnead();
+    }
+  };
+
+  // Transform Supabase data into Neural Ennead structure
+  const transformSupabaseToNeuralEnnead = (data: any[]) => {
+    // Group workers by division (or infer from data)
+    const workersByDivision = new Map<string, any[]>();
+
+    data.forEach((item, idx) => {
+      // Try to get division from data, or assign based on index
+      const divisionKey = item.division || item.department || DIVISIONS[idx % 9].id;
+      if (!workersByDivision.has(divisionKey)) {
+        workersByDivision.set(divisionKey, []);
+      }
+      workersByDivision.get(divisionKey)!.push(item);
+    });
+
+    const generatedDivisions: Division[] = DIVISIONS.map((div, divIdx) => {
+      const divisionWorkers = workersByDivision.get(div.id) || [];
+
+      // Split workers into teams (max 9 per team)
+      const teams: Team[] = TEAM_NAMES.map((teamName, teamIdx) => {
+        const teamStart = teamIdx * 9;
+        const teamWorkers = divisionWorkers.slice(teamStart, teamStart + 9);
+
+        const workers: Worker[] = teamWorkers.length > 0
+          ? teamWorkers.map((w, workerIdx) => ({
+              id: w.id || `${div.id}-${teamIdx}-${workerIdx}`,
+              name: w.name || w.title || w.role_name || `Worker-${workerIdx + 1}`,
+              role: w.role || w.title || w.specialization || 'Worker',
+              status: (w.status || 'active') as Worker['status'],
+              division: div.id,
+              team: `${div.id}-${teamName}`,
+              output: w.output || Math.floor(Math.random() * 100) + 50,
+              tasks_completed: w.tasks_completed || Math.floor(Math.random() * 500),
+              efficiency: w.efficiency || Math.floor(Math.random() * 40) + 60,
+              specialization: w.specialization || w.role || 'General',
+              last_active: w.last_active ? new Date(w.last_active) : new Date()
+            }))
+          : Array.from({ length: 9 }, (_, workerIdx) => generateMockWorker(div.id, teamName, teamIdx, workerIdx, divIdx));
+
+        const teamHealth = Math.round(workers.reduce((sum, w) => sum + w.efficiency, 0) / workers.length);
+        const teamOutput = workers.reduce((sum, w) => sum + w.output, 0);
+
+        return {
+          id: `${div.id}-${teamName}`,
+          name: `${teamName} Team`,
+          division: div.id,
+          workers,
+          health: teamHealth,
+          output: teamOutput,
+          lead: workers[0]?.name
+        };
+      });
+
+      const divHealth = Math.round(teams.reduce((sum, t) => sum + t.health, 0) / teams.length);
+      const divOutput = teams.reduce((sum, t) => sum + t.output, 0);
+
+      return {
+        id: div.id,
+        name: div.name,
+        icon: div.icon,
+        color: div.color,
+        teams,
+        health: divHealth,
+        output: divOutput,
+        director: `Director-${divIdx + 1}`
+      };
+    });
+
+    setDivisions(generatedDivisions);
+    setIsLoading(false);
+  };
+
+  const generateMockWorker = (divId: string, teamName: string, teamIdx: number, workerIdx: number, divIdx: number): Worker => {
+    const statuses: Worker['status'][] = ['active', 'active', 'active', 'busy', 'busy', 'idle', 'idle', 'offline', 'active'];
+    const specializations = [
+      'AI Agent', 'Data Processor', 'API Handler', 'Content Creator',
+      'Analyzer', 'Optimizer', 'Coordinator', 'Researcher', 'Validator'
+    ];
+    return {
+      id: `${divId}-${teamIdx}-${workerIdx}`,
+      name: `Worker-${(divIdx * 81) + (teamIdx * 9) + workerIdx + 1}`,
+      role: specializations[workerIdx],
+      status: statuses[workerIdx],
+      division: divId,
+      team: `${divId}-${teamName}`,
+      output: Math.floor(Math.random() * 100) + 50,
+      tasks_completed: Math.floor(Math.random() * 500) + 100,
+      efficiency: Math.floor(Math.random() * 40) + 60,
+      specialization: specializations[workerIdx],
+      last_active: new Date(Date.now() - Math.random() * 86400000)
+    };
+  };
 
   // Generate the 9×9×9 Neural Ennead structure
   const generateNeuralEnnead = () => {
@@ -241,8 +384,21 @@ const WorkerDashboard = () => {
               <SelectItem value="offline">Offline</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon">
-            <RefreshCw className="w-4 h-4" />
+          <Badge variant={dataSource === 'supabase' ? 'default' : 'outline'} className="gap-1">
+            {dataSource === 'supabase' ? (
+              <>
+                <CheckCircle className="w-3 h-3" />
+                Supabase ({supabaseWorkerCount})
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-3 h-3" />
+                Mock Data
+              </>
+            )}
+          </Badge>
+          <Button variant="outline" size="icon" onClick={loadWorkerData} disabled={isLoading}>
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>

@@ -44,26 +44,38 @@ const BridgeDataFinder = () => {
     {
       id: 'find-4500',
       name: 'Find 4500 Roles',
-      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*4500*" -o -name "*roles*" -o -name "*workers*" \\) 2>/dev/null | head -20',
+      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*4500*" -o -name "*roles*" -o -name "*workers*" \\) 2>/dev/null | head -30',
       description: 'Search for files containing 4500, roles, or workers'
     },
     {
       id: 'find-neural',
       name: 'Find Neural/Ennead',
-      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*neural*" -o -name "*ennead*" -o -name "*9x9*" \\) 2>/dev/null | head -20',
+      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*neural*" -o -name "*ennead*" -o -name "*9x9*" \\) 2>/dev/null | head -30',
       description: 'Search for Neural Ennead related files'
+    },
+    {
+      id: 'find-9x9x9',
+      name: 'Find 9×9×9 Docs',
+      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*9x9x9*" -o -name "*729*" -o -name "*nine*" -o -name "*divisions*" \\) 2>/dev/null | head -30',
+      description: 'Search for 9×9×9 structure documents'
     },
     {
       id: 'find-csv',
       name: 'Find Large CSVs',
-      command: 'find ~/Documents ~/Downloads ~/Desktop -name "*.csv" -size +100k 2>/dev/null | head -20',
+      command: 'find ~/Documents ~/Downloads ~/Desktop -name "*.csv" -size +100k 2>/dev/null | head -30',
       description: 'Find CSV files larger than 100KB'
     },
     {
       id: 'find-workfamily',
       name: 'Find WorkFamily',
-      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*workfamily*" -o -name "*work_family*" -o -name "*family*ai*" \\) 2>/dev/null | head -20',
+      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*workfamily*" -o -name "*work_family*" -o -name "*family*ai*" \\) 2>/dev/null | head -30',
       description: 'Search for WorkFamily AI related files'
+    },
+    {
+      id: 'find-word-pdf',
+      name: 'Find Word/PDF Docs',
+      command: 'find ~/Documents ~/Downloads ~/Desktop -type f \\( -name "*.docx" -o -name "*.doc" -o -name "*.pdf" \\) -mtime -30 2>/dev/null | head -30',
+      description: 'Recent Word and PDF documents (last 30 days)'
     },
     {
       id: 'list-bridge',
@@ -74,19 +86,31 @@ const BridgeDataFinder = () => {
     {
       id: 'list-downloads',
       name: 'Recent Downloads',
-      command: 'ls -lt ~/Downloads/*.{csv,xlsx,docx,pdf,json} 2>/dev/null | head -20',
-      description: 'List recent data files in Downloads'
+      command: 'ls -lt ~/Downloads/ 2>/dev/null | head -30',
+      description: 'List recent files in Downloads'
     },
     {
       id: 'grep-4500',
       name: 'Grep for 4500',
-      command: 'grep -r "4500" ~/Documents/*.{csv,txt,md} 2>/dev/null | head -10',
+      command: 'grep -rl "4500" ~/Documents ~/Downloads 2>/dev/null | head -20',
       description: 'Search file contents for 4500'
+    },
+    {
+      id: 'grep-roles',
+      name: 'Grep for Roles',
+      command: 'grep -rl -i "role" ~/Documents ~/Downloads 2>/dev/null | head -20',
+      description: 'Search file contents for role/roles'
+    },
+    {
+      id: 'mdfind-4500',
+      name: 'Spotlight 4500',
+      command: 'mdfind "4500 roles" 2>/dev/null | head -20',
+      description: 'Use macOS Spotlight to find 4500 roles'
     },
     {
       id: 'supabase-tables',
       name: 'Supabase Tables',
-      command: `troy-sql "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename LIMIT 20"`,
+      command: 'troy-sql "SELECT tablename FROM pg_tables WHERE schemaname = \'public\' ORDER BY tablename LIMIT 30"',
       description: 'List Supabase tables'
     }
   ];
@@ -184,11 +208,20 @@ const BridgeDataFinder = () => {
     if (ext === 'csv' || ext === 'txt' || ext === 'md' || ext === 'json') {
       command = `head -100 "${filePath}"`;
     } else if (ext === 'xlsx' || ext === 'xls') {
-      // Try to convert with csvkit if available, or just show file info
-      command = `file "${filePath}" && ls -la "${filePath}"`;
-    } else if (ext === 'docx' || ext === 'pdf') {
-      // Show file info for binary files
-      command = `file "${filePath}" && ls -la "${filePath}" && echo "---" && strings "${filePath}" | head -50`;
+      // Try xlsx2csv if available, otherwise show file info
+      command = `if command -v xlsx2csv &>/dev/null; then xlsx2csv "${filePath}" 2>/dev/null | head -100; else file "${filePath}" && ls -la "${filePath}"; fi`;
+    } else if (ext === 'docx') {
+      // Extract text from Word document using textutil (built into macOS)
+      command = `textutil -stdout -convert txt "${filePath}" 2>/dev/null | head -200`;
+    } else if (ext === 'doc') {
+      // For older .doc files, try antiword or catdoc
+      command = `if command -v antiword &>/dev/null; then antiword "${filePath}" 2>/dev/null | head -200; elif command -v catdoc &>/dev/null; then catdoc "${filePath}" 2>/dev/null | head -200; else strings "${filePath}" | head -100; fi`;
+    } else if (ext === 'pdf') {
+      // Extract text from PDF using pdftotext (from poppler) or strings as fallback
+      command = `if command -v pdftotext &>/dev/null; then pdftotext -layout "${filePath}" - 2>/dev/null | head -200; else strings "${filePath}" | grep -v "^$" | head -100; fi`;
+    } else if (ext === 'rtf') {
+      // Rich text using textutil
+      command = `textutil -stdout -convert txt "${filePath}" 2>/dev/null | head -200`;
     } else {
       command = `head -50 "${filePath}"`;
     }
@@ -199,6 +232,41 @@ const BridgeDataFinder = () => {
       setFileContent(result.output || 'Empty file');
     } else {
       setFileContent(`Error: ${result.error}`);
+    }
+  };
+
+  // Extract full document text with advanced options
+  const extractFullDocument = async (filePath: string, maxLines: number = 500) => {
+    const ext = filePath.split('.').pop()?.toLowerCase();
+    let command: string;
+
+    if (ext === 'docx' || ext === 'rtf') {
+      command = `textutil -stdout -convert txt "${filePath}" 2>/dev/null | head -${maxLines}`;
+    } else if (ext === 'pdf') {
+      command = `pdftotext -layout "${filePath}" - 2>/dev/null | head -${maxLines}`;
+    } else if (ext === 'csv') {
+      command = `cat "${filePath}" | head -${maxLines}`;
+    } else if (ext === 'xlsx') {
+      command = `xlsx2csv "${filePath}" 2>/dev/null | head -${maxLines}`;
+    } else {
+      command = `cat "${filePath}" | head -${maxLines}`;
+    }
+
+    toast({
+      title: "Extracting full document...",
+      description: `Getting up to ${maxLines} lines`,
+    });
+
+    const result = await executeBridgeCommand(command);
+    if (result.success) {
+      setFileContent(result.output || 'Empty file');
+      setCommandOutput(null);
+    } else {
+      toast({
+        title: "Extraction failed",
+        description: result.error,
+        variant: "destructive"
+      });
     }
   };
 
@@ -337,10 +405,18 @@ const BridgeDataFinder = () => {
           <div>
             <div className="text-sm font-medium mb-2 flex items-center justify-between">
               <span>File Preview: {selectedFile?.split('/').pop()}</span>
-              <Button variant="outline" size="sm">
-                <Upload className="w-4 h-4 mr-2" />
-                Import to Supabase
-              </Button>
+              <div className="flex gap-2">
+                {selectedFile && ['docx', 'pdf', 'csv', 'xlsx', 'rtf'].includes(selectedFile.split('.').pop()?.toLowerCase() || '') && (
+                  <Button variant="outline" size="sm" onClick={() => extractFullDocument(selectedFile, 500)}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Full Extract
+                  </Button>
+                )}
+                <Button variant="outline" size="sm">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import to Supabase
+                </Button>
+              </div>
             </div>
             <ScrollArea className="h-[300px] border rounded-lg">
               <pre className="p-3 text-xs font-mono whitespace-pre-wrap">{fileContent}</pre>
