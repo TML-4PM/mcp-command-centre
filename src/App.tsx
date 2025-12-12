@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import MCPCommandCentre from "./pages/MCPCommandCentre";
 import ChatDashboard from "./pages/ChatDashboard";
+import WorkerDashboard from "./pages/WorkerDashboard";
+import CMODashboard from "./pages/CMODashboard";
 import Search from "./pages/Search";
 import Commands from "./pages/Commands";
 import Portfolio from "./pages/Portfolio";
@@ -28,6 +30,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<MCPCommandCentre />} />
             <Route path="/chats" element={<ChatDashboard />} />
+            <Route path="/workers" element={<WorkerDashboard />} />
+            <Route path="/cmo" element={<CMODashboard />} />
             <Route path="/search" element={<Search />} />
             <Route path="/commands" element={<Commands />} />
             <Route path="/portfolio" element={<Portfolio />} />
