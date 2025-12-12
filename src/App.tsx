@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import MCPCommandCentre from "./pages/MCPCommandCentre";
+import ChatDashboard from "./pages/ChatDashboard";
 import Search from "./pages/Search";
 import Commands from "./pages/Commands";
 import Portfolio from "./pages/Portfolio";
@@ -26,6 +27,7 @@ const App = () => (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <Routes>
             <Route path="/" element={<MCPCommandCentre />} />
+            <Route path="/chats" element={<ChatDashboard />} />
             <Route path="/search" element={<Search />} />
             <Route path="/commands" element={<Commands />} />
             <Route path="/portfolio" element={<Portfolio />} />

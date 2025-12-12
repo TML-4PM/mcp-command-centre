@@ -3,6 +3,7 @@ import { NavLink } from "./NavLink";
 const Navigation = () => {
   const navItems = [
     { to: "/", label: "Dashboard" },
+    { to: "/chats", label: "Chats" },
     { to: "/search", label: "Search" },
     { to: "/commands", label: "Commands" },
     { to: "/portfolio", label: "Portfolio" },
