@@ -7,3 +7,5 @@ export { default as InsightsWidget } from './InsightsWidget';
 export { default as S3BrowserWidget } from './S3BrowserWidget';
 export { default as WeeklyPlannerWidget } from './WeeklyPlannerWidget';
 export { default as SQLConsoleWidget } from './SQLConsoleWidget';
+export { default as DataImportWidget } from './DataImportWidget';
+export { default as BridgeDataFinder } from './BridgeDataFinder';

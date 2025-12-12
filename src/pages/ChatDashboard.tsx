@@ -5,7 +5,8 @@ import {
   RefreshCw, Search, Filter, Calendar, Database, Cloud,
   MessageSquare, FileCode, Clock, AlertCircle, CheckCircle,
   Download, Upload, FolderOpen, Zap, Settings, ExternalLink,
-  Layers, Activity, TrendingUp, BarChart3, Globe, HardDrive
+  Layers, Activity, TrendingUp, BarChart3, Globe, HardDrive,
+  Terminal, FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,9 @@ import ChatHistoryWidget from "@/components/chat-dashboard/ChatHistoryWidget";
 import InsightsWidget from "@/components/chat-dashboard/InsightsWidget";
 import S3BrowserWidget from "@/components/chat-dashboard/S3BrowserWidget";
 import WeeklyPlannerWidget from "@/components/chat-dashboard/WeeklyPlannerWidget";
+import SQLConsoleWidget from "@/components/chat-dashboard/SQLConsoleWidget";
+import DataImportWidget from "@/components/chat-dashboard/DataImportWidget";
+import BridgeDataFinder from "@/components/chat-dashboard/BridgeDataFinder";
 
 interface DashboardMetrics {
   totalChats: number;
@@ -221,10 +225,18 @@ const ChatDashboard = () => {
 
       {/* Main Tabbed Interface */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full h-auto">
+        <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full h-auto">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="w-4 h-4" />
             <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="bridge" className="gap-2">
+            <Terminal className="w-4 h-4" />
+            <span className="hidden sm:inline">Bridge</span>
+          </TabsTrigger>
+          <TabsTrigger value="import" className="gap-2">
+            <FileSpreadsheet className="w-4 h-4" />
+            <span className="hidden sm:inline">Import</span>
           </TabsTrigger>
           <TabsTrigger value="sources" className="gap-2">
             <Database className="w-4 h-4" />
@@ -279,6 +291,19 @@ const ChatDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ChatHistoryWidget limit={5} />
             <InsightsWidget />
+          </div>
+        </TabsContent>
+
+        {/* Bridge Tab - Search Mac via MCP Bridge */}
+        <TabsContent value="bridge" className="mt-6">
+          <BridgeDataFinder />
+        </TabsContent>
+
+        {/* Import Tab - CSV/Data Import */}
+        <TabsContent value="import" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <DataImportWidget />
+            <SQLConsoleWidget />
           </div>
         </TabsContent>
 
