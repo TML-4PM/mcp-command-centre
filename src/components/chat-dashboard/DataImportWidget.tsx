@@ -2,9 +2,10 @@ import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import {
   Upload, FileSpreadsheet, CheckCircle, AlertCircle, RefreshCw,
-  Database, Users, Building2, Briefcase, Download, Trash2
+  Database, Users, Building2, Briefcase, Download, Trash2, FileJson, FileText
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,44 +90,88 @@ const DataImportWidget = () => {
     setIsUploading(true);
     setUploadProgress(10);
 
+    const ext = file.name.split('.').pop()?.toLowerCase();
+
     try {
-      // Parse CSV file
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          setUploadProgress(50);
+      if (ext === 'csv' || ext === 'tsv') {
+        // Parse CSV/TSV file
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          delimiter: ext === 'tsv' ? '\t' : ',',
+          complete: (results) => {
+            setUploadProgress(50);
+            processData(file.name, results.data as any[], results.meta.fields || []);
+          },
+          error: (error) => {
+            console.error('Parse error:', error);
+            setIsUploading(false);
+            toast({
+              title: "Parse Error",
+              description: error.message,
+              variant: "destructive"
+            });
+          }
+        });
+      } else if (ext === 'xlsx' || ext === 'xls') {
+        // Parse Excel file
+        const arrayBuffer = await file.arrayBuffer();
+        setUploadProgress(30);
 
-          const data = results.data as any[];
-          const columns = results.meta.fields || [];
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
 
-          setImportedData({
-            fileName: file.name,
-            rowCount: data.length,
-            columns,
-            data,
-            importedAt: new Date()
-          });
+        setUploadProgress(50);
 
-          setPreviewData(data.slice(0, 10));
-          setUploadProgress(100);
-          setIsUploading(false);
+        // Convert to JSON with headers
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
 
-          toast({
-            title: "File Parsed Successfully",
-            description: `${data.length} rows with ${columns.length} columns`,
-          });
-        },
-        error: (error) => {
-          console.error('Parse error:', error);
-          setIsUploading(false);
-          toast({
-            title: "Parse Error",
-            description: error.message,
-            variant: "destructive"
-          });
+        if (jsonData.length < 2) {
+          throw new Error('Excel file appears to be empty');
         }
-      });
+
+        // First row is headers
+        const headers = jsonData[0].map((h: any) => String(h || '').trim());
+        const rows = jsonData.slice(1).map(row => {
+          const obj: Record<string, any> = {};
+          headers.forEach((header, idx) => {
+            obj[header] = row[idx] ?? '';
+          });
+          return obj;
+        }).filter(row => Object.values(row).some(v => v !== ''));
+
+        processData(file.name, rows, headers);
+
+        toast({
+          title: "Excel Parsed",
+          description: `Sheet "${sheetName}" - ${rows.length} rows`,
+        });
+      } else if (ext === 'json') {
+        // Parse JSON file
+        const text = await file.text();
+        setUploadProgress(30);
+
+        let jsonData = JSON.parse(text);
+
+        // Handle both array and object with data property
+        if (!Array.isArray(jsonData)) {
+          jsonData = jsonData.data || jsonData.rows || jsonData.items || [jsonData];
+        }
+
+        if (jsonData.length === 0) {
+          throw new Error('JSON file appears to be empty');
+        }
+
+        setUploadProgress(50);
+
+        // Get columns from first object
+        const columns = Object.keys(jsonData[0]);
+
+        processData(file.name, jsonData, columns);
+      } else {
+        throw new Error(`Unsupported file type: .${ext}. Use CSV, Excel, or JSON.`);
+      }
     } catch (e: any) {
       setIsUploading(false);
       toast({
@@ -135,6 +180,25 @@ const DataImportWidget = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const processData = (fileName: string, data: any[], columns: string[]) => {
+    setImportedData({
+      fileName,
+      rowCount: data.length,
+      columns,
+      data,
+      importedAt: new Date()
+    });
+
+    setPreviewData(data.slice(0, 10));
+    setUploadProgress(100);
+    setIsUploading(false);
+
+    toast({
+      title: "File Parsed Successfully",
+      description: `${data.length} rows with ${columns.length} columns`,
+    });
   };
 
   const importToSupabase = async () => {
@@ -281,13 +345,13 @@ const DataImportWidget = () => {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,.tsv"
+            accept=".csv,.tsv,.xlsx,.xls,.json"
             onChange={handleFileSelect}
             className="hidden"
           />
           <Button
             variant="outline"
-            className="w-full h-24 border-dashed"
+            className="w-full h-28 border-dashed"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
           >
@@ -298,9 +362,18 @@ const DataImportWidget = () => {
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
-                <Upload className="w-6 h-6" />
-                <span>Click to upload CSV (4500 roles, workers, etc.)</span>
-                <span className="text-xs text-muted-foreground">Supports Neural Ennead 9×9×9 structure</span>
+                <div className="flex items-center gap-3">
+                  <FileSpreadsheet className="w-6 h-6 text-green-500" />
+                  <FileJson className="w-6 h-6 text-yellow-500" />
+                  <FileText className="w-6 h-6 text-blue-500" />
+                </div>
+                <span className="font-medium">Click to upload your 4500 roles file</span>
+                <div className="flex gap-2 text-xs text-muted-foreground">
+                  <Badge variant="outline" className="text-xs">.xlsx</Badge>
+                  <Badge variant="outline" className="text-xs">.csv</Badge>
+                  <Badge variant="outline" className="text-xs">.json</Badge>
+                  <Badge variant="outline" className="text-xs">.xls</Badge>
+                </div>
               </div>
             )}
           </Button>
