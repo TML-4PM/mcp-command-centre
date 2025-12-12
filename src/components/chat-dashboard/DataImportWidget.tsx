@@ -41,17 +41,38 @@ const DataImportWidget = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [importedData, setImportedData] = useState<ImportedData | null>(null);
-  const [targetTable, setTargetTable] = useState<string>("workers");
+  const [targetTable, setTargetTable] = useState<string>("roles");
   const [existingTables, setExistingTables] = useState<TableInfo[]>([]);
   const [isLoadingTables, setIsLoadingTables] = useState(false);
   const [previewData, setPreviewData] = useState<any[]>([]);
 
-  // Predefined table schemas for Neural Ennead
+  // Predefined table schemas matching user's actual data
   const tableSchemas: Record<string, string[]> = {
-    workers: ['id', 'name', 'role', 'status', 'division', 'team', 'efficiency', 'output', 'specialization', 'created_at'],
+    roles: [
+      'group_name', 'exemplar', 'asset_id', 'asset_name', 'variant_id',
+      'variant_name', 'time_state', 'signal_state', 'ai_trajectory_score',
+      'lag_status', 'velocity', 'lens', 'status'
+    ],
+    agents: [
+      'coordinates', 'variant_id', 'count', 'status_code', 'date',
+      'status', 'location', 'schedule', 'api_url', 'auth_method',
+      'priority', 'tags', 'event_id', 'next_run', 'action'
+    ],
+    workers: [
+      'id', 'role_type', 'education', 'department', 'experience_years',
+      'language_proficiencies', 'date_range', 'skills', 'category', 'level'
+    ],
+    work_styles: [
+      'score_1', 'score_2', 'score_3', 'score_4', 'score_5', 'disc_profile',
+      'work_style_combo', 'metric_1', 'metric_2', 'metric_3', 'metric_4',
+      'metric_5', 'level', 'date', 'flag_1', 'flag_2', 'score_final'
+    ],
     divisions: ['id', 'name', 'director', 'health', 'output', 'created_at'],
     teams: ['id', 'name', 'division_id', 'lead', 'health', 'output', 'created_at'],
-    roles: ['id', 'title', 'description', 'level', 'division', 'count', 'created_at']
+    events: [
+      'event_id', 'variant_id', 'location', 'status', 'api_url',
+      'action', 'next_run', 'priority'
+    ]
   };
 
   const loadExistingTables = async () => {
@@ -295,28 +316,46 @@ const DataImportWidget = () => {
                 <SelectValue placeholder="Select table" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="roles">
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="w-4 h-4" />
+                    roles (4500 roles - exemplar/variant/trajectory)
+                  </div>
+                </SelectItem>
+                <SelectItem value="agents">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    agents (10K events - location/status/action)
+                  </div>
+                </SelectItem>
                 <SelectItem value="workers">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    workers (Neural Ennead 729+)
+                    workers (education/skills/department)
+                  </div>
+                </SelectItem>
+                <SelectItem value="work_styles">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" />
+                    work_styles (DISC/personality scores)
+                  </div>
+                </SelectItem>
+                <SelectItem value="events">
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4" />
+                    events (EV IDs - invoke/terminate/monitor)
                   </div>
                 </SelectItem>
                 <SelectItem value="divisions">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4" />
-                    divisions (9 divisions)
+                    divisions (9 Neural Ennead divisions)
                   </div>
                 </SelectItem>
                 <SelectItem value="teams">
                   <div className="flex items-center gap-2">
                     <Briefcase className="w-4 h-4" />
                     teams (81 teams)
-                  </div>
-                </SelectItem>
-                <SelectItem value="roles">
-                  <div className="flex items-center gap-2">
-                    <FileSpreadsheet className="w-4 h-4" />
-                    roles (4500 roles)
                   </div>
                 </SelectItem>
               </SelectContent>

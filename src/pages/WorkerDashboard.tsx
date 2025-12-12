@@ -145,12 +145,45 @@ const WorkerDashboard = () => {
 
   // Transform Supabase data into Neural Ennead structure
   const transformSupabaseToNeuralEnnead = (data: any[]) => {
-    // Group workers by division (or infer from data)
+    // Group workers by division - map asset_name to divisions for 4500 roles format
     const workersByDivision = new Map<string, any[]>();
 
+    // Map asset_names to Neural Ennead divisions
+    const assetToDivision: Record<string, string> = {
+      'Identity & Sticker': 'strategy',
+      'Bio / Origin': 'research',
+      'Key Works / Principles / Process': 'engineering',
+      'Timeline & Influence': 'operations',
+      'Applications & Domains': 'data',
+    };
+
+    // Map variant_name to efficiency scores
+    const variantToEfficiency: Record<string, number> = {
+      'Novice': 40,
+      'Practitioner': 55,
+      'Expert': 70,
+      'Leader': 85,
+      'Augmented': 95,
+    };
+
+    // Map signal_state to status
+    const signalToStatus: Record<string, Worker['status']> = {
+      'none': 'offline',
+      'weak': 'idle',
+      'moderate': 'busy',
+      'strong': 'active',
+      'embedded': 'active',
+    };
+
     data.forEach((item, idx) => {
-      // Try to get division from data, or assign based on index
-      const divisionKey = item.division || item.department || DIVISIONS[idx % 9].id;
+      // Handle 4500 roles format
+      let divisionKey: string;
+      if (item.asset_name) {
+        divisionKey = assetToDivision[item.asset_name] || DIVISIONS[idx % 9].id;
+      } else {
+        divisionKey = item.division || item.department || DIVISIONS[idx % 9].id;
+      }
+
       if (!workersByDivision.has(divisionKey)) {
         workersByDivision.set(divisionKey, []);
       }
@@ -168,15 +201,26 @@ const WorkerDashboard = () => {
         const workers: Worker[] = teamWorkers.length > 0
           ? teamWorkers.map((w, workerIdx) => ({
               id: w.id || `${div.id}-${teamIdx}-${workerIdx}`,
-              name: w.name || w.title || w.role_name || `Worker-${workerIdx + 1}`,
-              role: w.role || w.title || w.specialization || 'Worker',
-              status: (w.status || 'active') as Worker['status'],
+              // Map 4500 roles format: exemplar + variant_name
+              name: w.exemplar
+                ? `${w.exemplar} (${w.variant_name || 'Worker'})`
+                : w.name || w.title || w.role_name || `Worker-${workerIdx + 1}`,
+              role: w.variant_name || w.role || w.title || w.specialization || 'Worker',
+              // Map signal_state to status
+              status: w.signal_state
+                ? (signalToStatus[w.signal_state] || 'active')
+                : (w.status || 'active') as Worker['status'],
               division: div.id,
               team: `${div.id}-${teamName}`,
-              output: w.output || Math.floor(Math.random() * 100) + 50,
+              // Use ai_trajectory_score for output
+              output: w.ai_trajectory_score || w.output || Math.floor(Math.random() * 100) + 50,
               tasks_completed: w.tasks_completed || Math.floor(Math.random() * 500),
-              efficiency: w.efficiency || Math.floor(Math.random() * 40) + 60,
-              specialization: w.specialization || w.role || 'General',
+              // Map variant_name to efficiency
+              efficiency: w.variant_name
+                ? (variantToEfficiency[w.variant_name] || 60)
+                : w.efficiency || Math.floor(Math.random() * 40) + 60,
+              // Use asset_name or velocity as specialization
+              specialization: w.asset_name || w.velocity || w.specialization || w.role || 'General',
               last_active: w.last_active ? new Date(w.last_active) : new Date()
             }))
           : Array.from({ length: 9 }, (_, workerIdx) => generateMockWorker(div.id, teamName, teamIdx, workerIdx, divIdx));
