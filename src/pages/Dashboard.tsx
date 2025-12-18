@@ -13,6 +13,7 @@ import SystemHealthOverview from "@/components/dashboard/SystemHealthOverview";
 import BusinessUnitCard from "@/components/dashboard/BusinessUnitCard";
 import InfrastructureCosts from "@/components/dashboard/InfrastructureCosts";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
+import { CommandCentreWidget } from "@/components/CommandCentreWidget";
 
 interface SystemHealth {
   [key: string]: {
@@ -282,7 +283,7 @@ const Dashboard = () => {
           <ActivityFeed activities={activities} />
         </div>
         <div className="space-y-4">
-          {/* Statistics Grid moved inline */}
+          <CommandCentreWidget />
         </div>
       </div>
 
