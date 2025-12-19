@@ -1,21 +1,16 @@
-import { Terminal } from 'lucide-react';
+import { Terminal, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const COMMANDS = [
   '/cc', '/bs', '/prove', '/judge', '/audit', 
   '/kill', '/plan', '/mission', '/cleanup', '/capture', '/restore'
 ];
 
-const COMMAND_CENTRE_URL = 'https://troy-bridge-files.s3.ap-southeast-2.amazonaws.com/commands/command_centre.html';
-
 export function CommandCentreWidget() {
-  const handleClick = () => {
-    window.open(COMMAND_CENTRE_URL, '_blank');
-  };
-
   return (
-    <div 
-      onClick={handleClick}
-      className="bg-slate-900 rounded-xl p-4 border border-slate-700 cursor-pointer hover:border-slate-500 transition-colors"
+    <Link 
+      to="/commands"
+      className="block bg-slate-900 rounded-xl p-4 border border-slate-700 cursor-pointer hover:border-emerald-500/50 transition-colors"
     >
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
@@ -37,16 +32,17 @@ export function CommandCentreWidget() {
         {COMMANDS.map((cmd) => (
           <span 
             key={cmd} 
-            className="px-2 py-1 bg-slate-800 text-emerald-400 text-xs font-mono rounded hover:bg-slate-700 transition-colors"
+            className="px-2 py-1 bg-slate-800 text-emerald-400 text-xs font-mono rounded"
           >
             {cmd}
           </span>
         ))}
       </div>
 
-      <div className="p-2 bg-slate-800/50 border border-slate-700 rounded text-slate-400 text-xs">
-        📋 Closure contract: All commands bound to session scope
+      <div className="flex items-center justify-between p-2 bg-slate-800/50 border border-slate-700 rounded text-slate-400 text-xs">
+        <span>📋 Closure contract: All commands bound to session scope</span>
+        <ArrowRight className="w-4 h-4 text-emerald-400" />
       </div>
-    </div>
+    </Link>
   );
 }
