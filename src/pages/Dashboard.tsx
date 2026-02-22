@@ -14,6 +14,7 @@ import BusinessUnitCard from "@/components/dashboard/BusinessUnitCard";
 import InfrastructureCosts from "@/components/dashboard/InfrastructureCosts";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
 import { CommandCentreWidget } from "@/components/CommandCentreWidget";
+import { AgentChannelWidget } from "@/components/AgentChannelWidget";
 
 interface SystemHealth {
   [key: string]: {
@@ -284,6 +285,7 @@ const Dashboard = () => {
         </div>
         <div className="space-y-4">
           <CommandCentreWidget />
+          <AgentChannelWidget />
         </div>
       </div>
 
