@@ -2,12 +2,15 @@ import { NavLink } from "./NavLink";
 
 const Navigation = () => {
   const navItems = [
-    { to: "/", label: "Dashboard" },
+    { to: "/", label: "Overview" },
+    { to: "/dashboard", label: "Dashboard" },
     { to: "/search", label: "Search" },
     { to: "/commands", label: "Commands" },
     { to: "/portfolio", label: "Portfolio" },
     { to: "/tasks", label: "Tasks" },
-    { to: "/outreach", label: "Outreach" }
+    { to: "/outreach", label: "Outreach" },
+    { to: "/infra", label: "Infra" },
+    { to: "/sql-queries", label: "SQL" },
   ];
 
   return (
