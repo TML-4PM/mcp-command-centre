@@ -13,6 +13,7 @@ import Tasks from "./pages/Tasks";
 import Outreach from "./pages/Outreach";
 import SQLQueries from "./pages/SQLQueries";
 import Infra from "./pages/Infra";
+import Assets from "./pages/Assets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/outreach" element={<Outreach />} />
             <Route path="/sql-queries" element={<SQLQueries />} />
             <Route path="/infra" element={<Infra />} />
+            <Route path="/assets" element={<Assets />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
