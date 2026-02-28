@@ -55,7 +55,8 @@ const PortfolioSurface = () => {
     setError(null);
     try {
       const res = await bridgeSQL(SQL_LOAD);
-      setRows(res.rows as SurfaceRow[]);
+      const rawRows = res.rows;
+      setRows(Array.isArray(rawRows) ? rawRows as SurfaceRow[] : []);
       setDirtyMap({});
     } catch (e: any) {
       setError(e.message);
@@ -122,7 +123,8 @@ const PortfolioSurface = () => {
   };
 
   // ── Filter ───────────────────────────────────────────────────────────────
-  const filtered = rows.filter(r => {
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const filtered = safeRows.filter(r => {
     const cur = getCurrent(r);
     if (groupFilter !== "ALL" && cur.group_code !== groupFilter) return false;
     if (stateFilter && cur.validation_state !== stateFilter) return false;
@@ -369,7 +371,7 @@ const PortfolioSurface = () => {
 
       {/* Footer count */}
       <div className="text-xs text-slate-600 font-mono text-right">
-        {filtered.length} / {rows.length} businesses
+        {filtered.length} / {safeRows.length} businesses
       </div>
 
       {/* Toast */}
