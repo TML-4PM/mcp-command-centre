@@ -1,37 +1,104 @@
 import { NavLink } from "./NavLink";
+import { useState } from "react";
+
+const sections = [
+  {
+    label: "Operations",
+    items: [
+      { to: "/", label: "Overview" },
+      { to: "/dashboard", label: "Dashboard" },
+      { to: "/systems", label: "Systems" },
+      { to: "/architecture", label: "Architecture" },
+    ],
+  },
+  {
+    label: "Commercial",
+    items: [
+      { to: "/products", label: "Products" },
+      { to: "/pricing", label: "Pricing" },
+      { to: "/customers", label: "Sites" },
+      { to: "/hob", label: "HOB" },
+      { to: "/content", label: "Content" },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { to: "/finance", label: "Finance" },
+      { to: "/tax", label: "Tax & R&D" },
+    ],
+  },
+  {
+    label: "Assets",
+    items: [
+      { to: "/assets", label: "Assets" },
+      { to: "/ip", label: "IP" },
+      { to: "/agents", label: "Agents" },
+      { to: "/workers", label: "Workers" },
+    ],
+  },
+  {
+    label: "Intelligence",
+    items: [
+      { to: "/health", label: "Health" },
+      { to: "/signals", label: "Signals" },
+      { to: "/tasks", label: "Tasks" },
+      { to: "/metrics", label: "Metrics" },
+      { to: "/cmo", label: "CMO" },
+    ],
+  },
+  {
+    label: "Personal",
+    items: [
+      { to: "/jobs", label: "Jobs" },
+      { to: "/search", label: "Search" },
+      { to: "/outreach", label: "Outreach" },
+    ],
+  },
+  {
+    label: "Platform",
+    items: [
+      { to: "/infra", label: "Infra" },
+      { to: "/apps", label: "Apps" },
+      { to: "/sql-queries", label: "SQL" },
+      { to: "/chat-ops", label: "Chat Ops" },
+      { to: "/analytics", label: "Analytics" },
+    ],
+  },
+];
 
 const Navigation = () => {
-  const navItems = [
-    { to: "/",           label: "Overview"   },
-    { to: "/dashboard",  label: "Dashboard"  },
-    { to: "/assets",     label: "Assets"     },
-    { to: "/finance",    label: "Finance"    },
-    { to: "/search",     label: "Search"     },
-    { to: "/commands",   label: "Commands"   },
-    { to: "/portfolio",  label: "Portfolio"  },
-    { to: "/tasks",      label: "Tasks"      },
-    { to: "/outreach",   label: "Outreach"   },
-    { to: "/infra",      label: "Infra"      },
-    { to: "/sql-queries",label: "SQL"        },
-  ];
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <nav className="glass border-b border-border sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
             MCP Command Centre
           </div>
-          <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className="px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm text-muted-foreground hover:bg-muted transition-all"
-                activeClassName="bg-primary text-primary-foreground hover:bg-primary"
-              >
-                {item.label}
-              </NavLink>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="sm:hidden text-muted-foreground px-2 py-1 text-sm"
+          >
+            {expanded ? "✕" : "☰"}
+          </button>
+          <div className={`${expanded ? 'flex' : 'hidden'} sm:flex flex-wrap gap-x-1 gap-y-1 items-center`}>
+            {sections.map((sec) => (
+              <div key={sec.label} className="flex items-center gap-0.5">
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider px-1 hidden lg:inline">{sec.label}</span>
+                {sec.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className="px-2 py-1 rounded text-xs text-muted-foreground hover:bg-muted transition-all whitespace-nowrap"
+                    activeClassName="bg-primary text-primary-foreground hover:bg-primary"
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+                <span className="text-slate-700 px-0.5 hidden sm:inline">|</span>
+              </div>
             ))}
           </div>
         </div>

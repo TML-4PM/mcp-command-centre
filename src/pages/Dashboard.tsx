@@ -76,7 +76,7 @@ const Dashboard = () => {
 
   const fetchLambdaData = async () => {
     try {
-      const response = await fetch('https://32sux667kmm23wh3bjjjh4y6fa0afinn.lambda-url.ap-southeast-2.on.aws/');
+      const response = await fetch('https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/mobile/dashboard');
       const data = await response.json();
       setLambdaData(data);
       setLambdaLoading(false);
