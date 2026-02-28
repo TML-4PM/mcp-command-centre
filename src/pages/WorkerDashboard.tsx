@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { bridgeSQL } from "@/lib/bridge";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -99,43 +100,35 @@ const WorkerDashboard = () => {
     setIsLoading(true);
 
     try {
-      // Check for workers table
+      // Try bridge first — neural_ennead_members is the real data
+      try {
+        const ennead = await bridgeSQL("SELECT id, name, role, family, division, status, efficiency, tasks_completed, specialization FROM neural_ennead_members ORDER BY family, division, name LIMIT 729");
+        if (ennead.rows && ennead.rows.length > 0) {
+          setDataSource('supabase');
+          setSupabaseWorkerCount(ennead.rows.length);
+          transformSupabaseToNeuralEnnead(ennead.rows);
+          setIsLoading(false);
+          return;
+        }
+      } catch (bridgeErr) {
+        console.warn('Bridge fetch failed, trying Supabase:', bridgeErr);
+      }
+
+      // Supabase fallback
       const { data: workersData, error: workersError, count: workersCount } = await supabase
-        .from('workers')
+        .from('neural_ennead_members')
         .select('*', { count: 'exact' })
-        .limit(100);
+        .limit(729);
 
       if (!workersError && workersData && workersData.length > 0) {
-        toast({
-          title: "Loaded from Supabase",
-          description: `Found ${workersCount || workersData.length} workers in database`,
-        });
         setDataSource('supabase');
         setSupabaseWorkerCount(workersCount || workersData.length);
-        // Transform Supabase data to division structure
         transformSupabaseToNeuralEnnead(workersData);
         return;
       }
 
-      // Check for roles table as fallback
-      const { data: rolesData, error: rolesError, count: rolesCount } = await supabase
-        .from('roles')
-        .select('*', { count: 'exact' })
-        .limit(100);
-
-      if (!rolesError && rolesData && rolesData.length > 0) {
-        toast({
-          title: "Loaded from Supabase",
-          description: `Found ${rolesCount || rolesData.length} roles in database`,
-        });
-        setDataSource('supabase');
-        setSupabaseWorkerCount(rolesCount || rolesData.length);
-        transformSupabaseToNeuralEnnead(rolesData);
-        return;
-      }
-
-      // Fall back to mock data
-      console.log('No worker/roles data in Supabase, using mock data');
+      // Fall back to generated data
+      console.log('No ennead data available, generating');
       generateNeuralEnnead();
     } catch (error) {
       console.error('Error loading worker data:', error);

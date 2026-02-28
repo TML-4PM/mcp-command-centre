@@ -14,7 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 
 // MCP Bridge endpoint - operates on your Mac
-const MCP_BRIDGE_URL = 'https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com';
+const MCP_BRIDGE_URL = '';  // Now uses /api/bridge proxy
 
 interface FileResult {
   path: string;
@@ -118,7 +118,7 @@ const BridgeDataFinder = () => {
   // Execute command via MCP Bridge
   const executeBridgeCommand = async (command: string): Promise<CommandResult> => {
     try {
-      const response = await fetch(`${MCP_BRIDGE_URL}/lambda/invoke`, {
+      const response = await fetch('/api/bridge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

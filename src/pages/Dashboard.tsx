@@ -76,8 +76,8 @@ const Dashboard = () => {
 
   const fetchLambdaData = async () => {
     try {
-      const response = await fetch('https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/mobile/dashboard');
-      const data = await response.json();
+      const response = await fetch('/api/bridge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ functionName: 'troy-sql-executor', payload: { sql: "SELECT json_build_object('system_health', (SELECT json_object_agg(service, status) FROM v_system_health_summary), 'business_units', (SELECT coalesce(json_agg(row_to_json(h)), '[]') FROM v_pos_business_health h), 'infrastructure', json_build_object('lambda_count', (SELECT count(*) FROM mcp_lambda_registry), 'tool_count', (SELECT count(*) FROM tool_registry WHERE is_active=true), 's3_buckets', (SELECT count(*) FROM s3_bucket_audit)), 'alerts', (SELECT coalesce(json_agg(row_to_json(a)), '[]') FROM cc.alerts a WHERE resolved_at IS NULL ORDER BY created_at DESC LIMIT 10), 'lambdas', (SELECT coalesce(json_agg(json_build_object('name', function_name, 'status', status, 'category', category)), '[]') FROM mcp_lambda_registry LIMIT 20)) as data" } }) });
+      const envelope = await response.json(); const body = typeof envelope.result?.body === "string" ? JSON.parse(envelope.result.body) : envelope.result?.body || {}; const data = body.rows?.[0]?.data || {};
       setLambdaData(data);
       setLambdaLoading(false);
     } catch (error) {

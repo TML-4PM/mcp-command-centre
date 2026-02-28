@@ -1,159 +1,147 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { bridgeSQL } from "@/lib/bridge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Search as SearchIcon, Loader2 } from "lucide-react";
+import { Search as SearchIcon, Loader2, Download } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
 interface SearchResult {
-  id: string;
   source: string;
   title: string;
-  created_at: string;
-  message_count: number;
-  rank: number;
-  headline: string;
+  detail: string;
+  match_context: string;
 }
+
+const SEARCH_SOURCES = [
+  { value: "all", label: "All Sources" },
+  { value: "businesses", label: "Businesses" },
+  { value: "ip", label: "IP Assets" },
+  { value: "products", label: "Products" },
+  { value: "agents", label: "Agents" },
+  { value: "grants", label: "Grants" },
+  { value: "sites", label: "Sites & Domains" },
+  { value: "transactions", label: "Transactions" },
+];
+
+const buildSearchSQL = (q: string, source: string): string => {
+  const escaped = q.replace(/'/g, "''");
+  const like = `%${escaped}%`;
+  const queries: string[] = [];
+
+  if (source === "all" || source === "businesses") {
+    queries.push(`SELECT 'Business' as source, business_name as title, coalesce(business_key,'') as detail, group_name as match_context FROM mcp_business_registry WHERE business_name ILIKE '${like}' OR business_key ILIKE '${like}' OR group_name ILIKE '${like}'`);
+  }
+  if (source === "all" || source === "ip") {
+    queries.push(`SELECT 'IP Asset' as source, title, coalesce(ip_type,'') as detail, coalesce(family,'') as match_context FROM ip_assets WHERE title ILIKE '${like}' OR description ILIKE '${like}' OR family ILIKE '${like}'`);
+  }
+  if (source === "all" || source === "products") {
+    queries.push(`SELECT 'Product' as source, product_name as title, coalesce(category,'') as detail, coalesce(business_key,'') as match_context FROM catalog_master WHERE product_name ILIKE '${like}' OR description ILIKE '${like}'`);
+  }
+  if (source === "all" || source === "agents") {
+    queries.push(`SELECT 'Agent' as source, name as title, coalesce(role,'') as detail, coalesce(family,'') as match_context FROM neural_ennead_members WHERE name ILIKE '${like}' OR role ILIKE '${like}' OR specialization ILIKE '${like}'`);
+  }
+  if (source === "all" || source === "grants") {
+    queries.push(`SELECT 'Grant' as source, title, coalesce(agency,'') as detail, coalesce(program_name,'') as match_context FROM grants.opportunities WHERE title ILIKE '${like}' OR agency ILIKE '${like}'`);
+    queries.push(`SELECT 'MAAT Grant' as source, grant_name as title, coalesce(provider,'') as detail, coalesce(status,'') as match_context FROM maat_grants WHERE grant_name ILIKE '${like}' OR provider ILIKE '${like}'`);
+  }
+  if (source === "all" || source === "sites") {
+    queries.push(`SELECT 'Site' as source, domain as title, coalesce(business_key,'') as detail, coalesce(status,'') as match_context FROM sites_registry WHERE domain ILIKE '${like}' OR business_key ILIKE '${like}'`);
+  }
+  if (source === "all" || source === "transactions") {
+    queries.push(`SELECT 'Transaction' as source, description as title, coalesce(counterparty,'') as detail, amount::text as match_context FROM maat_transactions WHERE description ILIKE '${like}' OR counterparty ILIKE '${like}' LIMIT 30`);
+  }
+
+  return queries.join(" UNION ALL ") + " LIMIT 100";
+};
 
 const Search = () => {
   const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
 
   const handleSearch = async () => {
-    if (!query.trim()) {
-      toast({
-        title: "Enter a search query",
-        description: "Please type something to search for.",
-        variant: "default"
-      });
-      return;
-    }
-    
+    if (!query.trim()) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('search_chat_archives', {
-        query: query,
-        source_filter: sourceFilter === "all" ? null : sourceFilter,
-        limit_count: 50
-      });
-
-      if (error) throw error;
-      setResults(data || []);
-      
-      if (data?.length === 0) {
-        toast({
-          title: "No results found",
-          description: `No matches for "${query}". Try different keywords.`,
-        });
+      const sql = buildSearchSQL(query.trim(), sourceFilter);
+      const r = await bridgeSQL(sql);
+      setResults(r.rows || []);
+      if (r.rows.length === 0) {
+        toast({ title: "No results", description: `Nothing matched "${query}"` });
       }
-    } catch (error: any) {
-      console.error('Search failed:', error);
-      toast({
-        title: "Search failed",
-        description: error.message || "Unable to search. Please try again.",
-        variant: "destructive"
-      });
-      setResults([]);
+    } catch (err: any) {
+      toast({ title: "Search failed", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const getIcon = (source: string) => {
-    switch (source) {
-      case 'gpt': return '💬';
-      case 'claude': return '🤖';
-      case 'linkedin': return '📝';
-      case 'slack': return '💼';
-      default: return '💻';
-    }
-  };
+  const grouped = results.reduce((acc, r) => {
+    if (!acc[r.source]) acc[r.source] = [];
+    acc[r.source].push(r);
+    return acc;
+  }, {} as Record<string, SearchResult[]>);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Universal Search</h1>
-        <p className="text-muted-foreground mt-2">Search across conversations, code blocks, and articles</p>
-      </div>
-
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">🔍 Universal Search</h1>
+      <div className="flex gap-3">
+        <div className="flex-1">
           <Input
-            type="text"
-            placeholder="Search across all conversations, code, articles..."
+            placeholder="Search businesses, IP, products, agents, grants, sites, transactions..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-10 bg-muted border-border"
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="bg-slate-800 border-slate-700"
           />
         </div>
         <Select value={sourceFilter} onValueChange={setSourceFilter}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="All sources" />
+          <SelectTrigger className="w-40 bg-slate-800 border-slate-700">
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All sources</SelectItem>
-            <SelectItem value="gpt">GPT</SelectItem>
-            <SelectItem value="claude">Claude</SelectItem>
-            <SelectItem value="linkedin">LinkedIn</SelectItem>
-            <SelectItem value="slack">Slack</SelectItem>
+            {SEARCH_SOURCES.map(s => (
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        <Button onClick={handleSearch} disabled={loading} className="px-8">
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Searching...
-            </>
-          ) : (
-            'Search'
-          )}
+        <Button onClick={handleSearch} disabled={loading} className="bg-blue-600 hover:bg-blue-500">
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SearchIcon className="w-4 h-4" />}
+          <span className="ml-2">Search</span>
         </Button>
       </div>
 
-      <div className="space-y-4">
-        {results.length === 0 && !loading ? (
-          <div className="text-center text-muted-foreground py-8">
-            {query ? 'No results found' : 'Enter a search query to find conversations'}
-          </div>
-        ) : (
-          results.map((result) => (
-            <div key={result.id} className="p-6 glass rounded-lg hover:border-primary/50 transition-all border border-border">
-              <div className="flex items-start gap-4">
-                <span className="text-3xl">{getIcon(result.source)}</span>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold">{result.title || 'Untitled'}</h3>
-                    <span className="text-xs bg-muted px-2 py-1 rounded capitalize">{result.source}</span>
-                  </div>
-                  <div 
-                    className="text-sm text-muted-foreground mb-3"
-                    dangerouslySetInnerHTML={{ __html: result.headline || '' }}
-                  />
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{new Date(result.created_at).toLocaleDateString()}</span>
-                    <span>•</span>
-                    <span>{result.message_count} messages</span>
-                    <span>•</span>
-                    <span>Relevance: {(result.rank * 100).toFixed(1)}%</span>
+      {results.length > 0 && (
+        <div className="text-sm text-slate-400">{results.length} results across {Object.keys(grouped).length} sources</div>
+      )}
+
+      {Object.entries(grouped).map(([source, items]) => (
+        <Card key={source} className="bg-slate-800/50 border-slate-700">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              {source} <span className="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-400">{items.length}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {items.map((r, i) => (
+                <div key={i} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-700/30 border border-slate-800">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-slate-200 truncate">{r.title || "—"}</div>
+                    <div className="text-xs text-slate-500 truncate">{r.detail}{r.match_context ? ` · ${r.match_context}` : ""}</div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))
-        )}
-      </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };

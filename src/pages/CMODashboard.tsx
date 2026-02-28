@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { bridgeSQL } from "@/lib/bridge";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -69,8 +70,25 @@ const CMODashboard = () => {
     loadDashboardData();
   }, []);
 
-  const loadDashboardData = () => {
-    // Generate mock marketing metrics
+  const loadDashboardData = async () => {
+    // Try bridge data first
+    try {
+      const [campaignRows, contentRows, metricsRows] = await Promise.allSettled([
+        bridgeSQL("SELECT * FROM business_campaigns ORDER BY created_at DESC LIMIT 20"),
+        bridgeSQL("SELECT * FROM business_content_pipeline ORDER BY created_at DESC LIMIT 20"),
+        bridgeSQL("SELECT * FROM v_t4h_marketing_assets_live"),
+      ]);
+      if (campaignRows.status === 'fulfilled' && campaignRows.value.rows.length > 0) {
+        const rows = campaignRows.value.rows;
+        setCampaigns(rows.map((r: any, i: number) => ({
+          id: String(r.id || i), name: r.name || r.campaign_name || 'Campaign', status: r.status || 'active',
+          channel: r.channel || 'Multi', spend: Number(r.spend || 0), reach: Number(r.reach || 0),
+          clicks: Number(r.clicks || 0), conversions: Number(r.conversions || 0), roi: Number(r.roi || 0),
+        })));
+      }
+    } catch (e) { console.warn('Bridge CMO data unavailable, using defaults:', e); }
+
+    // Defaults / fallback metrics
     setMetrics({
       reach: 2847000,
       engagement: 156000,

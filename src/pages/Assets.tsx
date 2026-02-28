@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 
-const BRIDGE = "https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke";
+const BRIDGE = "/api/bridge";
 
 async function bridgeSQL(sql: string) {
   const res = await fetch(BRIDGE, {

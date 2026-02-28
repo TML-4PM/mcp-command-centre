@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const BRIDGE = "https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke";
+const BRIDGE = "/api/bridge";
 
 interface SqlTip {
   id: number;
