@@ -49,6 +49,7 @@ const Products = lazy(() => import("./pages/Products"));
 const Signals = lazy(() => import("./pages/Signals"));
 const Systems = lazy(() => import("./pages/Systems"));
 const Tax = lazy(() => import("./pages/Tax"));
+const Tools = lazy(() => import("./pages/Tools"));
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ const App = () => (
                 <Route path="/grants" element={<Grants />} />
                 <Route path="/rd" element={<RnD />} />
                 <Route path="/tax" element={<Tax />} />
+                <Route path="/tools" element={<Tools />} />
                 <Route path="/assets" element={<Assets />} />
                 <Route path="/ip" element={<IpPortfolio />} />
                 <Route path="/ennead" element={<NeuralEnnead />} />
