@@ -24,7 +24,14 @@ import ChatDashboard from "./pages/ChatDashboard";
 import WorkerDashboard from "./pages/WorkerDashboard";
 import CMODashboard from "./pages/CMODashboard";
 
-// Bridge-powered pages (DB-registered)
+// New dedicated pages
+import MaatSystem from "./pages/MaatSystem";
+import Grants from "./pages/Grants";
+import RnD from "./pages/RnD";
+import Businesses from "./pages/Businesses";
+import NeuralEnnead from "./pages/NeuralEnnead";
+
+// Bridge-powered pages
 import Agents from "./pages/Agents";
 import Analytics from "./pages/Analytics";
 import AppConsole from "./pages/AppConsole";
@@ -57,6 +64,7 @@ const App = () => (
             {/* Operations */}
             <Route path="/" element={<MCPCommandCentre />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/businesses" element={<Businesses />} />
             <Route path="/systems" element={<Systems />} />
             <Route path="/architecture" element={<Architecture />} />
 
@@ -68,14 +76,18 @@ const App = () => (
             <Route path="/content" element={<Content />} />
             <Route path="/hob" element={<Hob />} />
 
-            {/* Finance */}
+            {/* Finance — MAAT System */}
             <Route path="/finance" element={<Finance />} />
+            <Route path="/maat" element={<MaatSystem />} />
+            <Route path="/grants" element={<Grants />} />
+            <Route path="/rd" element={<RnD />} />
             <Route path="/tax" element={<Tax />} />
 
             {/* Assets */}
             <Route path="/assets" element={<Assets />} />
             <Route path="/ip" element={<IpPortfolio />} />
             <Route path="/agents" element={<Agents />} />
+            <Route path="/ennead" element={<NeuralEnnead />} />
             <Route path="/workers" element={<WorkerDashboard />} />
 
             {/* Intelligence */}

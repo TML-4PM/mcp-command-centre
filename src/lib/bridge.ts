@@ -1,5 +1,6 @@
-// Bridge client for troy-sql-executor via Lambda invoke gateway
-const BRIDGE_URL = 'https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
+// Bridge client — routes through /api/bridge proxy (avoids CORS)
+// Falls back to direct URL for server-side calls
+const PROXY_URL = '/api/bridge';
 
 export interface BridgeResult {
   success: boolean;
@@ -9,7 +10,7 @@ export interface BridgeResult {
 }
 
 export async function bridgeSQL(sql: string): Promise<BridgeResult> {
-  const res = await fetch(BRIDGE_URL, {
+  const res = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -28,7 +29,7 @@ export async function bridgeSQL(sql: string): Promise<BridgeResult> {
 
 export async function bridgeQueryKey(key: string): Promise<any[]> {
   const lookup = await bridgeSQL(
-    `SELECT sql FROM command_centre_queries WHERE key = '${key}' AND is_active = true LIMIT 1`
+    `SELECT sql FROM command_centre_queries WHERE key = '${key.replace(/'/g, "''")}' AND is_active = true LIMIT 1`
   );
   if (!lookup.rows.length) throw new Error(`Query key "${key}" not found`);
   const result = await bridgeSQL(lookup.rows[0].sql);

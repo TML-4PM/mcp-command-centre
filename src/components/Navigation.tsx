@@ -7,6 +7,7 @@ const sections = [
     items: [
       { to: "/", label: "Overview" },
       { to: "/dashboard", label: "Dashboard" },
+      { to: "/businesses", label: "Businesses" },
       { to: "/systems", label: "Systems" },
       { to: "/architecture", label: "Architecture" },
     ],
@@ -24,8 +25,11 @@ const sections = [
   {
     label: "Finance",
     items: [
+      { to: "/maat", label: "MAAT" },
       { to: "/finance", label: "Finance" },
-      { to: "/tax", label: "Tax & R&D" },
+      { to: "/grants", label: "Grants" },
+      { to: "/rd", label: "R&D" },
+      { to: "/tax", label: "Tax" },
     ],
   },
   {
@@ -33,6 +37,7 @@ const sections = [
     items: [
       { to: "/assets", label: "Assets" },
       { to: "/ip", label: "IP" },
+      { to: "/ennead", label: "Ennead" },
       { to: "/agents", label: "Agents" },
       { to: "/workers", label: "Workers" },
     ],
