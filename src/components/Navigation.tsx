@@ -68,6 +68,7 @@ const sections = [
       { to: "/apps", label: "Apps" },
       { to: "/sql-queries", label: "SQL" },
       { to: "/chat-ops", label: "Chat Ops" },
+      { to: "/portfolio-surface", label: "Surface" },
       { to: "/analytics", label: "Analytics" },
     ],
   },
