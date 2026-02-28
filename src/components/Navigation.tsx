@@ -39,6 +39,7 @@ const sections = [
       { to: "/ip", label: "IP" },
       { to: "/ennead", label: "Ennead" },
       { to: "/agents", label: "Agents" },
+      { to: "/tools", label: "Tools" },
       { to: "/workers", label: "Workers" },
     ],
   },
