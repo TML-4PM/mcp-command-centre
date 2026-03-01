@@ -1,13 +1,14 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import ErrorBoundary from "./components/ErrorBoundary";
 import StatusBar from "./components/StatusBar";
 import { Loader2 } from "lucide-react";
+import { emitRouteEnter, emitRouteComplete } from "@/lib/aiops/emitter";
 
 // Eager load Overview (landing page)
 import MCPCommandCentre from "./pages/MCPCommandCentre";
@@ -54,6 +55,28 @@ const PortfolioSurface = lazy(() => import("./pages/PortfolioSurface"));
 
 const queryClient = new QueryClient();
 
+/** AIOps — emit flow events on every route change */
+const RouteTracker = () => {
+  const { pathname } = useLocation();
+  const flowRef = useRef<{ id: string; ts: number } | null>(null);
+
+  useEffect(() => {
+    // Complete previous route flow
+    if (flowRef.current) {
+      emitRouteComplete(
+        flowRef.current.id,
+        pathname,
+        Date.now() - flowRef.current.ts
+      );
+    }
+    // Start new route flow
+    const flowId = emitRouteEnter(pathname);
+    flowRef.current = { id: flowId, ts: Date.now() };
+  }, [pathname]);
+
+  return null;
+};
+
 const PageLoader = () => (
   <div className="flex items-center justify-center py-20">
     <Loader2 className="w-6 h-6 animate-spin text-blue-400 mr-3" />
@@ -67,6 +90,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <RouteTracker />
         <Navigation />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-16">
           <ErrorBoundary fallbackTitle="Page crashed">

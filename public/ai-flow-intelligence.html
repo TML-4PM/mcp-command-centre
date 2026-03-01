@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Flow Intelligence — Command Centre</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #070b0f;
+    --surface: #0d1318;
+    --surface2: #131b22;
+    --border: #1a2633;
+    --border-bright: #1e3045;
+    --text: #c8d8e8;
+    --text-dim: #567090;
+    --text-bright: #e8f4ff;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+
+    --exemplar: #00e5a0;
+    --normal: #3b9eff;
+    --watch: #f5a623;
+    --high-risk: #ff4d6d;
+    --accent: #00c8ff;
+    --accent2: #7c6fff;
+
+    --col1: #00e5a0;
+    --col2: #3b9eff;
+    --col3: #f5a623;
+    --col4: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,200,255,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,200,255,0.03) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(7,11,15,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .header-logo {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .header-slash {
+    color: var(--border-bright);
+    font-family: var(--mono);
+  }
+
+  .header-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--exemplar);
+    box-shadow: 0 0 8px var(--exemplar);
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--exemplar);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .last-updated {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+    padding: 4px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+
+  .refresh-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,200,255,0.05);
+  }
+
+  .main {
+    position: relative;
+    z-index: 1;
+    padding: 20px 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* Metric bar at top */
+  .metric-bar {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .metric-cell {
+    background: var(--surface);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background 0.15s;
+  }
+
+  .metric-cell:hover { background: var(--surface2); }
+
+  .metric-cell-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .metric-cell-value {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+
+  .metric-cell-sub {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  .metric-cell-value.exemplar { color: var(--exemplar); }
+  .metric-cell-value.high-risk { color: var(--high-risk); }
+  .metric-cell-value.watch { color: var(--watch); }
+
+  /* Dashboard grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .panel-wide { grid-column: span 2; }
+  .panel-full { grid-column: span 3; }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .panel-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--border);
+    padding: 2px 8px;
+  }
+
+  .panel-body {
+    padding: 0;
+    overflow-y: auto;
+    max-height: 320px;
+  }
+
+  /* Live stream table */
+  .stream-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .stream-table th {
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--text-dim);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .stream-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(26,38,51,0.5);
+    vertical-align: middle;
+  }
+
+  .stream-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .band-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .band-pill.exemplar { background: rgba(0,229,160,0.12); color: var(--exemplar); }
+  .band-pill.normal { background: rgba(59,158,255,0.12); color: var(--normal); }
+  .band-pill.watch { background: rgba(245,166,35,0.12); color: var(--watch); }
+  .band-pill.high_risk, .band-pill.high-risk { background: rgba(255,77,109,0.12); color: var(--high-risk); }
+
+  .state-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 9px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-dim);
+    margin: 1px;
+    letter-spacing: 0.04em;
+  }
+
+  .state-tag.over-auto { background: rgba(255,77,109,0.08); color: var(--high-risk); }
+  .state-tag.exemplar { background: rgba(0,229,160,0.08); color: var(--exemplar); }
+  .state-tag.friction { background: rgba(245,166,35,0.08); color: var(--watch); }
+
+  .score-num {
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .score-num.high { color: var(--exemplar); }
+  .score-num.mid { color: var(--normal); }
+  .score-num.low { color: var(--high-risk); }
+
+  /* MWU list */
+  .mwu-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(26,38,51,0.6);
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    gap: 10px;
+    align-items: start;
+    transition: background 0.1s;
+  }
+
+  .mwu-item:hover { background: rgba(255,255,255,0.02); }
+
+  .mwu-priority {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .mwu-priority.p1 { color: var(--high-risk); }
+  .mwu-priority.p2 { color: var(--watch); }
+  .mwu-priority.p3 { color: var(--normal); }
+
+  .mwu-title {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+
+  .mwu-meta {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+  }
+
+  .mwu-status {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .mwu-status.open { border: 1px solid rgba(59,158,255,0.3); color: var(--normal); }
+  .mwu-status.triage { border: 1px solid rgba(245,166,35,0.3); color: var(--watch); }
+
+  /* Bar chart */
+  .bar-chart {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 50px;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .bar-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-track {
+    background: rgba(255,255,255,0.04);
+    height: 6px;
+    position: relative;
+  }
+
+  .bar-fill {
+    height: 100%;
+    transition: width 1s ease;
+  }
+
+  .bar-val {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* Quadrant chart */
+  .quadrant-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .quadrant-canvas {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: 
+      linear-gradient(to right, rgba(255,77,109,0.04) 0%, rgba(255,77,109,0.04) 50%, transparent 50%),
+      linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(0,229,160,0.04) 50%);
+    border: 1px solid var(--border);
+  }
+
+  .quadrant-canvas::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px; height: 100%;
+    background: var(--border-bright);
+  }
+
+  .quadrant-canvas::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0;
+    width: 100%; height: 1px;
+    background: var(--border-bright);
+    z-index: 1;
+  }
+
+  .quadrant-dot {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s;
+  }
+
+  .quadrant-label {
+    position: absolute;
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .q-danger { top: 8px; left: 8px; color: rgba(255,77,109,0.5); }
+  .q-safe { top: 8px; right: 8px; color: rgba(0,229,160,0.4); }
+
+  .quadrant-axes {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .quadrant-axis-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* Heatmap */
+  .heatmap-grid {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .heatmap-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 60px 60px;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .heatmap-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .heat-bar {
+    height: 5px;
+    background: linear-gradient(to right, var(--exemplar), var(--watch), var(--high-risk));
+    position: relative;
+  }
+
+  .heat-indicator {
+    position: absolute;
+    top: -3px;
+    width: 2px;
+    height: 11px;
+    background: white;
+    transform: translateX(-50%);
+  }
+
+  .heat-val {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-align: right;
+  }
+
+  /* Rule trigger */
+  .rule-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(26,38,51,0.6);
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    transition: background 0.1s;
+  }
+
+  .rule-item:hover { background: rgba(255,255,255,0.02); }
+
+  .rule-name {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text);
+    letter-spacing: 0.06em;
+  }
+
+  .rule-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .rule-sev {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .sev-high { background: rgba(255,77,109,0.1); color: var(--high-risk); }
+  .sev-watch { background: rgba(245,166,35,0.1); color: var(--watch); }
+  .sev-exemplar { background: rgba(0,229,160,0.1); color: var(--exemplar); }
+
+  /* Loading state */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    gap: 8px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+
+  .loading-dots span {
+    display: inline-block;
+    animation: blink 1.2s ease infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes blink {
+    0%,100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Config notice */
+  .config-notice {
+    background: rgba(0,200,255,0.05);
+    border: 1px solid rgba(0,200,255,0.15);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .config-notice strong { color: var(--text-bright); }
+
+  /* Time ago */
+  .time-ago {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  .source-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    font-family: var(--mono);
+    font-size: 9px;
+    background: rgba(124,111,255,0.1);
+    color: var(--accent2);
+    letter-spacing: 0.04em;
+  }
+
+  .flow-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* Attribution table */
+  .attrib-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .attrib-table th {
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--text-dim);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .attrib-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(26,38,51,0.5);
+  }
+
+  .outcome-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .outcome-fill {
+    height: 4px;
+    background: var(--exemplar);
+    min-width: 2px;
+    transition: width 1s ease;
+  }
+
+  .outcome-val {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-logo">T4H</span>
+  <span class="header-slash">/</span>
+  <span class="header-title">AI Flow Intelligence</span>
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <span class="status-label">Live</span>
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="config-notice">
+    <span>⚙</span>
+    <span>Configure Supabase: set <strong>SUPABASE_URL</strong> and <strong>SUPABASE_ANON_KEY</strong> in the <code>CONFIG</code> block below → Save → Reload. Emitter code is at <strong>/src/lib/aiops/emitter.ts</strong>.</span>
+  </div>
+
+  <!-- Metric bar -->
+  <div class="metric-bar" id="metricBar">
+    <div class="metric-cell">
+      <span class="metric-cell-label">Total Sessions</span>
+      <span class="metric-cell-value" id="m-total">—</span>
+      <span class="metric-cell-sub">all time</span>
+    </div>
+    <div class="metric-cell">
+      <span class="metric-cell-label">Last 24h</span>
+      <span class="metric-cell-value" id="m-24h">—</span>
+      <span class="metric-cell-sub">sessions</span>
+    </div>
+    <div class="metric-cell">
+      <span class="metric-cell-label">Exemplar Rate</span>
+      <span class="metric-cell-value exemplar" id="m-exemplar">—</span>
+      <span class="metric-cell-sub">of sessions</span>
+    </div>
+    <div class="metric-cell">
+      <span class="metric-cell-label">High Risk</span>
+      <span class="metric-cell-value high-risk" id="m-highrisk">—</span>
+      <span class="metric-cell-sub">of sessions</span>
+    </div>
+    <div class="metric-cell">
+      <span class="metric-cell-label">Open MWUs</span>
+      <span class="metric-cell-value watch" id="m-mwu">—</span>
+      <span class="metric-cell-sub">auto-generated</span>
+    </div>
+    <div class="metric-cell">
+      <span class="metric-cell-label">Avg Score</span>
+      <span class="metric-cell-value" id="m-avgscore">—</span>
+      <span class="metric-cell-sub">/ 5.0 max</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- Panel 1: Live Stream (wide) -->
+    <div class="panel panel-wide">
+      <div class="panel-header">
+        <span class="panel-title">Live Flow Stream</span>
+        <span class="panel-count" id="streamCount">0 sessions</span>
+      </div>
+      <div class="panel-body" id="liveStream">
+        <div class="loading">LOADING <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+
+    <!-- Panel 2: MWU Backlog -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">MWU Backlog</span>
+        <span class="panel-count" id="mwuCount">0 items</span>
+      </div>
+      <div class="panel-body" id="mwuBacklog">
+        <div class="loading">LOADING <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Friction Heatmap -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Friction Heatmap</span>
+        <span class="panel-count">by step</span>
+      </div>
+      <div class="panel-body" id="frictionHeatmap">
+        <div class="loading">LOADING <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+
+    <!-- Panel 4: Unsafe Automation Quadrant -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">AI Intensity vs Intent Clarity</span>
+        <span class="panel-count">unsafe detection</span>
+      </div>
+      <div class="panel-body" id="quadrantPanel">
+        <div class="loading">LOADING <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+
+    <!-- Panel 5: Risk by Source (bar chart) -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Risk Distribution by Source</span>
+        <span class="panel-count">7d</span>
+      </div>
+      <div class="panel-body" id="riskBySource">
+        <div class="loading">LOADING <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+
+    <!-- Panel 6: Rule Triggers -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Rule Trigger Activity</span>
+        <span class="panel-count" id="ruleCount">0 rules</span>
+      </div>
+      <div class="panel-body" id="ruleTriggers">
+        <div class="loading">LOADING <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+
+    <!-- Panel 7: Attribution Impact (full width) -->
+    <div class="panel panel-full">
+      <div class="panel-header">
+        <span class="panel-title">Asset Attribution Impact</span>
+        <span class="panel-count">which assets cause outcomes</span>
+      </div>
+      <div class="panel-body" id="attributionPanel" style="max-height:200px">
+        <div class="loading">LOADING <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG — Update these with your Supabase project credentials
+// ============================================================
+const CONFIG = {
+  SUPABASE_URL: 'https://YOUR_PROJECT.supabase.co',
+  SUPABASE_ANON_KEY: 'YOUR_ANON_KEY',
+};
+// ============================================================
+
+const BRIDGE = 'https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
+
+async function bridgeSql(sql) {
+  try {
+    const res = await fetch(BRIDGE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ functionName: 'troy-sql-executor', payload: { sql } })
+    });
+    const data = await res.json();
+    const body = JSON.parse(data?.result?.body || '{}');
+    return body.rows || [];
+  } catch (e) {
+    console.error('Bridge SQL error:', e);
+    return [];
+  }
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diff = (Date.now() - new Date(dateStr)) / 1000;
+  if (diff < 60) return `${Math.floor(diff)}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function bandClass(band) {
+  if (!band) return '';
+  return band.replace('_','-');
+}
+
+function scoreClass(score) {
+  if (!score) return '';
+  if (score >= 3) return 'high';
+  if (score >= 2) return 'mid';
+  return 'low';
+}
+
+function stateTagClass(state) {
+  if (state === 'OVER_AUTOMATION') return 'over-auto';
+  if (state === 'EXEMPLAR') return 'exemplar';
+  if (state === 'HIGH_FRICTION') return 'friction';
+  return '';
+}
+
+async function loadMetrics() {
+  const [totals, mwuCount] = await Promise.all([
+    bridgeSql(`SELECT 
+      count(*) as total,
+      sum(CASE WHEN created_at >= now() - interval '24 hours' THEN 1 ELSE 0 END) as last24h,
+      sum(CASE WHEN risk_band = 'exemplar' THEN 1 ELSE 0 END) as exemplar,
+      sum(CASE WHEN risk_band = 'high_risk' THEN 1 ELSE 0 END) as highrisk,
+      round(avg(score)::numeric, 2) as avgscore
+    FROM ai_ops.ai_session`),
+    bridgeSql(`SELECT count(*) as cnt FROM ai_ops.t4h_must_wire_up WHERE status NOT IN ('closed','verified')`)
+  ]);
+
+  if (totals[0]) {
+    const t = totals[0];
+    document.getElementById('m-total').textContent = t.total || '0';
+    document.getElementById('m-24h').textContent = t.last24h || '0';
+    const ex = t.total > 0 ? Math.round((t.exemplar / t.total) * 100) : 0;
+    const hr = t.total > 0 ? Math.round((t.highrisk / t.total) * 100) : 0;
+    document.getElementById('m-exemplar').textContent = ex + '%';
+    document.getElementById('m-highrisk').textContent = hr + '%';
+    document.getElementById('m-avgscore').textContent = t.avgscore || '—';
+  }
+  if (mwuCount[0]) {
+    document.getElementById('m-mwu').textContent = mwuCount[0].cnt || '0';
+  }
+}
+
+async function loadLiveStream() {
+  const rows = await bridgeSql(`SELECT source, phase, flow_type, flow_step, flow_step_id, score, risk_band, derived_states, matched_rules, title, created_at FROM ai_ops.v_live_stream LIMIT 50`);
+  const el = document.getElementById('liveStream');
+  document.getElementById('streamCount').textContent = `${rows.length} sessions`;
+
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No sessions yet — awaiting first emit</div>'; return; }
+
+  el.innerHTML = `<table class="stream-table">
+    <thead><tr>
+      <th>Time</th><th>Source</th><th>Flow</th><th>Step</th>
+      <th>Score</th><th>Band</th><th>States</th><th>Title</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r => `<tr>
+        <td class="time-ago">${timeAgo(r.created_at)}</td>
+        <td><span class="source-badge">${r.source || '—'}</span></td>
+        <td class="flow-badge">${r.flow_type || '—'}</td>
+        <td class="flow-badge">${r.flow_step_id || r.flow_step || '—'}</td>
+        <td><span class="score-num ${scoreClass(r.score)}">${r.score !== null ? Number(r.score).toFixed(2) : '—'}</span></td>
+        <td><span class="band-pill ${bandClass(r.risk_band)}">${r.risk_band || '—'}</span></td>
+        <td>${(r.derived_states || []).slice(0,2).map(s => `<span class="state-tag ${stateTagClass(s)}">${s}</span>`).join('')}</td>
+        <td style="font-size:10px;color:var(--text-dim);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.title || '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+async function loadMWU() {
+  const rows = await bridgeSql(`SELECT * FROM ai_ops.v_mwu_backlog LIMIT 20`);
+  const el = document.getElementById('mwuBacklog');
+  document.getElementById('mwuCount').textContent = `${rows.length} items`;
+
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No open MWUs — system healthy</div>'; return; }
+
+  el.innerHTML = rows.map(r => `
+    <div class="mwu-item">
+      <div class="mwu-priority p${r.priority || 3}">${r.priority || '3'}</div>
+      <div>
+        <div class="mwu-title">${r.title}</div>
+        <div class="mwu-meta">${r.rule_name || '—'} · ${r.flow_type || '—'} · ${timeAgo(r.created_at)}</div>
+      </div>
+      <div><span class="mwu-status ${r.status}">${r.status}</span></div>
+    </div>
+  `).join('');
+}
+
+async function loadFriction() {
+  const rows = await bridgeSql(`SELECT * FROM ai_ops.v_friction_heatmap LIMIT 12`);
+  const el = document.getElementById('frictionHeatmap');
+
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No step data yet</div>'; return; }
+
+  const maxFriction = Math.max(...rows.map(r => Number(r.avg_friction) || 0), 5);
+
+  el.innerHTML = '<div class="heatmap-grid">' + rows.map(r => {
+    const fv = Number(r.avg_friction) || 0;
+    const pct = (fv / maxFriction * 100).toFixed(0);
+    const col = fv >= 4 ? 'var(--high-risk)' : fv >= 3 ? 'var(--watch)' : 'var(--exemplar)';
+    return `<div class="heatmap-row">
+      <div class="heatmap-label" title="${r.flow_type}:${r.flow_step_id}">${r.flow_step_id || r.flow_type}</div>
+      <div class="heat-bar">
+        <div style="position:absolute;top:0;left:0;height:100%;width:${pct}%;background:${col};transition:width 1s ease;"></div>
+      </div>
+      <div class="heat-val" style="color:${col}">${fv.toFixed(1)}</div>
+      <div class="heat-val" style="font-size:9px">${r.events}ev</div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+async function loadQuadrant() {
+  const rows = await bridgeSql(`SELECT * FROM ai_ops.v_unsafe_quadrant LIMIT 30`);
+  const el = document.getElementById('quadrantPanel');
+
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No quadrant data yet</div>'; return; }
+
+  const dots = rows.map(r => {
+    const x = ((Number(r.intent_clarity) || 1) - 1) / 4; // 0..1 (low=left=dangerous)
+    const y = (Number(r.ai_intensity) || 0) / 100; // 0..1 (high=top=dangerous)
+    const isUnsafe = x < 0.4 && y > 0.6;
+    const color = isUnsafe ? 'var(--high-risk)' : x > 0.6 && y < 0.4 ? 'var(--exemplar)' : 'var(--normal)';
+    const size = Math.min(16, Math.max(6, Math.sqrt(r.events || 1) * 4));
+    return { x: x * 100, y: (1 - y) * 100, color, size, label: `${r.source}:${r.flow_type}`, events: r.events };
+  });
+
+  el.innerHTML = `<div class="quadrant-container">
+    <div class="quadrant-canvas" id="qCanvas">
+      <span class="quadrant-label q-danger">OVER-AUTOMATION ZONE</span>
+      <span class="quadrant-label q-safe">SAFE ZONE</span>
+      ${dots.map(d => `<div class="quadrant-dot" title="${d.label} (${d.events} events)" style="left:${d.x}%;top:${d.y}%;width:${d.size}px;height:${d.size}px;background:${d.color};box-shadow:0 0 ${d.size}px ${d.color}40;"></div>`).join('')}
+    </div>
+    <div class="quadrant-axes">
+      <span class="quadrant-axis-label">← Low Intent Clarity</span>
+      <span class="quadrant-axis-label">High AI Intensity ↑</span>
+      <span class="quadrant-axis-label">High Intent Clarity →</span>
+    </div>
+  </div>`;
+}
+
+async function loadRiskBySource() {
+  const rows = await bridgeSql(`SELECT source, risk_band, sum(events) as total FROM ai_ops.v_risk_by_source WHERE day >= now() - interval '7 days' GROUP BY source, risk_band ORDER BY total DESC LIMIT 20`);
+  const el = document.getElementById('riskBySource');
+
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No source data yet</div>'; return; }
+
+  // Aggregate by source
+  const sources = {};
+  rows.forEach(r => {
+    if (!sources[r.source]) sources[r.source] = { total: 0, high_risk: 0, exemplar: 0, watch: 0, normal: 0 };
+    const n = Number(r.total) || 0;
+    sources[r.source].total += n;
+    sources[r.source][r.risk_band] = (sources[r.source][r.risk_band] || 0) + n;
+  });
+
+  const maxTotal = Math.max(...Object.values(sources).map(s => s.total), 1);
+
+  el.innerHTML = '<div class="bar-chart">' + Object.entries(sources).sort((a,b) => b[1].total - a[1].total).slice(0, 8).map(([src, d]) => {
+    const hrPct = (d.total / maxTotal * 100).toFixed(0);
+    const hrRatio = d.total > 0 ? Math.round(d.high_risk / d.total * 100) : 0;
+    const col = hrRatio > 40 ? 'var(--high-risk)' : hrRatio > 15 ? 'var(--watch)' : 'var(--exemplar)';
+    return `<div class="bar-row">
+      <div class="bar-label">${src}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${hrPct}%;background:${col};"></div></div>
+      <div class="bar-val">${d.total}</div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+async function loadRuleTriggers() {
+  const rows = await bridgeSql(`SELECT rule_name, severity, creates_mwu, count(CASE WHEN s.matched_rules @> ARRAY[rc.rule_name] THEN 1 END) as trigger_count FROM ai_ops.rule_catalog rc LEFT JOIN ai_ops.ai_session s ON s.matched_rules @> ARRAY[rc.rule_name] WHERE rc.is_active = true GROUP BY rc.rule_name, rc.severity, rc.creates_mwu ORDER BY trigger_count DESC NULLS LAST`);
+  const el = document.getElementById('ruleTriggers');
+  document.getElementById('ruleCount').textContent = `${rows.length} rules`;
+
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No rules loaded</div>'; return; }
+
+  const maxCount = Math.max(...rows.map(r => Number(r.trigger_count) || 0), 1);
+
+  el.innerHTML = rows.map(r => {
+    const cnt = Number(r.trigger_count) || 0;
+    const col = cnt > 0 ? (r.severity === 'high_risk' ? 'var(--high-risk)' : r.severity === 'exemplar' ? 'var(--exemplar)' : 'var(--watch)') : 'var(--text-dim)';
+    return `<div class="rule-item">
+      <div class="rule-name">${r.rule_name}</div>
+      <div class="rule-count" style="color:${col}">${cnt}</div>
+      <div><span class="rule-sev sev-${r.severity}">${r.severity}</span></div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAttribution() {
+  const rows = await bridgeSql(`SELECT aar.asset_name, ai.asset_type, ai.program_id, ai.touches, ai.outcomes, ai.outcome_rate FROM ai_ops.v_attribution_impact ai LEFT JOIN ai_ops.asset_attribution_registry aar ON aar.asset_id = ai.asset_id ORDER BY outcome_rate DESC, outcomes DESC LIMIT 10`);
+  const el = document.getElementById('attributionPanel');
+
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No attributed sessions yet — emit asset_id in flow events</div>'; return; }
+
+  el.innerHTML = `<table class="attrib-table">
+    <thead><tr>
+      <th>Asset</th><th>Type</th><th>Program</th>
+      <th>Touches</th><th>Outcomes</th><th>Outcome Rate</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r => {
+        const rate = Number(r.outcome_rate) || 0;
+        const pct = Math.min(100, Math.round(rate * 100));
+        return `<tr>
+          <td style="color:var(--text-bright)">${r.asset_name || r.asset_id || '—'}</td>
+          <td class="flow-badge">${r.asset_type || '—'}</td>
+          <td class="flow-badge">${r.program_id || '—'}</td>
+          <td>${r.touches || 0}</td>
+          <td>${r.outcomes || 0}</td>
+          <td>
+            <div class="outcome-bar">
+              <div class="outcome-fill" style="width:${pct}px;max-width:80px;"></div>
+              <span class="outcome-val">${(rate * 100).toFixed(1)}%</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+async function loadAll() {
+  document.getElementById('lastUpdated').textContent = 'Loading...';
+  await Promise.all([
+    loadMetrics(),
+    loadLiveStream(),
+    loadMWU(),
+    loadFriction(),
+    loadQuadrant(),
+    loadRiskBySource(),
+    loadRuleTriggers(),
+    loadAttribution(),
+  ]);
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-AU', { hour12: false });
+}
+
+// Load on init
+loadAll();
+
+// Auto-refresh every 30s
+setInterval(loadAll, 30000);
+</script>
+
+</body>
+</html>
