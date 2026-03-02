@@ -52,6 +52,7 @@ const Systems = lazy(() => import("./pages/Systems"));
 const Tax = lazy(() => import("./pages/Tax"));
 const Tools = lazy(() => import("./pages/Tools"));
 const PortfolioSurface = lazy(() => import("./pages/PortfolioSurface"));
+const LoopOS = lazy(() => import("./pages/LoopOS"));
 
 const queryClient = new QueryClient();
 
@@ -128,6 +129,7 @@ const App = () => (
                 <Route path="/outreach" element={<Outreach />} />
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/portfolio-surface" element={<PortfolioSurface />} />
+                <Route path="/loop-os" element={<LoopOS />} />
                 <Route path="/infra" element={<Infra />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/apps" element={<AppConsole />} />
