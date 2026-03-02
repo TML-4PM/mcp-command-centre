@@ -7,6 +7,7 @@ const sections = [
     items: [
       { to: "/", label: "Overview" },
       { to: "/dashboard", label: "Dashboard" },
+      { to: "/loop-os", label: "Loop OS" },
       { to: "/businesses", label: "Businesses" },
       { to: "/systems", label: "Systems" },
       { to: "/architecture", label: "Architecture" },
