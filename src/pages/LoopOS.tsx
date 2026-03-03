@@ -199,7 +199,7 @@ export default function LoopOS() {
           {TABS.map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)}
               className="flex items-center gap-1.5 px-4 py-4 text-xs font-medium shrink-0 transition-all"
-              style={{color:tab===t.id?C.cyan:"#475569",borderBottom:`2px solid ${tab===t.id?C.cyan:"transparent"}`,background:"none",border:"none",borderBottom:`2px solid ${tab===t.id?C.cyan:"transparent"}`,cursor:"pointer"}}>
+              style={{color:tab===t.id?C.cyan:"#475569",borderBottom:`2px solid ${tab===t.id?C.cyan:"transparent"}`,background:"none",cursor:"pointer"}}>
               <span>{t.icon}</span>{t.label}
             </button>
           ))}
