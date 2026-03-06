@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-const BRIDGE = "/api/bridge";
+import { bridgeSQL as bridge } from "@/lib/bridge";
 
 interface SqlTip {
   id: number;
@@ -10,17 +9,6 @@ interface SqlTip {
   context: string;
   pillar: string;
   tags: string[];
-}
-
-async function bridge(sql: string) {
-  const res = await fetch(BRIDGE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ functionName: "troy-sql-executor", payload: { sql } }),
-  });
-  const data = await res.json();
-  const body = typeof data.result?.body === "string" ? JSON.parse(data.result.body) : data.result?.body;
-  return body?.rows ?? [];
 }
 
 const PILLAR_COLORS: Record<string, string> = {
