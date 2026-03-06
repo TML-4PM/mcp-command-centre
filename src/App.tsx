@@ -53,6 +53,8 @@ const Tax = lazy(() => import("./pages/Tax"));
 const Tools = lazy(() => import("./pages/Tools"));
 const PortfolioSurface = lazy(() => import("./pages/PortfolioSurface"));
 const LoopOS = lazy(() => import("./pages/LoopOS"));
+const Patterns = lazy(() => import("./pages/Patterns"));
+const PlmosProducts = lazy(() => import("./pages/PlmosProducts"));
 
 const queryClient = new QueryClient();
 
@@ -136,6 +138,8 @@ const App = () => (
                 <Route path="/sql-queries" element={<SQLQueries />} />
                 <Route path="/chat-ops" element={<ChatDashboard />} />
                 <Route path="/commands" element={<Commands />} />
+                <Route path="/patterns" element={<Patterns />} />
+                <Route path="/plmos" element={<PlmosProducts />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
