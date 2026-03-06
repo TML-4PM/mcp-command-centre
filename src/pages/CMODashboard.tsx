@@ -74,8 +74,8 @@ const CMODashboard = () => {
     // Try bridge data first
     try {
       const [campaignRows, contentRows, metricsRows] = await Promise.allSettled([
-        bridgeSQL("SELECT * FROM business_campaigns ORDER BY created_at DESC LIMIT 20"),
-        bridgeSQL("SELECT * FROM business_content_pipeline ORDER BY created_at DESC LIMIT 20"),
+        bridgeSQL("SELECT id, campaign_name as name, status, channel, created_at FROM marketing_campaigns ORDER BY created_at DESC LIMIT 20"),
+        bridgeSQL("SELECT id, asset_name as title, asset_type, status, business_key, created_at FROM t4h_marketing_asset ORDER BY created_at DESC LIMIT 20"),
         bridgeSQL("SELECT * FROM v_t4h_marketing_assets_live"),
       ]);
       if (campaignRows.status === 'fulfilled' && campaignRows.value.rows.length > 0) {
