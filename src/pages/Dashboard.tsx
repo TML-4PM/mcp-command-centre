@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { bridgeSQL } from "@/lib/bridge";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ const Dashboard = () => {
   const [metrics, setMetrics] = useState({
     conversations: 0,
     codeBlocks: 0,
-    repos: 107,
+    repos: 0,
     stars: 0
   });
   const [health, setHealth] = useState<SystemHealth>({});
@@ -76,7 +77,7 @@ const Dashboard = () => {
 
   const fetchLambdaData = async () => {
     try {
-      const response = await fetch('/api/bridge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ functionName: 'troy-sql-executor', payload: { sql: "SELECT json_build_object('system_health', (SELECT json_object_agg(service, status) FROM v_system_health_summary), 'business_units', (SELECT coalesce(json_agg(row_to_json(h)), '[]') FROM v_pos_business_health h), 'infrastructure', json_build_object('lambda_count', (SELECT count(*) FROM mcp_lambda_registry), 'tool_count', (SELECT count(*) FROM tool_registry WHERE is_active=true), 's3_buckets', (SELECT count(*) FROM s3_bucket_audit)), 'alerts', (SELECT coalesce(json_agg(row_to_json(a)), '[]') FROM cc.alerts a WHERE resolved_at IS NULL ORDER BY created_at DESC LIMIT 10), 'lambdas', (SELECT coalesce(json_agg(json_build_object('name', function_name, 'status', status, 'category', category)), '[]') FROM mcp_lambda_registry LIMIT 20)) as data" } }) });
+      const response = await bridgeSQL("SELECT json_build_object('system_health', (SELECT json_object_agg(service, status) FROM v_system_health_summary), 'business_units', (SELECT coalesce(json_agg(row_to_json(h)), '[]') FROM v_pos_business_health h), 'infrastructure', json_build_object('lambda_count', (SELECT count(*) FROM mcp_lambda_registry), 'tool_count', (SELECT count(*) FROM bridge_command_map WHERE active=true), 's3_buckets', (SELECT count(*) FROM s3_bucket_audit)), 'alerts', (SELECT coalesce(json_agg(row_to_json(a)), '[]') FROM cc.alerts a WHERE resolved_at IS NULL ORDER BY created_at DESC LIMIT 10), 'lambdas', (SELECT coalesce(json_agg(json_build_object('name', function_name, 'status', status, 'category', category)), '[]') FROM mcp_lambda_registry LIMIT 20)) as data");
       const envelope = await response.json(); const body = typeof envelope.result?.body === "string" ? JSON.parse(envelope.result.body) : envelope.result?.body || {}; const data = body.rows?.[0]?.data || {};
       setLambdaData(data);
       setLambdaLoading(false);
@@ -135,18 +136,18 @@ const Dashboard = () => {
         .select('*', { count: 'exact', head: true });
 
       if (convError || codeError) {
-        setMetrics({ conversations: 76701, codeBlocks: 25479, repos: 107, stars: 0 });
+        setMetrics({ conversations: 76701, codeBlocks: 25479, repos: 0, stars: 0 });
       } else {
         setMetrics({
-          conversations: convCount || 76701,
-          codeBlocks: codeCount || 25479,
-          repos: 107,
+          conversations: convCount || 0,
+          codeBlocks: codeCount || 0,
+          repos: 0,
           stars: 0
         });
       }
     } catch (error) {
       console.error('Metrics fetch failed:', error);
-      setMetrics({ conversations: 76701, codeBlocks: 25479, repos: 107, stars: 0 });
+      setMetrics({ conversations: 76701, codeBlocks: 25479, repos: 0, stars: 0 });
     }
   };
 
@@ -177,9 +178,9 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Health check failed:', error);
       setHealth({
-        supabase: { status: 'healthy', count: 24 },
-        notion: { status: 'healthy', count: 24 },
-        github: { status: 'healthy', count: 24 },
+        supabase: { status: 'healthy', count: 0 },
+        notion: { status: 'healthy', count: 0 },
+        github: { status: 'healthy', count: 0 },
         cron: { status: 'warning', count: 0 }
       });
     }
