@@ -164,7 +164,7 @@ export default function InfraDrillDown() {
     const queries: Record<string, string> = {
       lambdas: 'SELECT count(*) as c FROM lambda_registry',
       s3: 'SELECT count(*) as c FROM s3_audit_buckets',
-      tools: "SELECT count(*) as c FROM tool_registry WHERE active = true",
+      tools: "SELECT count(*) as c FROM t4h_tool_registry WHERE is_active = true",
       partners: 'SELECT count(*) as c FROM partners',
       alerts: 'SELECT count(*) as c FROM alert_log WHERE acknowledged = false',
     };
