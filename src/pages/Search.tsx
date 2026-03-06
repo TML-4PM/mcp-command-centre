@@ -39,7 +39,7 @@ const buildSearchSQL = (q: string, source: string): string => {
     queries.push(`SELECT 'IP Asset' as source, title, coalesce(ip_type,'') as detail, coalesce(family,'') as match_context FROM ip_assets WHERE title ILIKE '${like}' OR description ILIKE '${like}' OR family ILIKE '${like}'`);
   }
   if (source === "all" || source === "products") {
-    queries.push(`SELECT 'Product' as source, product_name as title, coalesce(category,'') as detail, coalesce(business_key,'') as match_context FROM catalog_master WHERE product_name ILIKE '${like}' OR description ILIKE '${like}'`);
+    queries.push(`SELECT 'Product' as source, product_name as title, coalesce(category,'') as detail, coalesce(business_key,'') as match_context FROM t4h_catalog WHERE product_name ILIKE '${like}' OR description ILIKE '${like}'`);
   }
   if (source === "all" || source === "agents") {
     queries.push(`SELECT 'Agent' as source, name as title, coalesce(role,'') as detail, coalesce(family,'') as match_context FROM neural_ennead_members WHERE name ILIKE '${like}' OR role ILIKE '${like}' OR specialization ILIKE '${like}'`);
