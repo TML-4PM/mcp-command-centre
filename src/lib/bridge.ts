@@ -1,5 +1,4 @@
 // Bridge client — routes through /api/bridge proxy (avoids CORS)
-// Falls back to direct URL for server-side calls
 const PROXY_URL = '/api/bridge';
 
 export interface BridgeResult {
@@ -13,18 +12,17 @@ export async function bridgeSQL(sql: string): Promise<BridgeResult> {
   const res = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    // Bridge expects: {target, route, sql} — NOT {functionName, payload}
     body: JSON.stringify({
-      functionName: 'troy-sql-executor',
-      payload: { sql },
+      target: 'troy-sql-executor',
+      route: 'sql',
+      sql,
     }),
   });
   if (!res.ok) throw new Error(`Bridge HTTP ${res.status}`);
-  const envelope = await res.json();
-  const body = typeof envelope.result?.body === 'string'
-    ? JSON.parse(envelope.result.body)
-    : envelope.result?.body;
+  const body = await res.json();
   if (!body?.success) throw new Error(body?.error || 'Bridge query failed');
-  return { success: true, rows: body.rows ?? [], count: body.count ?? 0, sql: body.sql ?? sql };
+  return { success: true, rows: Array.isArray(body.rows) ? body.rows : [], count: body.count ?? 0, sql: body.sql ?? sql };
 }
 
 export async function bridgeQueryKey(key: string): Promise<any[]> {
@@ -42,4 +40,14 @@ export async function bridgeCount(sql: string): Promise<number> {
   if (!first) return 0;
   const val = first.c ?? first.count ?? Object.values(first)[0];
   return Number(val) || 0;
+}
+
+export async function bridgeLambda(target: string, payload: Record<string, any>): Promise<any> {
+  const res = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target, ...payload }),
+  });
+  if (!res.ok) throw new Error(`Bridge HTTP ${res.status}`);
+  return res.json();
 }
