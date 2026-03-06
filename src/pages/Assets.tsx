@@ -1,18 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-
-const BRIDGE = "/api/bridge";
-
-async function bridgeSQL(sql: string) {
-  const res = await fetch(BRIDGE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ functionName: "troy-sql-executor", payload: { sql } }),
-  });
-  const data = await res.json();
-  const body = typeof data.result?.body === "string" ? JSON.parse(data.result.body) : data.result?.body;
-  if (body?.error) throw new Error(body.error);
-  return body?.rows ?? [];
-}
+import { bridgeSQL } from "@/lib/bridge";
 
 type TabKey = "ip" | "content" | "books" | "products" | "infra" | "evidence";
 
