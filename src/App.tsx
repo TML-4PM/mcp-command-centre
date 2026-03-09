@@ -57,6 +57,9 @@ const Patterns = lazy(() => import("./pages/Patterns"));
 const PlmosProducts = lazy(() => import("./pages/PlmosProducts"));
 const Dogfood = lazy(() => import("./pages/Dogfood"));
 const Dossier = lazy(() => import("./pages/Dossier"));
+const Connections = lazy(() => import("./pages/Connections"));
+const Mcp = lazy(() => import("./pages/Mcp"));
+const Growth = lazy(() => import("./pages/Growth"));
 
 const queryClient = new QueryClient();
 
@@ -145,6 +148,9 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
                             <Route path="/dossier" element={<Dossier />} />
                             <Route path="/dogfood" element={<Dogfood />} />
+                            <Route path="/connections" element={<Connections />} />
+                            <Route path="/mcp" element={<Mcp />} />
+                            <Route path="/growth" element={<Growth />} />
             </Routes>
             </Suspense>
           </ErrorBoundary>
