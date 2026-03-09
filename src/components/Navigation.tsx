@@ -72,6 +72,9 @@ const sections = [
       { to: "/chat-ops", label: "Chat Ops" },
       { to: "/portfolio-surface", label: "Surface" },
       { to: "/analytics", label: "Analytics" },
+      { to: "/connections", label: "Connections" },
+      { to: "/mcp", label: "MCP" },
+      { to: "/growth", label: "Growth" },
     ],
   },
 ];
