@@ -55,6 +55,7 @@ const PortfolioSurface = lazy(() => import("./pages/PortfolioSurface"));
 const LoopOS = lazy(() => import("./pages/LoopOS"));
 const Patterns = lazy(() => import("./pages/Patterns"));
 const PlmosProducts = lazy(() => import("./pages/PlmosProducts"));
+const Dogfood = lazy(() => import("./pages/Dogfood"));
 
 const queryClient = new QueryClient();
 
@@ -141,7 +142,8 @@ const App = () => (
                 <Route path="/patterns" element={<Patterns />} />
                 <Route path="/plmos" element={<PlmosProducts />} />
                 <Route path="*" element={<NotFound />} />
-              </Routes>
+                            <Route path="/dogfood" element={<Dogfood />} />
+            </Routes>
             </Suspense>
           </ErrorBoundary>
         </main>
