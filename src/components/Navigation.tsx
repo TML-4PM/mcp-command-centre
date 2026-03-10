@@ -86,9 +86,17 @@ const Navigation = () => {
     <nav className="glass border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between gap-4">
-          <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
-            MCP Command Centre
-          </div>
+          <a href="/" className="flex items-center gap-2.5 min-w-0 shrink-0 group">
+            <img
+              src="https://lzfgigiyqpuuxslsygjt.supabase.co/storage/v1/object/public/images/T4H%20Logo%201.jpg"
+              alt="T4H Logo"
+              className="w-8 h-8 rounded-md object-cover shrink-0"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
+              T4H Command Centre
+            </span>
+          </a>
           <button
             onClick={() => setExpanded(!expanded)}
             className="sm:hidden text-muted-foreground px-2 py-1 text-sm"
