@@ -1,44 +1,41 @@
 import { useEffect, useState, useCallback } from "react";
 import { bridgeQueryKey } from "@/lib/bridge";
 
-// ── Helpers ────────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, loading }: { label: string; value: any; loading: boolean }) => (
-  <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{label}</div>
-    <div className="text-2xl font-bold text-white">
+  <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 min-w-0">
+    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1 truncate">{label}</div>
+    <div className="text-2xl font-bold text-white font-mono">
       {loading ? <span className="animate-pulse text-slate-600">—</span> : String(value ?? "—")}
     </div>
   </div>
 );
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const Section = ({ title, count, children }: { title: string; count?: number; children: React.ReactNode }) => (
   <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
-    <div className="px-4 py-3 border-b border-slate-700 bg-slate-900/40">
+    <div className="px-4 py-3 border-b border-slate-700 bg-slate-900/40 flex items-center justify-between">
       <h3 className="text-sm font-semibold text-slate-300">{title}</h3>
+      {count !== undefined && <span className="text-xs text-slate-500 font-mono">{count} rows</span>}
     </div>
-    <div className="overflow-x-auto">{children}</div>
+    <div className="overflow-x-auto max-h-80">{children}</div>
   </div>
 );
 
-const DataTable = ({ rows, loading, cols, renderHead, renderRow }: {
-  rows: any[]; loading: boolean; cols: string[];
+const DataTable = ({ rows, loading, renderHead, renderRow }: {
+  rows: any[]; loading: boolean;
   renderHead: () => React.ReactNode;
   renderRow: (row: any, i: number) => React.ReactNode;
 }) => (
   loading ? (
-    <div className="flex items-center justify-center h-32 text-slate-500 text-sm animate-pulse">Loading…</div>
+    <div className="flex items-center justify-center h-24 text-slate-500 text-sm animate-pulse">Loading…</div>
   ) : !rows?.length ? (
-    <div className="flex items-center justify-center h-20 text-slate-600 text-sm">No data</div>
+    <div className="flex items-center justify-center h-16 text-slate-600 text-sm">No data</div>
   ) : (
     <table className="w-full text-sm">
-      <thead className="bg-slate-900/50">{renderHead()}</thead>
+      <thead className="sticky top-0 z-10">{renderHead()}</thead>
       <tbody>{rows.map((row, i) => renderRow(row, i))}</tbody>
     </table>
   )
 );
-
-// ── Page ───────────────────────────────────────────────────────────────────
-const PAGE_ID = "tools";
 
 const ToolsPage = () => {
   const [kpis, setKpis] = useState<Record<string, any>>({}); 
@@ -49,17 +46,17 @@ const ToolsPage = () => {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const kpiKeys = ["tools_total", "tools_runs", "tools_sessions", "tools_sensors", "tools_variants"];
-      const tableKeys = ["tools_registry", "tools_runs_list", "tools_sensors_list", "tools_variants_list", "tools_sessions_list"];
-      const [kpiResults, tableResults] = await Promise.all([
-        Promise.all(kpiKeys.map(k => bridgeQueryKey(PAGE_ID, k))),
-        Promise.all(tableKeys.map(k => bridgeQueryKey(PAGE_ID, k))),
+      await Promise.allSettled([
+      bridgeQueryKey("tools_total").then(rows => setKpis(prev => ({ ...prev, "tools_total": rows[0]?.value ?? rows[0] ?? "—" }))).catch(() => setKpis(prev => ({ ...prev, "tools_total": "err" }))),
+      bridgeQueryKey("tools_runs").then(rows => setKpis(prev => ({ ...prev, "tools_runs": rows[0]?.value ?? rows[0] ?? "—" }))).catch(() => setKpis(prev => ({ ...prev, "tools_runs": "err" }))),
+      bridgeQueryKey("tools_sessions").then(rows => setKpis(prev => ({ ...prev, "tools_sessions": rows[0]?.value ?? rows[0] ?? "—" }))).catch(() => setKpis(prev => ({ ...prev, "tools_sessions": "err" }))),
+      bridgeQueryKey("tools_sensors").then(rows => setKpis(prev => ({ ...prev, "tools_sensors": rows[0]?.value ?? rows[0] ?? "—" }))).catch(() => setKpis(prev => ({ ...prev, "tools_sensors": "err" }))),
+      bridgeQueryKey("tools_variants").then(rows => setKpis(prev => ({ ...prev, "tools_variants": rows[0]?.value ?? rows[0] ?? "—" }))).catch(() => setKpis(prev => ({ ...prev, "tools_variants": "err" }))),
+      bridgeQueryKey("tools_registry").then(rows => setData(prev => ({ ...prev, "tools_registry": rows }))).catch(() => setData(prev => ({ ...prev, "tools_registry": [] }))),
+      bridgeQueryKey("tools_runs_list").then(rows => setData(prev => ({ ...prev, "tools_runs_list": rows }))).catch(() => setData(prev => ({ ...prev, "tools_runs_list": [] }))),
+      bridgeQueryKey("tools_sensors_list").then(rows => setData(prev => ({ ...prev, "tools_sensors_list": rows }))).catch(() => setData(prev => ({ ...prev, "tools_sensors_list": [] }))),
+      bridgeQueryKey("tools_variants_list").then(rows => setData(prev => ({ ...prev, "tools_variants_list": rows }))).catch(() => setData(prev => ({ ...prev, "tools_variants_list": [] }))),
       ]);
-      const newKpis: Record<string, any> = {};
-      kpiKeys.forEach((k, i) => { newKpis[k] = kpiResults[i]?.rows?.[0]?.value ?? kpiResults[i]?.rows?.[0] ?? "—"; });
-      const newData: Record<string, any[]> = {};
-      tableKeys.forEach((k, i) => { newData[k] = tableResults[i]?.rows ?? []; });
-      setKpis(newKpis); setData(newData);
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   }, []);
@@ -68,85 +65,50 @@ const ToolsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Tools</h1>
-          <p className="text-slate-500 text-sm mt-0.5 font-mono">{PAGE_ID} · live from bridge</p>
+          <p className="text-slate-500 text-xs mt-0.5 font-mono">page_id: tools · live from bridge · no hardcoded data</p>
         </div>
         <button onClick={load} disabled={loading}
-          className="px-3 py-1.5 text-xs rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition disabled:opacity-50">
-          {loading ? "Loading…" : "↻ Refresh"}
+          className="px-3 py-1.5 text-xs rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition disabled:opacity-40">
+          {loading ? "↻ Loading…" : "↻ Refresh"}
         </button>
       </div>
-      {error && <div className="bg-red-900/20 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm">{error}</div>}
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {error && <div className="bg-red-900/20 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm font-mono">{error}</div>}
+      {kpis && Object.keys(kpis).length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <StatCard label="Active Tools" value={kpis["tools_total"]} loading={loading} />
-      <StatCard label="Total Runs" value={kpis["tools_runs"]} loading={loading} />
+      <StatCard label="Runs" value={kpis["tools_runs"]} loading={loading} />
       <StatCard label="Sessions" value={kpis["tools_sessions"]} loading={loading} />
       <StatCard label="Sensors" value={kpis["tools_sensors"]} loading={loading} />
       <StatCard label="Variants" value={kpis["tools_variants"]} loading={loading} />
-      </div>
-      {/* Tables */}
+        </div>
+      )}
       <div className="space-y-4">
-      <Section title="Tool Registry">
-        <DataTable rows={data["tools_registry"]} loading={loading} cols={["tool_name","category","mode","production_state"]}
-          renderHead={()=>(
-            <tr><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">tool_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">category</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">mode</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">production_state</th></tr>
-          )}
-          renderRow={(row, i)=>(
-            <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/20">
-              <td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["tool_name"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["category"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["mode"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["production_state"] ?? "—")}</td>
-            </tr>
-          )}
+
+      <Section title="Tool Registry" count={(data["tools_registry"] || []).length}>
+        <DataTable rows={data["tools_registry"]} loading={loading}
+          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">tool_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">category</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">mode</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">production_state</th></tr>)}
+          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["tool_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["category"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["mode"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["production_state"] ?? "—")}</td></tr>)}
         />
       </Section>
-      <Section title="Run Telemetry">
-        <DataTable rows={data["tools_runs_list"]} loading={loading} cols={["tool_id","evidence_class","confidence_level","duration_ms","created_at"]}
-          renderHead={()=>(
-            <tr><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">tool_id</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">evidence_class</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">confidence_level</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">duration_ms</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">created_at</th></tr>
-          )}
-          renderRow={(row, i)=>(
-            <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/20">
-              <td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["tool_id"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["evidence_class"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["confidence_level"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["duration_ms"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["created_at"] ?? "—")}</td>
-            </tr>
-          )}
+      <Section title="Run Telemetry" count={(data["tools_runs_list"] || []).length}>
+        <DataTable rows={data["tools_runs_list"]} loading={loading}
+          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">tool_id</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">evidence_class</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">confidence_level</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">duration_ms</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">created_at</th></tr>)}
+          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["tool_id"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["evidence_class"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["confidence_level"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["duration_ms"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["created_at"] ?? "—")}</td></tr>)}
         />
       </Section>
-      <Section title="Sensor Catalogue">
-        <DataTable rows={data["tools_sensors_list"]} loading={loading} cols={["dimension","description","captured_by_tool","data_type","is_active"]}
-          renderHead={()=>(
-            <tr><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">dimension</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">description</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">captured_by_tool</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">data_type</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">is_active</th></tr>
-          )}
-          renderRow={(row, i)=>(
-            <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/20">
-              <td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["dimension"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["description"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["captured_by_tool"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["data_type"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["is_active"] ?? "—")}</td>
-            </tr>
-          )}
+      <Section title="Sensor Catalogue" count={(data["tools_sensors_list"] || []).length}>
+        <DataTable rows={data["tools_sensors_list"]} loading={loading}
+          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">dimension</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">description</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">captured_by_tool</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">data_type</th></tr>)}
+          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["dimension"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["description"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["captured_by_tool"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["data_type"] ?? "—")}</td></tr>)}
         />
       </Section>
-      <Section title="Variant Library">
-        <DataTable rows={data["tools_variants_list"]} loading={loading} cols={["tool_name","variant_name","variation_type","confidence_level"]}
-          renderHead={()=>(
-            <tr><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">tool_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">variant_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">variation_type</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">confidence_level</th></tr>
-          )}
-          renderRow={(row, i)=>(
-            <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/20">
-              <td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["tool_name"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["variant_name"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["variation_type"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["confidence_level"] ?? "—")}</td>
-            </tr>
-          )}
-        />
-      </Section>
-      <Section title="Recent Sessions">
-        <DataTable rows={data["tools_sessions_list"]} loading={loading} cols={["user_type","entry_tool","is_active","created_at"]}
-          renderHead={()=>(
-            <tr><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">user_type</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">entry_tool</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">is_active</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">created_at</th></tr>
-          )}
-          renderRow={(row, i)=>(
-            <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/20">
-              <td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["user_type"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["entry_tool"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["is_active"] ?? "—")}</td><td className="px-3 py-2 text-sm text-slate-300 max-w-xs truncate">{String(row["created_at"] ?? "—")}</td>
-            </tr>
-          )}
+      <Section title="Variant Library" count={(data["tools_variants_list"] || []).length}>
+        <DataTable rows={data["tools_variants_list"]} loading={loading}
+          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">tool_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">variant_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">variation_type</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">confidence_level</th></tr>)}
+          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["tool_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["variant_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["variation_type"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["confidence_level"] ?? "—")}</td></tr>)}
         />
       </Section>
       </div>
