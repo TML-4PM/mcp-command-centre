@@ -26,9 +26,13 @@ export default async function handler(req: Request) {
 
   try {
     const body = await req.json();
+    const apiKey = process.env.BRIDGE_API_KEY;
     const response = await fetch(BRIDGE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'BRIDGE_API_KEY': apiKey } : {}),
+      },
       body: JSON.stringify(body),
     });
     const data = await response.json();
