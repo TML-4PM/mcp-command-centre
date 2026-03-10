@@ -17,7 +17,7 @@ const INITIAL_ITEMS = [
   { id:"T014", cat:"CC", title:"C07: RDTI progress bar widget", owner:"Claude", priority:"P1", status:"open", notes:"Tied to 30 Apr deadline" },
   { id:"T015", cat:"CC", title:"C08: Director Loan / Div 7A warning", owner:"Claude", priority:"P1", status:"open", notes:"" },
   { id:"T016", cat:"CC", title:"C11: R&D timesheet gap alert", owner:"Claude", priority:"P1", status:"open", notes:"" },
-  { id:"T017", cat:"BRIDGE", title:"Audit all tools using old functionName/payload format", owner:"Claude", priority:"P2", status:"open", notes:"Still returning 400" },
+  { id:"T017", cat:"BRIDGE", title:"Audit all tools using old functionName/payload format — DONE 2026-03-10", owner:"Claude", priority:"P2", status:"open", notes:"Still returning 400" },
   { id:"T018", cat:"AGENTS", title:"Name 1,000 agents from 15 canonical seed names", owner:"Claude", priority:"P3", status:"open", notes:"AGT-0001-AGT-1000" },
   { id:"T019", cat:"AGENTS", title:"Build agent_dossiers table", owner:"Claude", priority:"P3", status:"open", notes:"" },
   { id:"T020", cat:"AGENTS", title:"Map 49 products to SKUs + Stripe", owner:"Claude", priority:"P3", status:"open", notes:"71 SKUs, 319 Stripe - no bridge yet" },
