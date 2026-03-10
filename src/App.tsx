@@ -60,6 +60,7 @@ const Dossier = lazy(() => import("./pages/Dossier"));
 const Connections = lazy(() => import("./pages/Connections"));
 const Mcp = lazy(() => import("./pages/Mcp"));
 const Growth = lazy(() => import("./pages/Growth"));
+const MissionControl = lazy(() => import("./pages/MissionControl"));
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ const App = () => (
                 <Route path="/commands" element={<Commands />} />
                 <Route path="/patterns" element={<Patterns />} />
                 <Route path="/plmos" element={<PlmosProducts />} />
+                <Route path="/mission-control" element={<MissionControl />} />
                 <Route path="*" element={<NotFound />} />
                             <Route path="/dossier" element={<Dossier />} />
                             <Route path="/dogfood" element={<Dogfood />} />
