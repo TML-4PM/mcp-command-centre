@@ -47,7 +47,7 @@ const TaxPage = () => {
     setLoading(true); setError(null);
     try {
       await Promise.allSettled([
-      bridgeQueryKey("tax_rdti_spend_by_category").then(rows => setData(prev => ({ ...prev, "tax_rdti_spend_by_category": rows }))).catch(() => setData(prev => ({ ...prev, "tax_rdti_spend_by_category": [] }))),
+      bridgeQueryKey("tax_rd_spend_by_category").then(rows => setData(prev => ({ ...prev, "tax_rd_spend_by_category": rows }))).catch(() => setData(prev => ({ ...prev, "tax_rd_spend_by_category": [] }))),
       bridgeQueryKey("tax_rd_top_vendors").then(rows => setData(prev => ({ ...prev, "tax_rd_top_vendors": rows }))).catch(() => setData(prev => ({ ...prev, "tax_rd_top_vendors": [] }))),
       bridgeQueryKey("tax_reconciliation").then(rows => setData(prev => ({ ...prev, "tax_reconciliation": rows }))).catch(() => setData(prev => ({ ...prev, "tax_reconciliation": [] }))),
       bridgeQueryKey("tax_rd_evidence_gaps").then(rows => setData(prev => ({ ...prev, "tax_rd_evidence_gaps": rows }))).catch(() => setData(prev => ({ ...prev, "tax_rd_evidence_gaps": [] }))),
@@ -80,8 +80,8 @@ const TaxPage = () => {
       )}
       <div className="space-y-4">
 
-      <Section title="RDTI Spend by Category" count={(data["tax_rdti_spend_by_category"] || []).length}>
-        <DataTable rows={data["tax_rdti_spend_by_category"]} loading={loading}
+      <Section title="RDTI Spend by Category" count={(data["tax_rd_spend_by_category"] || []).length}>
+        <DataTable rows={data["tax_rd_spend_by_category"]} loading={loading}
           renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">category</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">transactions</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">total_allocated</th></tr>)}
           renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["category"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["transactions"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["total_allocated"] ?? "—")}</td></tr>)}
         />
