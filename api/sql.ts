@@ -1,30 +1,52 @@
-import { createClient } from "@supabase/supabase-js";
+export const config = {
+  runtime: 'edge',
+};
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+const BRIDGE_URL = 'https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
 
-export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+export default async function handler(req: Request) {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
   }
 
-  const { sql } = req.body || {};
-  if (!sql) {
-    return res.status(400).json({ error: "sql required" });
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'POST only' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    });
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data, error } = await supabase.rpc("exec_sql", { query: sql });
-    if (error) throw error;
-    // exec_sql returns rows array
-    const rows = Array.isArray(data) ? data : [data];
-    return res.status(200).json({ rows, count: rows.length });
-  } catch (err: any) {
-    // Fallback: try direct REST query approach
-    return res.status(500).json({ 
-      error: err.message || String(err),
-      hint: "Ensure exec_sql RPC exists in Supabase or update this endpoint to use service_role direct queries"
+    const body = await req.json() as { sql?: string };
+    const { sql } = body;
+    if (!sql) {
+      return new Response(JSON.stringify({ error: 'sql required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
+    }
+    const response = await fetch(BRIDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ function: 'troy-sql-executor', route: 'sql', sql }),
+    });
+    const data = await response.json();
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
 }
