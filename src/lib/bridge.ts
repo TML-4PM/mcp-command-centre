@@ -12,10 +12,9 @@ export async function bridgeSQL(sql: string): Promise<BridgeResult> {
   const res = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    // Bridge expects: {target, route, sql} — NOT {functionName, payload}
+    // Bridge format: {fn, sql} — top-level params, no payload wrapper
     body: JSON.stringify({
-      target: 'troy-sql-executor',
-      route: 'sql',
+      fn: 'troy-sql-executor',
       sql,
     }),
   });
@@ -27,7 +26,7 @@ export async function bridgeSQL(sql: string): Promise<BridgeResult> {
 
 export async function bridgeQueryKey(key: string): Promise<any[]> {
   const lookup = await bridgeSQL(
-    `SELECT sql FROM command_centre_queries WHERE key = '${key.replace(/'/g, "''")}' AND is_active = true LIMIT 1`
+    `SELECT sql FROM command_centre_queries WHERE key = '${key.replace(/'/g, "''")}'  AND is_active = true LIMIT 1`
   );
   if (!lookup.rows.length) throw new Error(`Query key "${key}" not found`);
   const result = await bridgeSQL(lookup.rows[0].sql);
@@ -42,11 +41,12 @@ export async function bridgeCount(sql: string): Promise<number> {
   return Number(val) || 0;
 }
 
-export async function bridgeLambda(target: string, payload: Record<string, any>): Promise<any> {
+export async function bridgeLambda(fn: string, params: Record<string, any>): Promise<any> {
   const res = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ target, ...payload }),
+    // Bridge format: {fn, ...params} — all at top level
+    body: JSON.stringify({ fn, ...params }),
   });
   if (!res.ok) throw new Error(`Bridge HTTP ${res.status}`);
   return res.json();
