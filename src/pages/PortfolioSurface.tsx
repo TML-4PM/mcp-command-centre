@@ -45,6 +45,7 @@ const PortfolioSurface = () => {
   const [groupFilter, setGroupFilter] = useState("ALL");
   const [stateFilter, setStateFilter] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [showAll, setShowAll] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -107,6 +108,7 @@ const PortfolioSurface = () => {
 
   const filtered = rows.filter(r => {
     const cur = getCurrent(r);
+    if (!showAll && !cur.include) return false;
     if (groupFilter !== "ALL" && cur.group_code !== groupFilter) return false;
     if (stateFilter && cur.validation_state !== stateFilter) return false;
     if (search) {
@@ -181,6 +183,11 @@ const PortfolioSurface = () => {
             {s}
           </button>
         ))}
+        <button onClick={() => setShowAll(v => !v)}
+          className={`px-3 py-1 rounded-md text-xs font-mono border transition ${
+            showAll ? "bg-slate-600 border-slate-400 text-white" : "border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"}`}>
+          {showAll ? `ALL ${rows.length}` : `28 active`}
+        </button>
         <div className="ml-auto">
           <input type="text" placeholder="Search name, slug, url..." value={search} onChange={e => setSearch(e.target.value)}
             className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:border-slate-500 w-56" />
