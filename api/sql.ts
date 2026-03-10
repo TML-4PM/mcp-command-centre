@@ -32,10 +32,11 @@ export default async function handler(req: Request) {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
+    // Bridge format: {fn, sql} — top-level params, no payload wrapper
     const response = await fetch(BRIDGE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ function: 'troy-sql-executor', route: 'sql', sql }),
+      body: JSON.stringify({ fn: 'troy-sql-executor', sql }),
     });
     const data = await response.json();
     return new Response(JSON.stringify(data), {
