@@ -32,6 +32,7 @@ const sections = [
       { to: "/grants", label: "Grants" },
       { to: "/rd", label: "R&D" },
       { to: "/tax", label: "Tax" },
+      { to: "/governance", label: "Governance" },
     ],
   },
   {
