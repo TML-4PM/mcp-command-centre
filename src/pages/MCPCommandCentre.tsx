@@ -21,6 +21,10 @@ const MCPCommandCentre = () => {
   const [maatDashboard, setMaatDashboard] = useState<any>(null);
   const [systemHealth, setSystemHealth] = useState<Record<string, HealthStatus>>({});
   const [alerts] = useState<Alert[]>([]);
+  const [workerStatus, setWorkerStatus] = useState<{
+    current_status: string; status_colour: string; elephant_active: boolean;
+    energy: number; emotional_state: string; last_check_at: string | null;
+  }>({ current_status: "UP", status_colour: "green", elephant_active: false, energy: 100, emotional_state: "neutral", last_check_at: null });
 
   const checkHealth = async (): Promise<Record<string, HealthStatus>> => {
     const health: Record<string, HealthStatus> = {};
@@ -87,8 +91,16 @@ const MCPCommandCentre = () => {
 
   useEffect(() => {
     fetchData();
+    const fetchWorkerStatus = async () => {
+      try {
+        const r = await bridgeSQL("SELECT current_status, status_colour, elephant_active, energy, emotional_state, last_check_at FROM cc_worker_state WHERE worker_id='cc-watchdog' LIMIT 1");
+        if (r?.rows?.[0]) setWorkerStatus(r.rows[0]);
+      } catch {}
+    };
+    fetchWorkerStatus();
     const i = setInterval(fetchData, 60000);
-    return () => clearInterval(i);
+    const w = setInterval(fetchWorkerStatus, 30000);
+    return () => { clearInterval(i); clearInterval(w); };
   }, []);
 
   if (loading) return (
@@ -135,8 +147,25 @@ const MCPCommandCentre = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-foreground p-8">
+    <div className={`min-h-screen text-foreground p-8 transition-colors duration-700 ${workerStatus.status_colour === "red" ? "bg-red-950" : workerStatus.status_colour === "amber" ? "bg-amber-950" : "bg-slate-900"}`}>
       <div className="max-w-7xl mx-auto">
+        {/* 🐘 Worker Incident Overlay */}
+        {workerStatus.elephant_active && (
+          <div className={`fixed inset-0 pointer-events-none z-50 border-4 ${workerStatus.status_colour === "red" ? "border-red-500 animate-pulse" : "border-amber-400"}`}>
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 pointer-events-auto z-50">
+              <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl text-white font-bold ${workerStatus.status_colour === "red" ? "bg-red-700" : "bg-amber-600"}`}>
+                <span className="text-4xl animate-bounce">&#x1F418;</span>
+                <div>
+                  <div className="text-lg">{workerStatus.current_status === "DOWN" ? "COMMAND CENTRE DOWN" : "CC DEGRADED"}</div>
+                  <div className="text-xs font-normal opacity-80 mt-1">energy {workerStatus.energy}pct · {workerStatus.emotional_state} · {workerStatus.last_check_at ? new Date(workerStatus.last_check_at).toLocaleTimeString() : "checking..."}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {!workerStatus.elephant_active && workerStatus.energy < 85 && (
+          <div className="fixed top-4 right-4 z-40 bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">CC Restored. Worker recovering ({workerStatus.energy}%)</div>
+        )}
         <header className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold">🚀 MCP Command Centre</h1>
           <div className="flex items-center gap-4">
@@ -144,8 +173,8 @@ const MCPCommandCentre = () => {
               <RefreshCw className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-green-400 font-semibold">LIVE</span>
+              <span className={`w-3 h-3 rounded-full animate-pulse ${workerStatus.status_colour === "red" ? "bg-red-400" : workerStatus.status_colour === "amber" ? "bg-amber-400" : "bg-green-400"}`} />
+              <span className={`font-semibold ${workerStatus.status_colour === "red" ? "text-red-400" : workerStatus.status_colour === "amber" ? "text-amber-400" : "text-green-400"}`}>{workerStatus.current_status}</span>
             </div>
           </div>
         </header>
