@@ -10,6 +10,7 @@ const sections = [
       { to: "/loop-os", label: "Loop OS" },
       { to: "/businesses", label: "Businesses" },
       { to: "/cap-store", label: "Cap Store" },
+      { to: "/exec-spine", label: "Exec Spine" },
       { to: "/dogfood", label: "28×50 Dogfood" },
       { to: "/systems", label: "Systems" },
       { to: "/architecture", label: "Architecture" },
