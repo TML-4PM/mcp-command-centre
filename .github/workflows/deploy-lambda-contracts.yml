@@ -1,0 +1,52 @@
+name: Deploy Lambda Bridge Contracts
+
+on:
+  workflow_dispatch:
+    inputs:
+      functions:
+        description: 'Comma-separated function names (or "all")'
+        required: false
+        default: 'all'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::140548542136:role/troy-lambda-deployer-role
+          aws-region: ap-southeast-2
+
+      - name: Deploy bridge contract Lambdas from S3
+        run: |
+          FUNCTIONS="${{ github.event.inputs.functions }}"
+          if [ "$FUNCTIONS" = "all" ]; then
+            FUNCTIONS="troy-s3-manager,troy-cfn-deployer,troy-lambda-manager,troy-lambda-deployer,troy-stripe-executor"
+          fi
+          
+          IFS=',' read -ra FN_LIST <<< "$FUNCTIONS"
+          BUCKET="t4h-cap-store"
+          
+          for FN in "${FN_LIST[@]}"; do
+            FN=$(echo "$FN" | xargs)  # trim whitespace
+            KEY="lambda-contracts/${FN}.zip"
+            echo "Deploying $FN from s3://$BUCKET/$KEY..."
+            
+            # Download zip from S3
+            aws s3 cp "s3://$BUCKET/$KEY" "/tmp/${FN}.zip"
+            
+            # Update Lambda function code
+            aws lambda update-function-code \
+              --function-name "$FN" \
+              --zip-file "fileb:///tmp/${FN}.zip" \
+              --region ap-southeast-2 \
+              --output json | jq '{FunctionName,CodeSize,LastModified,State}'
+            
+            echo "✅ $FN deployed"
+          done
+          
+          echo "All deployments complete"
