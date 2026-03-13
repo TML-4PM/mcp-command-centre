@@ -120,15 +120,32 @@ const CMODashboard = () => {
     ]);
 
     // Weekly trend data
-    const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'];
-    setTrendData(weeks.map((week, i) => ({
-      name: week,
-      reach: Math.floor(300000 + Math.random() * 100000 + i * 20000),
-      engagement: Math.floor(15000 + Math.random() * 8000 + i * 1500),
-      conversions: Math.floor(1200 + Math.random() * 500 + i * 150),
-      spend: Math.floor(8000 + Math.random() * 3000),
-      revenue: Math.floor(50000 + Math.random() * 20000 + i * 5000)
-    })));
+    // Load real trend data from analytics_events + maat_transactions
+    try {
+      const trendRows = await bridgeSQL(
+        `SELECT
+          to_char(date_trunc('week', ae.created_at), 'YYYY-MM-DD') as week_start,
+          'W' || to_char(date_trunc('week', ae.created_at), 'IW') as name,
+          count(*) as reach,
+          count(*) FILTER (WHERE ae.event_type = 'engagement') as engagement,
+          count(*) FILTER (WHERE ae.event_type = 'conversion') as conversions,
+          0 as spend,
+          coalesce(sum(t.amount) FILTER (WHERE t.amount > 0), 0) as revenue
+        FROM analytics_events ae
+        LEFT JOIN maat_transactions t ON date_trunc('week', t.posted_at) = date_trunc('week', ae.created_at)
+        WHERE ae.created_at > now() - interval '8 weeks'
+        GROUP BY 1,2 ORDER BY 1 DESC LIMIT 8`
+      );
+      if (trendRows && trendRows.length > 0) {
+        setTrendData(trendRows.reverse());
+      } else {
+        // Fallback: zero-filled weeks — no fake data
+        const weeks = ['W1','W2','W3','W4','W5','W6','W7','W8'];
+        setTrendData(weeks.map(name => ({ name, reach:0, engagement:0, conversions:0, spend:0, revenue:0 })));
+      }
+    } catch {
+      setTrendData([]);
+    }
 
     // Funnel data
     setFunnelData([
