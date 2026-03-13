@@ -62,6 +62,7 @@ const Mcp = lazy(() => import("./pages/Mcp"));
 const Growth = lazy(() => import("./pages/Growth"));
 const MissionControl = lazy(() => import("./pages/MissionControl"));
 const Governance = lazy(() => import("./pages/Governance"));
+const CapStore = lazy(() => import("./pages/CapStore"));
 
 const queryClient = new QueryClient();
 
@@ -149,6 +150,7 @@ const App = () => (
                 <Route path="/plmos" element={<PlmosProducts />} />
                 <Route path="/mission-control" element={<MissionControl />} />
                 <Route path="/governance" element={<Governance />} />
+                <Route path="/cap-store" element={<CapStore />} />
                 <Route path="*" element={<NotFound />} />
                             <Route path="/dossier" element={<Dossier />} />
                             <Route path="/dogfood" element={<Dogfood />} />
