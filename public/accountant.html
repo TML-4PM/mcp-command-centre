@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T4H Financial Intelligence — Accountant Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0f0f0f;
+  --paper: #f5f0e8;
+  --paper2: #ede8e0;
+  --accent: #c8401a;
+  --accent2: #1a4fc8;
+  --muted: #7a7268;
+  --border: #d4cfc5;
+  --green: #1a7a3a;
+  --amber: #b87000;
+  --red: #c8401a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* AUTH SCREEN */
+#auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+.auth-box {
+  width: 420px;
+  padding: 48px;
+}
+.auth-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--paper);
+  opacity: 0.5;
+  margin-bottom: 48px;
+}
+.auth-title {
+  font-family: 'Fraunces', serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--paper);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.auth-sub {
+  font-size: 11px;
+  color: #555;
+  letter-spacing: 0.08em;
+  margin-bottom: 40px;
+}
+.auth-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #333;
+  padding: 12px 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--paper);
+  outline: none;
+  letter-spacing: 0.05em;
+  transition: border-color 0.2s;
+}
+.auth-input:focus { border-color: var(--accent); }
+.auth-input::placeholder { color: #444; }
+.auth-btn {
+  margin-top: 32px;
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  color: var(--paper);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.auth-btn:hover { opacity: 0.85; }
+.auth-error {
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  min-height: 16px;
+}
+
+/* PORTAL */
+#portal { display: none; }
+
+/* TOP BAR */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 52px;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.topbar-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.topbar-sep { width: 1px; height: 20px; background: #333; }
+.topbar-user {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.05em;
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.topbar-ts { font-size: 10px; color: #555; letter-spacing: 0.05em; }
+.badge-live {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--green);
+  border: 1px solid #1a7a3a44;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+/* LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 52px);
+}
+
+/* SIDEBAR */
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 32px 0;
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  overflow-y: auto;
+  background: var(--paper);
+}
+.sidebar-section {
+  margin-bottom: 4px;
+}
+.sidebar-domain {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 16px 24px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.domain-count {
+  background: var(--paper2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1px 6px;
+  font-size: 9px;
+  color: var(--muted);
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 0.1s;
+  border-left: 2px solid transparent;
+  line-height: 1.3;
+}
+.sidebar-link:hover { background: var(--paper2); }
+.sidebar-link.active {
+  background: var(--paper2);
+  border-left-color: var(--accent);
+  color: var(--accent);
+}
+.sidebar-link.request {
+  color: var(--muted);
+  text-decoration: none;
+}
+.sidebar-link.request:hover { background: var(--paper2); }
+.rag-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rag-dot.green { background: var(--green); }
+.rag-dot.amber { background: var(--amber); }
+.rag-dot.red { background: var(--red); }
+.rag-dot.request { background: var(--border); }
+.freq-tag {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* MAIN CONTENT */
+.main {
+  padding: 40px 48px;
+  max-width: 1100px;
+}
+
+/* HEADER */
+.page-header {
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.page-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.page-title {
+  font-family: 'Fraunces', serif;
+  font-size: 42px;
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.page-meta {
+  margin-top: 16px;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.meta-item { font-size: 11px; color: var(--muted); }
+.meta-val { color: var(--ink); font-weight: 500; }
+
+/* STATS ROW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+.stat-cell {
+  background: var(--paper);
+  padding: 20px 24px;
+}
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.stat-val {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--ink);
+}
+.stat-val.accent { color: var(--accent); }
+.stat-val.green { color: var(--green); }
+.stat-sub { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* REPORT VIEWER */
+.report-panel {
+  border: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+.report-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--paper);
+  cursor: pointer;
+  transition: background 0.1s;
+  border-bottom: 1px solid var(--border);
+}
+.report-header:hover { background: var(--paper2); }
+.report-num {
+  font-size: 10px;
+  color: var(--muted);
+  padding-top: 2px;
+  width: 20px;
+  flex-shrink: 0;
+}
+.report-title { flex: 1; }
+.report-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.report-slug {
+  font-size: 10px;
+  color: var(--muted);
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+.report-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.btn-load {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-load:hover { opacity: 0.75; }
+.btn-csv {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--accent2);
+  border: 1px solid currentColor;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-csv:hover { opacity: 0.7; }
+.chevron {
+  color: var(--muted);
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+.chevron.open { transform: rotate(180deg); }
+
+.report-body { display: none; }
+.report-body.open { display: block; }
+.report-loading {
+  padding: 24px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.loading-anim::after {
+  content: '';
+  animation: dots 1.2s steps(3, end) infinite;
+}
+@keyframes dots {
+  0% { content: ''; }
+  33% { content: '.'; }
+  66% { content: '..'; }
+  100% { content: '...'; }
+}
+.report-error {
+  padding: 16px 24px;
+  font-size: 11px;
+  color: var(--red);
+}
+
+/* Table */
+.data-table-wrap { overflow-x: auto; }
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+table.data-table th {
+  text-align: left;
+  padding: 10px 16px;
+  background: var(--paper2);
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+table.data-table td {
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.data-table tr:last-child td { border-bottom: none; }
+.table-footer {
+  padding: 12px 16px;
+  font-size: 10px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  background: var(--paper2);
+}
+
+/* REQUEST PANEL */
+.request-panel {
+  border: 1px dashed var(--border);
+  margin-bottom: 32px;
+}
+.request-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+}
+.request-badge {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: var(--paper2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 3px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.btn-request {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-request:hover {
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+
+/* DOMAIN SECTION */
+.domain-section { margin-bottom: 48px; }
+.domain-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+.domain-heading-text {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 300;
+}
+.domain-heading-count {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* WAVE 1 */
+.wave1-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.wave1-card {
+  border: 1px solid var(--border);
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  position: relative;
+}
+.wave1-card:hover { border-color: var(--ink); }
+.wave1-card.urgent { border-left: 3px solid var(--accent); }
+.wave1-card-num {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.wave1-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.wave1-card-slug {
+  font-size: 10px;
+  color: var(--muted);
+  font-style: italic;
+}
+.wave1-card-tag {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid currentColor;
+  padding: 2px 6px;
+}
+
+/* Search */
+.search-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+  border: 1px solid var(--border);
+}
+.search-input {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  padding: 12px 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--ink);
+  outline: none;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-domain-filter {
+  display: flex;
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+  background: var(--paper2);
+}
+.filter-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: all 0.1s;
+}
+.filter-btn:hover { background: var(--paper); color: var(--ink); }
+.filter-btn.active { background: var(--ink); color: var(--paper); }
+
+/* empty */
+.empty { padding: 48px; text-align: center; color: var(--muted); font-size: 12px; }
+
+/* Deadline banner */
+.deadline-banner {
+  background: #fff8f5;
+  border: 1px solid #f0d0c0;
+  border-left: 4px solid var(--accent);
+  padding: 16px 24px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.deadline-text { font-size: 12px; color: var(--ink); }
+.deadline-date { font-size: 11px; color: var(--accent); font-weight: 500; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">Tech 4 Humanity Pty Ltd</div>
+    <div class="auth-title">Financial<br>Intelligence</div>
+    <div class="auth-sub">ACCOUNTANT PORTAL — RESTRICTED ACCESS</div>
+    <input type="password" class="auth-input" id="token-input" placeholder="Enter access token" autocomplete="off">
+    <button class="auth-btn" onclick="doAuth()">Access Portal</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- PORTAL -->
+<div id="portal">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">T4H / Financial Intelligence</div>
+      <div class="topbar-sep"></div>
+      <div class="topbar-user" id="user-label">—</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-ts" id="live-ts"></div>
+      <div class="badge-live">● LIVE</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar"></div>
+
+    <!-- MAIN -->
+    <div class="main" id="main-content">
+      <div class="page-header">
+        <div class="page-eyebrow">Tech 4 Humanity Pty Ltd · ABN 61 605 746 618</div>
+        <div class="page-title">Financial<br>Intelligence Portal</div>
+        <div class="page-meta">
+          <div class="meta-item">Prepared for <span class="meta-val" id="user-name-header">—</span></div>
+          <div class="meta-item">Tax Agent · Hales Redden & Partners</div>
+          <div class="meta-item">FY2024–25 primary filing year</div>
+        </div>
+      </div>
+
+      <div class="stats-row" id="stats-row">
+        <div class="stat-cell">
+          <div class="stat-label">Reports Available</div>
+          <div class="stat-val green" id="stat-avail">—</div>
+          <div class="stat-sub">live from Supabase</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">On Request</div>
+          <div class="stat-val" id="stat-req">—</div>
+          <div class="stat-sub">manual / drive</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">RDTI Claim</div>
+          <div class="stat-val accent">$921K</div>
+          <div class="stat-sub">FY24–25 · 30 Apr deadline</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">BAS Refund</div>
+          <div class="stat-val accent">$22,798</div>
+          <div class="stat-sub">4 quarters · overdue</div>
+        </div>
+      </div>
+
+      <div class="deadline-banner">
+        <div class="deadline-text">
+          ⚠ AusIndustry R&D Registration required for FY2024–25 RDTI claim ($921K at 43.5% offset)
+        </div>
+        <div class="deadline-date">30 April 2026</div>
+      </div>
+
+      <div id="reports-container"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BRIDGE = 'https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
+const BRIDGE_KEY = 'bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4';
+
+let ALL_REPORTS = [];
+let ACTIVE_DOMAIN = 'all';
+let SEARCH = '';
+let GUEST_INFO = null;
+
+async function sql(query) {
+  const r = await fetch(BRIDGE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': BRIDGE_KEY },
+    body: JSON.stringify({ fn: 'troy-sql-executor', sql: query })
+  });
+  const d = await r.json();
+  return d.rows || [];
+}
+
+async function doAuth() {
+  const token = document.getElementById('token-input').value.trim();
+  if (!token) return;
+  const btn = document.querySelector('.auth-btn');
+  btn.textContent = 'Verifying...';
+  try {
+    const rows = await sql(`SELECT validate_guest_token('${token.replace(/'/g,"''")}')`);
+    if (!rows.length) throw new Error('No response');
+    const info = rows[0][Object.keys(rows[0])[0]];
+    if (!info.valid) throw new Error(info.error || 'Invalid token');
+    GUEST_INFO = info;
+    sessionStorage.setItem('cc_guest_token', token);
+    sessionStorage.setItem('cc_guest_info', JSON.stringify(info));
+    initPortal();
+  } catch(e) {
+    document.getElementById('auth-error').textContent = e.message;
+    btn.textContent = 'Access Portal';
+  }
+}
+
+document.getElementById('token-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doAuth();
+});
+
+async function initPortal() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('portal').style.display = 'block';
+  document.getElementById('user-label').textContent = GUEST_INFO.label;
+  document.getElementById('user-name-header').textContent = GUEST_INFO.label;
+
+  // Live clock
+  const tick = () => {
+    const now = new Date();
+    document.getElementById('live-ts').textContent =
+      now.toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
+      now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+  };
+  tick();
+  setInterval(tick, 30000);
+
+  // Load reports
+  ALL_REPORTS = await sql(`
+    SELECT r.slug, r.name, r.domain, r.frequency, r.rag, r.tier, r.source_type, r.notes,
+      CASE WHEN t.table_name IS NOT NULL OR r.source_type='supabase_rpc' THEN 'available' ELSE 'request' END as availability
+    FROM rpt_report r
+    LEFT JOIN information_schema.tables t ON t.table_schema='public' AND t.table_name=r.source_ref
+    WHERE r.audience @> '["accountant"]' OR r.audience::text ILIKE '%accountant%'
+    ORDER BY r.tier, r.domain, r.name
+  `);
+
+  const avail = ALL_REPORTS.filter(r => r.availability === 'available').length;
+  const req = ALL_REPORTS.filter(r => r.availability === 'request').length;
+  document.getElementById('stat-avail').textContent = avail;
+  document.getElementById('stat-req').textContent = req;
+
+  buildSidebar();
+  renderReports();
+}
+
+function buildSidebar() {
+  const domains = ['all', ...new Set(ALL_REPORTS.map(r => r.domain))].sort((a,b) => a === 'all' ? -1 : a.localeCompare(b));
+  const sidebar = document.getElementById('sidebar');
+
+  // Search in sidebar
+  const searchWrap = document.createElement('div');
+  searchWrap.style.cssText = 'padding: 0 16px 16px; border-bottom: 1px solid var(--border); margin-bottom: 8px;';
+  searchWrap.innerHTML = `<input id="sidebar-search" style="width:100%;background:var(--paper2);border:1px solid var(--border);padding:8px 12px;font-family:DM Mono,monospace;font-size:11px;color:var(--ink);outline:none;" placeholder="Search reports…">`;
+  sidebar.appendChild(searchWrap);
+  document.getElementById('sidebar-search').addEventListener('input', e => {
+    SEARCH = e.target.value;
+    renderReports();
+    buildSidebarLinks();
+  });
+
+  const linksContainer = document.createElement('div');
+  linksContainer.id = 'sidebar-links';
+  sidebar.appendChild(linksContainer);
+  buildSidebarLinks();
+}
+
+function buildSidebarLinks() {
+  const container = document.getElementById('sidebar-links');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const domains = [...new Set(ALL_REPORTS.map(r => r.domain))].sort();
+
+  // All link
+  const allLink = document.createElement('div');
+  allLink.className = `sidebar-link ${ACTIVE_DOMAIN === 'all' ? 'active' : ''}`;
+  const total = filterReports('all').length;
+  allLink.innerHTML = `<span class="rag-dot green"></span><span style="flex:1">All Reports</span><span class="freq-tag">${total}</span>`;
+  allLink.onclick = () => { ACTIVE_DOMAIN = 'all'; renderReports(); buildSidebarLinks(); };
+  container.appendChild(allLink);
+
+  for (const domain of domains) {
+    const reports = filterReports(domain);
+    if (!reports.length) continue;
+    const sec = document.createElement('div');
+    sec.className = 'sidebar-section';
+
+    const heading = document.createElement('div');
+    heading.className = 'sidebar-domain';
+    heading.innerHTML = `${domain}<span class="domain-count">${reports.length}</span>`;
+    sec.appendChild(heading);
+
+    for (const r of reports.slice(0, 8)) {
+      const a = document.createElement('div');
+      a.className = `sidebar-link ${r.availability === 'request' ? 'request' : ''} ${ACTIVE_DOMAIN === r.slug ? 'active' : ''}`;
+      a.innerHTML = `
+        <span class="rag-dot ${r.availability === 'request' ? 'request' : r.rag}"></span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</span>
+        <span class="freq-tag">${r.frequency === 'on_demand' ? '⊙' : r.frequency.substring(0,3)}</span>
+      `;
+      a.onclick = () => { scrollToReport(r.slug); };
+      sec.appendChild(a);
+    }
+    if (reports.length > 8) {
+      const more = document.createElement('div');
+      more.style.cssText = 'padding: 6px 24px; font-size: 10px; color: var(--muted); cursor: pointer;';
+      more.textContent = `+${reports.length - 8} more →`;
+      more.onclick = () => { ACTIVE_DOMAIN = domain; renderReports(); buildSidebarLinks(); };
+      sec.appendChild(more);
+    }
+    container.appendChild(sec);
+  }
+}
+
+function filterReports(domain) {
+  return ALL_REPORTS.filter(r => {
+    const matchDomain = domain === 'all' || r.domain === domain;
+    const matchSearch = !SEARCH || r.name.toLowerCase().includes(SEARCH.toLowerCase()) || r.slug.includes(SEARCH.toLowerCase());
+    return matchDomain && matchSearch;
+  });
+}
+
+function scrollToReport(slug) {
+  const el = document.getElementById(`report-${slug.replace(/\./g,'-')}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const WAVE1 = [
+  't4h-financial-position', 'acct.annual.financial_stmts', 'acct.annual.trial_balance',
+  'maat.api.director_loan', 't4h-div7a-fy26-repayment', 't4h-bas-fy25-lodgement',
+  't4h-rdti-fy25-lodgement', 't4h-director-consulting-invoices',
+  'maat.api.tax_position', 'maat.rd_summary_corrected', 'rd.ondemand.contemporaneous_pack'
+];
+const URGENT = ['t4h-bas-fy25-lodgement', 't4h-rdti-fy25-lodgement', 't4h-div7a-fy26-repayment'];
+
+function renderReports() {
+  const container = document.getElementById('reports-container');
+  const filtered = filterReports(ACTIVE_DOMAIN);
+  container.innerHTML = '';
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty">No reports match your search</div>';
+    return;
+  }
+
+  // Wave 1 section (only when showing all / finance domain)
+  if (ACTIVE_DOMAIN === 'all' && !SEARCH) {
+    const w1Reports = WAVE1.map(s => ALL_REPORTS.find(r => r.slug === s)).filter(Boolean);
+    const sec = document.createElement('div');
+    sec.className = 'domain-section';
+    sec.innerHTML = `<div class="domain-heading">
+      <div class="domain-heading-text">Priority Pack</div>
+      <div class="domain-heading-count">11 reports for immediate action · send to Gordon</div>
+    </div>`;
+    const grid = document.createElement('div');
+    grid.className = 'wave1-grid';
+    w1Reports.forEach((r, i) => {
+      const card = document.createElement('div');
+      card.className = `wave1-card ${URGENT.includes(r.slug) ? 'urgent' : ''}`;
+      const isReq = r.availability === 'request';
+      card.innerHTML = `
+        <div class="wave1-card-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="wave1-card-name">${r.name}</div>
+        <div class="wave1-card-slug">${r.slug}</div>
+        ${URGENT.includes(r.slug) ? '<div class="wave1-card-tag">Urgent</div>' : ''}
+      `;
+      card.onclick = () => {
+        ACTIVE_DOMAIN = 'all';
+        setTimeout(() => scrollToReport(r.slug), 50);
+      };
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+    container.appendChild(sec);
+  }
+
+  // Group by domain
+  const domains = [...new Set(filtered.map(r => r.domain))].sort();
+  for (const domain of domains) {
+    const domReports = filtered.filter(r => r.domain === domain);
+    const sec = document.createElement('div');
+    sec.className = 'domain-section';
+    sec.innerHTML = `<div class="domain-heading">
+      <div class="domain-heading-text">${domain.charAt(0).toUpperCase() + domain.slice(1)}</div>
+      <div class="domain-heading-count">${domReports.length} reports</div>
+    </div>`;
+
+    domReports.forEach((r, i) => {
+      if (r.availability === 'available') {
+        sec.appendChild(buildReportPanel(r, i));
+      } else {
+        sec.appendChild(buildRequestPanel(r, i));
+      }
+    });
+    container.appendChild(sec);
+  }
+}
+
+function buildReportPanel(r, i) {
+  const div = document.createElement('div');
+  div.className = 'report-panel';
+  div.id = `report-${r.slug.replace(/\./g,'-')}`;
+
+  const header = document.createElement('div');
+  header.className = 'report-header';
+  header.innerHTML = `
+    <div class="report-num">${String(i+1).padStart(2,'0')}</div>
+    <div class="report-title">
+      <div class="report-name">${r.name}</div>
+      <div class="report-slug">${r.slug} · ${r.frequency}</div>
+    </div>
+    <div class="report-actions">
+      <span class="rag-dot ${r.rag}" style="width:8px;height:8px"></span>
+      <button class="btn-load" onclick="loadReport(event,'${r.slug}')">Load</button>
+      <span class="chevron" id="chev-${r.slug.replace(/\./g,'-').replace(/-/g,'_')}">▼</span>
+    </div>
+  `;
+
+  const body = document.createElement('div');
+  body.className = 'report-body';
+  body.id = `body-${r.slug.replace(/\./g,'-')}`;
+
+  div.appendChild(header);
+  div.appendChild(body);
+
+  header.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') return;
+    const bodyEl = document.getElementById(`body-${r.slug.replace(/\./g,'-')}`);
+    const chev = document.getElementById(`chev-${r.slug.replace(/\./g,'-').replace(/-/g,'_')}`);
+    bodyEl.classList.toggle('open');
+    if (chev) chev.classList.toggle('open');
+    if (bodyEl.classList.contains('open') && !bodyEl.dataset.loaded) {
+      doLoadReport(r.slug);
+    }
+  });
+
+  return div;
+}
+
+function buildRequestPanel(r, i) {
+  const div = document.createElement('div');
+  div.className = 'request-panel';
+  div.id = `report-${r.slug.replace(/\./g,'-')}`;
+  div.innerHTML = `
+    <div class="request-header">
+      <div class="report-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="report-title">
+        <div class="report-name" style="color:var(--muted)">${r.name}</div>
+        <div class="report-slug">${r.slug} · ${r.source_type === 'manual_upload' ? 'manual upload required' : r.frequency}</div>
+      </div>
+      <div class="report-actions">
+        <div class="request-badge">On Request</div>
+        <button class="btn-request" onclick="sendRequest('${r.slug}','${r.name.replace(/'/g,"\\'")}')">Request</button>
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+const reportData = {};
+
+async function loadReport(e, slug) {
+  e.stopPropagation();
+  const bodyEl = document.getElementById(`body-${slug.replace(/\./g,'-')}`);
+  const chev = document.getElementById(`chev-${slug.replace(/\./g,'-').replace(/-/g,'_')}`);
+  if (!bodyEl.classList.contains('open')) {
+    bodyEl.classList.add('open');
+    if (chev) chev.classList.add('open');
+  }
+  if (!bodyEl.dataset.loaded) {
+    doLoadReport(slug);
+  }
+}
+
+async function doLoadReport(slug) {
+  const bodyEl = document.getElementById(`body-${slug.replace(/\./g,'-')}`);
+  bodyEl.innerHTML = `<div class="report-loading"><span class="loading-anim">Fetching ${slug}</span></div>`;
+  bodyEl.dataset.loaded = '1';
+  try {
+    const rows = await sql(`SELECT cmd_render_report('${slug}')`);
+    if (!rows.length) throw new Error('No data');
+    const result = rows[0][Object.keys(rows[0])[0]];
+    if (result.error) throw new Error(result.error);
+    const data = Array.isArray(result.data) ? result.data : [result.data];
+    reportData[slug] = data;
+    renderTable(bodyEl, data, slug, result.generated_at);
+  } catch(e) {
+    bodyEl.innerHTML = `<div class="report-error">Error: ${e.message}</div>`;
+  }
+}
+
+function renderTable(container, data, slug, ts) {
+  if (!data || !data.length) {
+    container.innerHTML = '<div class="report-loading">No data returned</div>';
+    return;
+  }
+  const cols = Object.keys(data[0]);
+  const preview = data.slice(0, 100);
+
+  let html = `<div class="data-table-wrap"><table class="data-table"><thead><tr>`;
+  for (const c of cols) {
+    html += `<th>${c.replace(/_/g,' ').toUpperCase()}</th>`;
+  }
+  html += `</tr></thead><tbody>`;
+  for (const row of preview) {
+    html += '<tr>';
+    for (const c of cols) {
+      const v = row[c];
+      html += `<td title="${String(v??'').replace(/"/g,'&quot;')}">${formatCell(v,c)}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += `</tbody></table></div>`;
+  html += `<div class="table-footer" style="display:flex;justify-content:space-between;align-items:center">
+    <span>${data.length} rows · generated ${new Date(ts).toLocaleString('en-AU')}</span>
+    <button class="btn-csv" onclick="downloadCSV('${slug}')">Export CSV</button>
+  </div>`;
+  container.innerHTML = html;
+}
+
+function formatCell(v, col) {
+  if (v === null || v === undefined) return '<span style="color:var(--muted)">—</span>';
+  const s = String(v);
+  if (typeof v === 'number' && (col.includes('amount') || col.includes('spend') || col.includes('balance') || col.includes('cost'))) {
+    return '$' + v.toLocaleString('en-AU', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  if (s.match(/^\d{4}-\d{2}-\d{2}/)) {
+    try { return new Date(s).toLocaleDateString('en-AU', {day:'2-digit',month:'short',year:'numeric'}); } catch(_) {}
+  }
+  return s.length > 80 ? s.slice(0,80) + '…' : s;
+}
+
+function downloadCSV(slug) {
+  const data = reportData[slug];
+  if (!data?.length) return;
+  const cols = Object.keys(data[0]);
+  const rows = data.map(r => cols.map(c => `"${String(r[c]??'').replace(/"/g,'""')}"`).join(','));
+  const csv = [cols.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${slug}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function sendRequest(slug, name) {
+  // Opens email to Troy flagging request for manual doc
+  const subject = encodeURIComponent(`Report Request: ${name}`);
+  const body = encodeURIComponent(`Hi Troy,\n\nI need the following document from the T4H Financial Intelligence portal:\n\nReport: ${name}\nSlug: ${slug}\n\nPlease provide at your earliest convenience.\n\nRegards,\nGordon`);
+  window.open(`mailto:troy.latter@gmail.com?subject=${subject}&body=${body}`);
+}
+
+// Check session on load
+const savedToken = sessionStorage.getItem('cc_guest_token');
+const savedInfo = sessionStorage.getItem('cc_guest_info');
+if (savedToken && savedInfo) {
+  GUEST_INFO = JSON.parse(savedInfo);
+  initPortal();
+}
+</script>
+</body>
+</html>
