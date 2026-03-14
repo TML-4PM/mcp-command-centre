@@ -64,6 +64,7 @@ const MissionControl = lazy(() => import("./pages/MissionControl"));
 const Governance = lazy(() => import("./pages/Governance"));
 const CapStore = lazy(() => import("./pages/CapStore"));
 const ExecSpine = lazy(() => import("./pages/ExecSpine"));
+const AccountantPage = lazy(() => import("./pages/AccountantPage"));
 
 
 const queryClient = new QueryClient();
@@ -153,6 +154,7 @@ const App = () => (
                 <Route path="/mission-control" element={<MissionControl />} />
                 <Route path="/governance" element={<Governance />} />
                 <Route path="/exec-spine" element={<ExecSpine />} />
+                <Route path="/accountant" element={<AccountantPage />} />
 
                 <Route path="/cap-store" element={<CapStore />} />
                 <Route path="*" element={<NotFound />} />
