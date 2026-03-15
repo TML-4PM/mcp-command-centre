@@ -1,0 +1,30 @@
+{
+  "name": "t4h-bridge",
+  "version": "1.0.0",
+  "description": "Tech 4 Humanity MCP bridge — SQL executor, Lambda invoker, and T4H context for Claude Code",
+  "author": "Troy Latter <troy@tech4humanity.com.au>",
+  "homepage": "https://github.com/TML-4PM/t4h-bridge-plugin",
+  "license": "MIT",
+  "claudePlugin": {
+    "mcpServers": {
+      "t4h-bridge": {
+        "command": "node",
+        "args": ["/Users/troylatter/.claude/plugins/t4h-bridge/server.js"],
+        "env": {
+          "BRIDGE_URL": "https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke",
+          "BRIDGE_API_KEY": "bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4"
+        }
+      }
+    },
+    "commands": [
+      "commands/sql.md",
+      "commands/status.md",
+      "commands/deploy.md"
+    ],
+    "agents": [
+      "agents/t4h-infra.md",
+      "agents/t4h-rdti.md",
+      "agents/t4h-finance.md"
+    ]
+  }
+}
