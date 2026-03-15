@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/troylatter/Downloads",
+        "/Users/troylatter/plmos-live",
+        "/Users/troylatter/.gemini",
+        "/Users/troylatter/Desktop",
+        "/Users/troylatter/Documents"
+      ]
+    },
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "sbp_use-your-personal-access-token-from-supabase-dashboard"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "github_pat_11AO5POAQ0jZAQfXdpy5wy_glY7zhye7Ntjbykw7xsOyAhTLbRBQCqRGr5MIfg4RnqF4G"
+      }
+    },
+    "vercel": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vercel/mcp-adapter"
+      ],
+      "env": {
+        "VERCEL_ACCESS_TOKEN": "ZYmYu2v3F2xgsFCoeQyIPVVS"
+      }
+    }
+  }
+}
