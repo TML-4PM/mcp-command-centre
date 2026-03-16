@@ -67,6 +67,55 @@ const ExecSpine = lazy(() => import("./pages/ExecSpine"));
 const PostExec = lazy(() => import("./pages/PostExec"));
 const AccountantPage = lazy(() => import("./pages/AccountantPage"));
 const Octoparse = lazy(() => import("./pages/Octoparse"));
+const AgentCapacity = lazy(() => import("./pages/AgentCapacity"));
+const AgentOps = lazy(() => import("./pages/AgentOps"));
+const AgoeGovernance = lazy(() => import("./pages/AgoeGovernance"));
+const AutonomousEngine = lazy(() => import("./pages/AutonomousEngine"));
+const Autonomy = lazy(() => import("./pages/Autonomy"));
+const Basiq = lazy(() => import("./pages/Basiq"));
+const Boardroom = lazy(() => import("./pages/Boardroom"));
+const BridgeTerminal = lazy(() => import("./pages/BridgeTerminal"));
+const Campaign = lazy(() => import("./pages/Campaign"));
+const CloudMigration = lazy(() => import("./pages/CloudMigration"));
+const Comet = lazy(() => import("./pages/Comet"));
+const Crm = lazy(() => import("./pages/Crm"));
+const Dsr = lazy(() => import("./pages/Dsr"));
+const GtmControl = lazy(() => import("./pages/GtmControl"));
+const HoloCrm = lazy(() => import("./pages/HoloCrm"));
+const HoloorgEconomy = lazy(() => import("./pages/HoloorgEconomy"));
+const HoloorgFleet = lazy(() => import("./pages/HoloorgFleet"));
+const HoloorgSchema = lazy(() => import("./pages/HoloorgSchema"));
+const HoloorgTasks = lazy(() => import("./pages/HoloorgTasks"));
+const InsightOs = lazy(() => import("./pages/InsightOs"));
+const IpResearch = lazy(() => import("./pages/IpResearch"));
+const Knowledge = lazy(() => import("./pages/Knowledge"));
+const Lcd = lazy(() => import("./pages/Lcd"));
+const Leads = lazy(() => import("./pages/Leads"));
+const Level15 = lazy(() => import("./pages/Level15"));
+const Level23 = lazy(() => import("./pages/Level23"));
+const Linkedin = lazy(() => import("./pages/Linkedin"));
+const LinkedinContent = lazy(() => import("./pages/LinkedinContent"));
+const LivingCells = lazy(() => import("./pages/LivingCells"));
+const LivingCompany = lazy(() => import("./pages/LivingCompany"));
+const MaatSources = lazy(() => import("./pages/MaatSources"));
+const Narrative = lazy(() => import("./pages/Narrative"));
+const Orchestrator = lazy(() => import("./pages/Orchestrator"));
+const Overview = lazy(() => import("./pages/Overview"));
+const OzbridgeSwarm = lazy(() => import("./pages/OzbridgeSwarm"));
+const Pel = lazy(() => import("./pages/Pel"));
+const PortfolioForensic = lazy(() => import("./pages/PortfolioForensic"));
+const ProductFlywheel = lazy(() => import("./pages/ProductFlywheel"));
+const RdtiCorpus = lazy(() => import("./pages/RdtiCorpus"));
+const ReportFactory = lazy(() => import("./pages/ReportFactory"));
+const Revenue = lazy(() => import("./pages/Revenue"));
+const RocketControl = lazy(() => import("./pages/RocketControl"));
+const Scout = lazy(() => import("./pages/Scout"));
+const SellLoop = lazy(() => import("./pages/SellLoop"));
+const SpineOps = lazy(() => import("./pages/SpineOps"));
+const ThrivingKids = lazy(() => import("./pages/ThrivingKids"));
+const Trojanoz = lazy(() => import("./pages/Trojanoz"));
+const Watchdog = lazy(() => import("./pages/Watchdog"));
+const Webops = lazy(() => import("./pages/Webops"));
 
 
 const queryClient = new QueryClient();
@@ -160,6 +209,55 @@ const App = () => (
                 <Route path="/accountant" element={<AccountantPage />} />
 
                 <Route path="/cap-store" element={<CapStore />} />
+                                <Route path="/agent-capacity" element={<AgentCapacity />} />
+                <Route path="/agent-ops" element={<AgentOps />} />
+                <Route path="/agoe-governance" element={<AgoeGovernance />} />
+                <Route path="/autonomous-engine" element={<AutonomousEngine />} />
+                <Route path="/autonomy" element={<Autonomy />} />
+                <Route path="/basiq" element={<Basiq />} />
+                <Route path="/boardroom" element={<Boardroom />} />
+                <Route path="/bridge-terminal" element={<BridgeTerminal />} />
+                <Route path="/campaign" element={<Campaign />} />
+                <Route path="/cloud-migration" element={<CloudMigration />} />
+                <Route path="/comet" element={<Comet />} />
+                <Route path="/crm" element={<Crm />} />
+                <Route path="/dsr" element={<Dsr />} />
+                <Route path="/gtm-control" element={<GtmControl />} />
+                <Route path="/holo-crm" element={<HoloCrm />} />
+                <Route path="/holoorg-economy" element={<HoloorgEconomy />} />
+                <Route path="/holoorg-fleet" element={<HoloorgFleet />} />
+                <Route path="/holoorg-schema" element={<HoloorgSchema />} />
+                <Route path="/holoorg-tasks" element={<HoloorgTasks />} />
+                <Route path="/insight-os" element={<InsightOs />} />
+                <Route path="/ip-research" element={<IpResearch />} />
+                <Route path="/knowledge" element={<Knowledge />} />
+                <Route path="/lcd" element={<Lcd />} />
+                <Route path="/leads" element={<Leads />} />
+                <Route path="/level15" element={<Level15 />} />
+                <Route path="/level23" element={<Level23 />} />
+                <Route path="/linkedin" element={<Linkedin />} />
+                <Route path="/linkedin-content" element={<LinkedinContent />} />
+                <Route path="/living-cells" element={<LivingCells />} />
+                <Route path="/living-company" element={<LivingCompany />} />
+                <Route path="/maat-sources" element={<MaatSources />} />
+                <Route path="/narrative" element={<Narrative />} />
+                <Route path="/orchestrator" element={<Orchestrator />} />
+                <Route path="/overview" element={<Overview />} />
+                <Route path="/ozbridge-swarm" element={<OzbridgeSwarm />} />
+                <Route path="/pel" element={<Pel />} />
+                <Route path="/portfolio-forensic" element={<PortfolioForensic />} />
+                <Route path="/product-flywheel" element={<ProductFlywheel />} />
+                <Route path="/rdti-corpus" element={<RdtiCorpus />} />
+                <Route path="/report-factory" element={<ReportFactory />} />
+                <Route path="/revenue" element={<Revenue />} />
+                <Route path="/rocket-control" element={<RocketControl />} />
+                <Route path="/scout" element={<Scout />} />
+                <Route path="/sell-loop" element={<SellLoop />} />
+                <Route path="/spine-ops" element={<SpineOps />} />
+                <Route path="/thriving-kids" element={<ThrivingKids />} />
+                <Route path="/trojanoz" element={<Trojanoz />} />
+                <Route path="/watchdog" element={<Watchdog />} />
+                <Route path="/webops" element={<Webops />} />
                 <Route path="*" element={<NotFound />} />
                             <Route path="/dossier" element={<Dossier />} />
                             <Route path="/dogfood" element={<Dogfood />} />
