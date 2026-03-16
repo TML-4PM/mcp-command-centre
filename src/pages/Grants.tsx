@@ -1,61 +1,48 @@
 import { useEffect, useState, useCallback } from "react";
 import { bridgeQueryKey } from "@/lib/bridge";
 
-const StatCard = ({ label, value, loading }: { label: string; value: any; loading: boolean }) => (
-  <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 min-w-0">
-    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1 truncate">{label}</div>
-    <div className="text-2xl font-bold text-white font-mono">
-      {loading ? <span className="animate-pulse text-slate-600">—</span> : String(value ?? "—")}
-    </div>
+const SC = ({ label: l, v, ld }: { label: string; v: any; ld: boolean }) => (
+  <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1 truncate">{l}</div>
+    <div className="text-2xl font-bold text-white font-mono">{ld ? <span className="animate-pulse text-slate-600">—</span> : String(v ?? "—")}</div>
   </div>
 );
 
-const Section = ({ title, count, children }: { title: string; count?: number; children: React.ReactNode }) => (
+const Sec = ({ title: t, n, children: c }: { title: string; n?: number; children: React.ReactNode }) => (
   <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
     <div className="px-4 py-3 border-b border-slate-700 bg-slate-900/40 flex items-center justify-between">
-      <h3 className="text-sm font-semibold text-slate-300">{title}</h3>
-      {count !== undefined && <span className="text-xs text-slate-500 font-mono">{count} rows</span>}
+      <h3 className="text-sm font-semibold text-slate-300">{t}</h3>
+      {n !== undefined && <span className="text-xs text-slate-500 font-mono">{n} rows</span>}
     </div>
-    <div className="overflow-x-auto max-h-80">{children}</div>
+    <div className="overflow-x-auto max-h-80">{c}</div>
   </div>
 );
 
-const DataTable = ({ rows, loading, renderHead, renderRow }: {
-  rows: any[]; loading: boolean;
-  renderHead: () => React.ReactNode;
-  renderRow: (row: any, i: number) => React.ReactNode;
-}) => (
-  loading ? (
-    <div className="flex items-center justify-center h-24 text-slate-500 text-sm animate-pulse">Loading…</div>
-  ) : !rows?.length ? (
-    <div className="flex items-center justify-center h-16 text-slate-600 text-sm">No data</div>
-  ) : (
-    <table className="w-full text-sm">
-      <thead className="sticky top-0 z-10">{renderHead()}</thead>
-      <tbody>{rows.map((row, i) => renderRow(row, i))}</tbody>
-    </table>
-  )
+const DT = ({ rows, ld, head, row }: { rows: any[]; ld: boolean; head: () => React.ReactNode; row: (r: any, i: number) => React.ReactNode }) => (
+  ld ? <div className="flex items-center justify-center h-24 text-slate-500 text-sm animate-pulse">Loading…</div>
+  : !rows?.length ? <div className="flex items-center justify-center h-16 text-slate-600 text-sm">No data</div>
+  : <table className="w-full text-sm"><thead>{head()}</thead><tbody>{rows.map((r, i) => row(r, i))}</tbody></table>
 );
 
 const GrantsPage = () => {
-  const [kpis, setKpis] = useState<Record<string, any>>({}); 
-  const [data, setData] = useState<Record<string, any[]>>({}); 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [kpis, setKpis] = useState<Record<string, any>>({});
+  const [data, setData] = useState<Record<string, any[]>>({});
+  const [ld, setLd] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true); setError(null);
+    setLd(true); setErr(null);
     try {
       await Promise.allSettled([
-      bridgeQueryKey("grants_count").then(rows => setKpis(prev => ({ ...prev, "grants_count": rows[0]?.value ?? rows[0] ?? "—" }))).catch(() => setKpis(prev => ({ ...prev, "grants_count": "err" }))),
-      bridgeQueryKey("grants_total_value").then(rows => setKpis(prev => ({ ...prev, "grants_total_value": rows[0]?.value ?? rows[0] ?? "—" }))).catch(() => setKpis(prev => ({ ...prev, "grants_total_value": "err" }))),
-      bridgeQueryKey("grants_opportunities").then(rows => setData(prev => ({ ...prev, "grants_opportunities": rows }))).catch(() => setData(prev => ({ ...prev, "grants_opportunities": [] }))),
-      bridgeQueryKey("grants_pipeline").then(rows => setData(prev => ({ ...prev, "grants_pipeline": rows }))).catch(() => setData(prev => ({ ...prev, "grants_pipeline": [] }))),
-      bridgeQueryKey("grants_deadlines").then(rows => setData(prev => ({ ...prev, "grants_deadlines": rows }))).catch(() => setData(prev => ({ ...prev, "grants_deadlines": [] }))),
-      bridgeQueryKey("grants_budget").then(rows => setData(prev => ({ ...prev, "grants_budget": rows }))).catch(() => setData(prev => ({ ...prev, "grants_budget": [] }))),
+        bridgeQueryKey("grants_count").then(r => setKpis(p => ({ ...p, "grants_count": r[0]?.value ?? r[0] ?? "—" }))).catch(() => setKpis(p => ({ ...p, "grants_count": "err" }))),
+        bridgeQueryKey("grants_total_value").then(r => setKpis(p => ({ ...p, "grants_total_value": r[0]?.value ?? r[0] ?? "—" }))).catch(() => setKpis(p => ({ ...p, "grants_total_value": "err" }))),
+        bridgeQueryKey("grants_opportunities").then(r => setData(p => ({ ...p, "grants_opportunities": r }))).catch(() => setData(p => ({ ...p, "grants_opportunities": [] }))),
+        bridgeQueryKey("grants_pipeline").then(r => setData(p => ({ ...p, "grants_pipeline": r }))).catch(() => setData(p => ({ ...p, "grants_pipeline": [] }))),
+        bridgeQueryKey("grants_deadlines").then(r => setData(p => ({ ...p, "grants_deadlines": r }))).catch(() => setData(p => ({ ...p, "grants_deadlines": [] }))),
+        bridgeQueryKey("grants_budget").then(r => setData(p => ({ ...p, "grants_budget": r }))).catch(() => setData(p => ({ ...p, "grants_budget": [] }))),
       ]);
-    } catch (e: any) { setError(e.message); }
-    finally { setLoading(false); }
+    } catch (e: any) { setErr(e.message); }
+    finally { setLd(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -63,48 +50,42 @@ const GrantsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Grants</h1>
-          <p className="text-slate-500 text-xs mt-0.5 font-mono">page_id: grants · live from bridge · no hardcoded data</p>
-        </div>
-        <button onClick={load} disabled={loading}
-          className="px-3 py-1.5 text-xs rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition disabled:opacity-40">
-          {loading ? "↻ Loading…" : "↻ Refresh"}
-        </button>
+        <div><h1 className="text-2xl font-bold">Grants</h1>
+        <p className="text-slate-500 text-xs mt-0.5 font-mono">page_id:grants · live · no hardcoded data</p></div>
+        <button onClick={load} disabled={ld} className="px-3 py-1.5 text-xs rounded-lg border border-slate-700 text-slate-400 hover:text-white disabled:opacity-40">{ld ? "↻ Loading…" : "↻ Refresh"}</button>
       </div>
-      {error && <div className="bg-red-900/20 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm font-mono">{error}</div>}
-      {kpis && Object.keys(kpis).length > 0 && (
+      {err && <div className="bg-red-900/20 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm font-mono">{err}</div>}
+      {Object.keys(kpis).length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <StatCard label="Active Grants" value={kpis["grants_count"]} loading={loading} />
-      <StatCard label="Total Value" value={kpis["grants_total_value"]} loading={loading} />
+          <SC label="Active" v={kpis["grants_count"]} ld={ld} />
+          <SC label="Total Value" v={kpis["grants_total_value"]} ld={ld} />
         </div>
       )}
       <div className="space-y-4">
-
-      <Section title="Opportunities" count={(data["grants_opportunities"] || []).length}>
-        <DataTable rows={data["grants_opportunities"]} loading={loading}
-          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">title</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">agency</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">jurisdiction</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fit_score</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">amount_aud</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">deadline</th></tr>)}
-          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["title"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["agency"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["status"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["jurisdiction"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["fit_score"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["amount_aud"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["deadline"] ?? "—")}</td></tr>)}
-        />
-      </Section>
-      <Section title="Pipeline by Stage" count={(data["grants_pipeline"] || []).length}>
-        <DataTable rows={data["grants_pipeline"]} loading={loading}
-          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">stage</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">grant_count</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">total_value</th></tr>)}
-          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["stage"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["grant_count"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["total_value"] ?? "—")}</td></tr>)}
-        />
-      </Section>
-      <Section title="Deadlines — 60d" count={(data["grants_deadlines"] || []).length}>
-        <DataTable rows={data["grants_deadlines"]} loading={loading}
-          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">title</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">deadline</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">agency</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">amount_aud</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th></tr>)}
-          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["title"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["deadline"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["agency"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["amount_aud"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["status"] ?? "—")}</td></tr>)}
-        />
-      </Section>
-      <Section title="Budget vs Actual" count={(data["grants_budget"] || []).length}>
-        <DataTable rows={data["grants_budget"]} loading={loading}
-          renderHead={()=>(<tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">grant_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">budget</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">actual</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">variance</th></tr>)}
-          renderRow={(row, i)=>(<tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["grant_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["budget"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["actual"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[180px] truncate">{String(row["variance"] ?? "—")}</td></tr>)}
-        />
-      </Section>
+        <Sec title="Opportunities" n={(data["grants_opportunities"] || []).length}>
+          <DT rows={data["grants_opportunities"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">title</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">agency</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">jurisdiction</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fit_score</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">amount_aud</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">deadline</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["title"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["agency"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["status"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["jurisdiction"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["fit_score"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["amount_aud"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["deadline"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Pipeline" n={(data["grants_pipeline"] || []).length}>
+          <DT rows={data["grants_pipeline"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">stage</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">grant_count</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">total_value</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["stage"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["grant_count"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["total_value"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Deadlines 60d" n={(data["grants_deadlines"] || []).length}>
+          <DT rows={data["grants_deadlines"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">title</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">deadline</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">agency</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">amount_aud</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["title"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["deadline"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["agency"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["amount_aud"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["status"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Budget vs Actual" n={(data["grants_budget"] || []).length}>
+          <DT rows={data["grants_budget"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">grant_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">budget</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">actual</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">variance</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["grant_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["budget"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["actual"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["variance"] ?? "—")}</td></tr>}
+          />
+        </Sec>
       </div>
     </div>
   );
