@@ -1,28 +1,86 @@
-import{useEffect,useState,useCallback}from"react";import{bridgeQueryKey}from"@/lib/bridge";
-const SC=({label:l,v,ld}:{label:string;v:any;ld:boolean})=>(<div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4"><div className="text-xs text-slate-500 uppercase tracking-wider mb-1 truncate">{l}</div><div className="text-2xl font-bold text-white font-mono">{ld?<span className="animate-pulse text-slate-600">—</span>:String(v??"—")}</div></div>);
-const Sec=({title:t,n,children:c}:{title:string;n?:number;children:React.ReactNode})=>(<div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden"><div className="px-4 py-3 border-b border-slate-700 bg-slate-900/40 flex items-center justify-between"><h3 className="text-sm font-semibold text-slate-300">{t}</h3>{n!==undefined&&<span className="text-xs text-slate-500 font-mono">{n} rows</span>}</div><div className="overflow-x-auto max-h-80">{c}</div></div>);
-const DT=({rows,ld,head,row}:{rows:any[];ld:boolean;head:()=>React.ReactNode;row:(r:any,i:number)=>React.ReactNode})=>(ld?<div className="flex items-center justify-center h-24 text-slate-500 text-sm animate-pulse">Loading…</div>:!rows?.length?<div className="flex items-center justify-center h-16 text-slate-600 text-sm">No data</div>:<table className="w-full text-sm"><thead>{head()}</thead><tbody>{rows.map((r,i)=>row(r,i))}</tbody></table>);
-const CrawlerPage=()=>{
-  const[kpis,setKpis]=useState<Record<string,any>>({});
-  const[data,setData]=useState<Record<string,any[]>>({});
-  const[ld,setLd]=useState(true);
-  const[err,setErr]=useState<string|null>(null);
-  const load=useCallback(async()=>{setLd(true);setErr(null);try{await Promise.allSettled([
-    bridgeQueryKey("crawler_seeds").then(r=>setData(p=>{...p,"crawler_seeds":r})).catch(()=>setData(p=>{...p,"crawler_seeds":[]})),
-    bridgeQueryKey("crawler_queue_status").then(r=>setData(p=>{...p,"crawler_queue_status":r})).catch(()=>setData(p=>{...p,"crawler_queue_status":[]})),
-    bridgeQueryKey("crawler_stripe_ready").then(r=>setData(p=>{...p,"crawler_stripe_ready":r})).catch(()=>setData(p=>{...p,"crawler_stripe_ready":[]})),
-    bridgeQueryKey("crawler_needs_stripe").then(r=>setData(p=>{...p,"crawler_needs_stripe":r})).catch(()=>setData(p=>{...p,"crawler_needs_stripe":[]})),
-  ]);}catch(e:any){setErr(e.message);}finally{setLd(false);}},[]);
-  useEffect(()=>{load();},[load]);
-  return(<div className="space-y-6">
-    <div className="flex items-center justify-between flex-wrap gap-3"><div><h1 className="text-2xl font-bold">Crawler</h1><p className="text-slate-500 text-xs mt-0.5 font-mono">page_id:crawler · live · no hardcoded data</p></div><button onClick={load} disabled={ld} className="px-3 py-1.5 text-xs rounded-lg border border-slate-700 text-slate-400 hover:text-white disabled:opacity-40">{ld?"↻ Loading…":"↻ Refresh"}</button></div>
-    {err&&<div className="bg-red-900/20 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm font-mono">{err}</div>}
-    <div className="space-y-4">
-      <Sec title="Seeds" n={(data["crawler_seeds"]||[]).length}><DT rows={data["crawler_seeds"]} ld={ld} head={()=><tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_slug</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">primary_url</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">zone</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">last_verified_at</th></tr>} row={(r,i)=><tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["site_slug"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["site_name"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["primary_url"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["status"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["zone"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["last_verified_at"]??"—")}</td></tr>}/></Sec>
-      <Sec title="Queue" n={(data["crawler_queue_status"]||[]).length}><DT rows={data["crawler_queue_status"]} ld={ld} head={()=><tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">jobs</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">oldest</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">newest</th></tr>} row={(r,i)=><tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["status"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["jobs"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["oldest"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["newest"]??"—")}</td></tr>}/></Sec>
-      <Sec title="Stripe Ready" n={(data["crawler_stripe_ready"]||[]).length}><DT rows={data["crawler_stripe_ready"]} ld={ld} head={()=><tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_slug</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">offer_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">price_display</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">currency</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">amount</th></tr>} row={(r,i)=><tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["site_slug"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["offer_name"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["price_display"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["currency"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["amount"]??"—")}</td></tr>}/></Sec>
-      <Sec title="Needs Stripe" n={(data["crawler_needs_stripe"]||[]).length}><DT rows={data["crawler_needs_stripe"]} ld={ld} head={()=><tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_slug</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">offer_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">price_display</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">pricing_mode</th></tr>} row={(r,i)=><tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["site_slug"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["offer_name"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["price_display"]??"—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-[160px] truncate">{String(r["pricing_mode"]??"—")}</td></tr>}/></Sec>
+import { useEffect, useState, useCallback } from "react";
+import { bridgeQueryKey } from "@/lib/bridge";
+
+const SC = ({ label: l, v, ld }: { label: string; v: any; ld: boolean }) => (
+  <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1 truncate">{l}</div>
+    <div className="text-2xl font-bold text-white font-mono">{ld ? <span className="animate-pulse text-slate-600">—</span> : String(v ?? "—")}</div>
+  </div>
+);
+
+const Sec = ({ title: t, n, children: c }: { title: string; n?: number; children: React.ReactNode }) => (
+  <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+    <div className="px-4 py-3 border-b border-slate-700 bg-slate-900/40 flex items-center justify-between">
+      <h3 className="text-sm font-semibold text-slate-300">{t}</h3>
+      {n !== undefined && <span className="text-xs text-slate-500 font-mono">{n} rows</span>}
     </div>
-  </div>);
+    <div className="overflow-x-auto max-h-80">{c}</div>
+  </div>
+);
+
+const DT = ({ rows, ld, head, row }: { rows: any[]; ld: boolean; head: () => React.ReactNode; row: (r: any, i: number) => React.ReactNode }) => (
+  ld ? <div className="flex items-center justify-center h-24 text-slate-500 text-sm animate-pulse">Loading…</div>
+  : !rows?.length ? <div className="flex items-center justify-center h-16 text-slate-600 text-sm">No data</div>
+  : <table className="w-full text-sm"><thead>{head()}</thead><tbody>{rows.map((r, i) => row(r, i))}</tbody></table>
+);
+
+const CrawlerPage = () => {
+  const [kpis, setKpis] = useState<Record<string, any>>({});
+  const [data, setData] = useState<Record<string, any[]>>({});
+  const [ld, setLd] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLd(true); setErr(null);
+    try {
+      await Promise.allSettled([
+        bridgeQueryKey("crawler_seeds").then(r => setData(p => ({ ...p, "crawler_seeds": r }))).catch(() => setData(p => ({ ...p, "crawler_seeds": [] }))),
+        bridgeQueryKey("crawler_queue_status").then(r => setData(p => ({ ...p, "crawler_queue_status": r }))).catch(() => setData(p => ({ ...p, "crawler_queue_status": [] }))),
+        bridgeQueryKey("crawler_stripe_ready").then(r => setData(p => ({ ...p, "crawler_stripe_ready": r }))).catch(() => setData(p => ({ ...p, "crawler_stripe_ready": [] }))),
+        bridgeQueryKey("crawler_needs_stripe").then(r => setData(p => ({ ...p, "crawler_needs_stripe": r }))).catch(() => setData(p => ({ ...p, "crawler_needs_stripe": [] }))),
+      ]);
+    } catch (e: any) { setErr(e.message); }
+    finally { setLd(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div><h1 className="text-2xl font-bold">Crawler</h1>
+        <p className="text-slate-500 text-xs mt-0.5 font-mono">page_id:crawler · live · no hardcoded data</p></div>
+        <button onClick={load} disabled={ld} className="px-3 py-1.5 text-xs rounded-lg border border-slate-700 text-slate-400 hover:text-white disabled:opacity-40">{ld ? "↻ Loading…" : "↻ Refresh"}</button>
+      </div>
+      {err && <div className="bg-red-900/20 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm font-mono">{err}</div>}
+      <div className="space-y-4">
+        <Sec title="Seeds" n={(data["crawler_seeds"] || []).length}>
+          <DT rows={data["crawler_seeds"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_slug</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">primary_url</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">zone</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">last_verified_at</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["site_slug"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["site_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["primary_url"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["status"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["zone"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["last_verified_at"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Queue" n={(data["crawler_queue_status"] || []).length}>
+          <DT rows={data["crawler_queue_status"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">jobs</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">oldest</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">newest</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["status"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["jobs"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["oldest"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["newest"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Stripe Ready" n={(data["crawler_stripe_ready"] || []).length}>
+          <DT rows={data["crawler_stripe_ready"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_slug</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">offer_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">price_display</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">currency</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">amount</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["site_slug"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["offer_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["price_display"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["currency"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["amount"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Needs Stripe" n={(data["crawler_needs_stripe"] || []).length}>
+          <DT rows={data["crawler_needs_stripe"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">site_slug</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">offer_name</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">price_display</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">pricing_mode</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["site_slug"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["offer_name"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["price_display"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["pricing_mode"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+      </div>
+    </div>
+  );
 };
+
 export default CrawlerPage;
