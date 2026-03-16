@@ -65,6 +65,7 @@ const Governance = lazy(() => import("./pages/Governance"));
 const CapStore = lazy(() => import("./pages/CapStore"));
 const ExecSpine = lazy(() => import("./pages/ExecSpine"));
 const AccountantPage = lazy(() => import("./pages/AccountantPage"));
+const Octoparse = lazy(() => import("./pages/Octoparse"));
 
 
 const queryClient = new QueryClient();
@@ -162,6 +163,7 @@ const App = () => (
                             <Route path="/dogfood" element={<Dogfood />} />
                             <Route path="/connections" element={<Connections />} />
                             <Route path="/mcp" element={<Mcp />} />
+                            <Route path="/octoparse" element={<Octoparse />} />
                             <Route path="/growth" element={<Growth />} />
             </Routes>
             </Suspense>
