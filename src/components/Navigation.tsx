@@ -11,6 +11,7 @@ const sections = [
       { to: "/businesses", label: "Businesses" },
       { to: "/cap-store", label: "Cap Store" },
       { to: "/exec-spine", label: "Exec Spine" },
+      { to: "/post-exec", label: "Post Exec" },
       { to: "/dogfood", label: "28×50 Dogfood" },
       { to: "/systems", label: "Systems" },
       { to: "/architecture", label: "Architecture" },
