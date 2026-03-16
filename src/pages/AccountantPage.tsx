@@ -1,447 +1,113 @@
-import { useState, useEffect, useCallback } from "react";
-
-const BRIDGE_URL = "https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke";
-const BRIDGE_KEY = "bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4";
-
-const WAVE1_SLUGS = [
-  "t4h-financial-position",
-  "acct.annual.financial_stmts",
-  "acct.annual.trial_balance",
-  "maat.api.director_loan",
-  "t4h-div7a-fy26-repayment",
-  "t4h-bas-fy25-lodgement",
-  "t4h-rdti-fy25-lodgement",
-  "t4h-director-consulting-invoices",
-  "maat.api.tax_position",
-  "maat.rd_summary_corrected",
-  "rd.ondemand.contemporaneous_pack",
-];
-
-const WAVE1_LABELS: Record<string, string> = {
-  "t4h-financial-position": "T4H Financial Position",
-  "acct.annual.financial_stmts": "Full Year Financial Statements",
-  "acct.annual.trial_balance": "Full Year Trial Balance",
-  "maat.api.director_loan": "Director Loan Balance (FY)",
-  "t4h-div7a-fy26-repayment": "Div 7A — $72K Due 30 Jun 2026",
-  "t4h-bas-fy25-lodgement": "BAS FY2025 — 4 Qtrs Outstanding",
-  "t4h-rdti-fy25-lodgement": "RDTI FY2025 — 30 Apr Deadline",
-  "t4h-director-consulting-invoices": "Director Consulting Invoices",
-  "maat.api.tax_position": "Tax Position Summary",
-  "maat.rd_summary_corrected": "R&D Summary (Corrected)",
-  "rd.ondemand.contemporaneous_pack": "Contemporaneous Records Pack",
-};
-
-async function bridge(sql: string) {
-  const res = await fetch(BRIDGE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": BRIDGE_KEY },
-    body: JSON.stringify({ fn: "troy-sql-executor", sql }),
-  });
-  const d = await res.json();
-  return d.rows || [];
-}
-
-async function renderReport(slug: string) {
-  const rows = await bridge(`SELECT cmd_render_report('${slug}')`);
-  if (!rows.length) return null;
-  return rows[0]["cmd_render_report"] || null;
-}
-
-function RAGBadge({ rag }: { rag: string }) {
-  const colors: Record<string, string> = {
-    green: "bg-emerald-900 text-emerald-300 border-emerald-700",
-    amber: "bg-yellow-900 text-yellow-300 border-yellow-700",
-    red: "bg-red-900 text-red-300 border-red-700",
-  };
-  return (
-    <span className={`text-xs px-2 py-0.5 rounded border font-mono uppercase ${colors[rag] || colors.amber}`}>
-      {rag}
-    </span>
-  );
-}
-
-function DataTable({ data }: { data: Record<string, unknown>[] }) {
-  if (!data?.length) return <p className="text-gray-500 text-sm py-4">No data</p>;
-  const cols = Object.keys(data[0]);
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs border-collapse">
-        <thead>
-          <tr className="bg-gray-800">
-            {cols.map((c) => (
-              <th key={c} className="text-left px-3 py-2 text-gray-400 font-medium border-b border-gray-700 whitespace-nowrap">
-                {c.replace(/_/g, " ").toUpperCase()}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.slice(0, 50).map((row, i) => (
-            <tr key={i} className={i % 2 === 0 ? "bg-gray-900" : "bg-gray-850"}>
-              {cols.map((c) => (
-                <td key={c} className="px-3 py-2 text-gray-300 border-b border-gray-800 whitespace-nowrap">
-                  {String(row[c] ?? "")}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {data.length > 50 && (
-        <p className="text-gray-500 text-xs py-2 px-3">{data.length - 50} more rows not shown</p>
-      )}
-    </div>
-  );
-}
-
-function downloadCSV(data: Record<string, unknown>[], filename: string) {
-  if (!data?.length) return;
-  const cols = Object.keys(data[0]);
-  const rows = data.map((r) => cols.map((c) => `"${String(r[c] ?? "").replace(/"/g, '""')}"`).join(","));
-  const csv = [cols.join(","), ...rows].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function ReportPanel({ slug, label }: { slug: string; label: string }) {
-  const [data, setData] = useState<Record<string, unknown>[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+import { useEffect, useState, useCallback } from "react";
+import { bridgeQueryKey } from "@/lib/bridge";
+const SC = ({ label: l, v, ld }: { label: string; v: any; ld: boolean }) => (
+  <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1 truncate">{l}</div>
+    <div className="text-2xl font-bold text-white font-mono">{ld ? <span className="animate-pulse text-slate-600">—</span> : String(v ?? "—")}</div>
+  </div>
+);
+const Sec = ({ title: t, n, children: c }: { title: string; n?: number; children: React.ReactNode }) => (
+  <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+    <div className="px-4 py-3 border-b border-slate-700 bg-slate-900/40 flex items-center justify-between">
+      <h3 className="text-sm font-semibold text-slate-300">{t}</h3>
+      {n !== undefined && <span className="text-xs text-slate-500 font-mono">{n} rows</span>}
+    </div><div className="overflow-x-auto max-h-80">{c}</div></div>);
+const DT = ({ rows, ld, head, row }: { rows: any[]; ld: boolean; head: () => React.ReactNode; row: (r: any, i: number) => React.ReactNode }) => (
+  ld ? <div className="flex items-center justify-center h-24 text-slate-500 text-sm animate-pulse">Loading…</div>
+  : !rows?.length ? <div className="flex items-center justify-center h-16 text-slate-600 text-sm">No data</div>
+  : <table className="w-full text-sm"><thead>{head()}</thead><tbody>{rows.map((r, i) => row(r, i))}</tbody></table>);
+const AccountantPage = () => {
+  const [kpis, setKpis] = useState<Record<string, any>>({});
+  const [data, setData] = useState<Record<string, any[]>>({});
+  const [ld, setLd] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
   const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setLd(true); setErr(null);
     try {
-      const result = await renderReport(slug);
-      if (result?.error) {
-        setError(result.error);
-      } else if (result?.data) {
-        const d = result.data;
-        setData(Array.isArray(d) ? d : [d]);
-      } else {
-        setData([{ note: result?.note || "No data returned" }]);
-      }
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
-
-  const toggle = async () => {
-    if (!open && !data) await load();
-    setOpen((v) => !v);
-  };
-
-  return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden">
-      <div
-        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-800 transition-colors"
-        onClick={toggle}
-      >
-        <span className="text-sm font-medium text-white">{label}</span>
-        <div className="flex items-center gap-2">
-          {data && !error && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (data) downloadCSV(data, `${slug}.csv`);
-              }}
-              className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 border border-blue-800 rounded"
-            >
-              CSV
-            </button>
-          )}
-          <span className="text-gray-500 text-sm">{open ? "▲" : "▼"}</span>
-        </div>
-      </div>
-      {open && (
-        <div className="border-t border-gray-700">
-          {loading && <p className="text-gray-400 text-sm px-4 py-3 animate-pulse">Loading...</p>}
-          {error && <p className="text-red-400 text-sm px-4 py-3 font-mono">{error}</p>}
-          {data && !loading && <DataTable data={data} />}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LiveReportsTab() {
-  const [reports, setReports] = useState<Record<string, unknown>[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("");
-  const [domainFilter, setDomainFilter] = useState("all");
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
-  const [activeData, setActiveData] = useState<Record<string, unknown>[] | null>(null);
-  const [activeLoading, setActiveLoading] = useState(false);
-  const [activeError, setActiveError] = useState<string | null>(null);
-
-  useEffect(() => {
-    bridge(
-      "SELECT slug, name, domain, frequency, rag, source_type FROM rpt_report WHERE (audience @> '[\"accountant\"]' OR audience::text ILIKE '%accountant%') ORDER BY domain, name"
-    ).then(setReports).finally(() => setLoading(false));
+      await Promise.allSettled([
+        bridgeQueryKey("maat_txn_count").then(r => setKpis(p => ({ ...p, "maat_txn_count": r[0]?.value ?? r[0] ?? "—" }))).catch(() => setKpis(p => ({ ...p, "maat_txn_count": "err" }))),
+        bridgeQueryKey("maat_evidence_count").then(r => setKpis(p => ({ ...p, "maat_evidence_count": r[0]?.value ?? r[0] ?? "—" }))).catch(() => setKpis(p => ({ ...p, "maat_evidence_count": "err" }))),
+        bridgeQueryKey("maat_4yr_rdti_total").then(r => setKpis(p => ({ ...p, "maat_4yr_rdti_total": r[0]?.value ?? r[0] ?? "—" }))).catch(() => setKpis(p => ({ ...p, "maat_4yr_rdti_total": "err" }))),
+        bridgeQueryKey("maat_cum_loss").then(r => setKpis(p => ({ ...p, "maat_cum_loss": r[0]?.value ?? r[0] ?? "—" }))).catch(() => setKpis(p => ({ ...p, "maat_cum_loss": "err" }))),
+        bridgeQueryKey("maat_pl_master").then(r => setData(p => ({ ...p, "maat_pl_master": r }))).catch(() => setData(p => ({ ...p, "maat_pl_master": [] }))),
+        bridgeQueryKey("maat_rdti").then(r => setData(p => ({ ...p, "maat_rdti": r }))).catch(() => setData(p => ({ ...p, "maat_rdti": [] }))),
+        bridgeQueryKey("maat_director_loan").then(r => setData(p => ({ ...p, "maat_director_loan": r }))).catch(() => setData(p => ({ ...p, "maat_director_loan": [] }))),
+        bridgeQueryKey("maat_personal_tax").then(r => setData(p => ({ ...p, "maat_personal_tax": r }))).catch(() => setData(p => ({ ...p, "maat_personal_tax": [] }))),
+        bridgeQueryKey("maat_bas").then(r => setData(p => ({ ...p, "maat_bas": r }))).catch(() => setData(p => ({ ...p, "maat_bas": [] }))),
+        bridgeQueryKey("maat_invoices_summary").then(r => setData(p => ({ ...p, "maat_invoices_summary": r }))).catch(() => setData(p => ({ ...p, "maat_invoices_summary": [] }))),
+        bridgeQueryKey("maat_tax_position").then(r => setData(p => ({ ...p, "maat_tax_position": r }))).catch(() => setData(p => ({ ...p, "maat_tax_position": [] }))),
+        bridgeQueryKey("maat_claim_readiness").then(r => setData(p => ({ ...p, "maat_claim_readiness": r }))).catch(() => setData(p => ({ ...p, "maat_claim_readiness": [] }))),
+      ]);
+    } catch (e: any) { setErr(e.message); }
+    finally { setLd(false); }
   }, []);
-
-  const domains = ["all", ...Array.from(new Set(reports.map((r) => String(r.domain))))].sort();
-
-  const filtered = reports.filter((r) => {
-    const match =
-      String(r.name).toLowerCase().includes(filter.toLowerCase()) ||
-      String(r.slug).toLowerCase().includes(filter.toLowerCase());
-    const domOk = domainFilter === "all" || r.domain === domainFilter;
-    return match && domOk;
-  });
-
-  const selectReport = async (slug: string) => {
-    if (activeSlug === slug) {
-      setActiveSlug(null);
-      return;
-    }
-    setActiveSlug(slug);
-    setActiveData(null);
-    setActiveError(null);
-    setActiveLoading(true);
-    try {
-      const result = await renderReport(slug);
-      if (result?.error) setActiveError(result.error);
-      else if (result?.data) {
-        const d = result.data;
-        setActiveData(Array.isArray(d) ? d : [d]);
-      } else {
-        setActiveData([{ note: result?.note || "No data" }]);
-      }
-    } catch (e) {
-      setActiveError(String(e));
-    } finally {
-      setActiveLoading(false);
-    }
-  };
-
+  useEffect(() => { load(); }, [load]);
   return (
-    <div className="grid grid-cols-3 gap-4 h-full">
-      {/* Left: report list */}
-      <div className="col-span-1 flex flex-col gap-3">
-        <div className="flex gap-2">
-          <input
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Search reports..."
-            className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div><h1 className="text-2xl font-bold">Accountant</h1>
+        <p className="text-slate-500 text-xs mt-0.5 font-mono">page_id:maat · live · no hardcoded data</p></div>
+        <button onClick={load} disabled={ld} className="px-3 py-1.5 text-xs rounded-lg border border-slate-700 text-slate-400 hover:text-white disabled:opacity-40">{ld ? "↻ Loading…" : "↻ Refresh"}</button>
+      </div>
+      {err && <div className="bg-red-900/20 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm font-mono">{err}</div>}
+      {Object.keys(kpis).length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <SC label="Transactions" v={kpis["maat_txn_count"]} ld={ld} />
+          <SC label="Evidence" v={kpis["maat_evidence_count"]} ld={ld} />
+          <SC label="4yr RDTI Total" v={kpis["maat_4yr_rdti_total"]} ld={ld} />
+          <SC label="Cum. Loss" v={kpis["maat_cum_loss"]} ld={ld} />
+        </div>)}
+      <div className="space-y-4">
+        <Sec title="P&L Master by FY" n={(data["maat_pl_master"] || []).length}>
+          <DT rows={data["maat_pl_master"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fy</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">revenue</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">total_expense</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">net_loss</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">rdti_refund</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["fy"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["revenue"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["total_expense"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["net_loss"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["rdti_refund"] ?? "—")}</td></tr>}
           />
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {domains.map((d) => (
-            <button
-              key={d}
-              onClick={() => setDomainFilter(d)}
-              className={`text-xs px-2 py-1 rounded border transition-colors ${
-                domainFilter === d
-                  ? "bg-blue-600 border-blue-500 text-white"
-                  : "border-gray-700 text-gray-400 hover:text-white"
-              }`}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
-        <div className="overflow-y-auto flex-1 space-y-1">
-          {loading && <p className="text-gray-500 text-sm animate-pulse">Loading...</p>}
-          {filtered.map((r) => (
-            <div
-              key={String(r.slug)}
-              onClick={() => selectReport(String(r.slug))}
-              className={`px-3 py-2 rounded cursor-pointer border transition-colors ${
-                activeSlug === r.slug
-                  ? "bg-blue-900 border-blue-600"
-                  : "border-transparent hover:bg-gray-800 hover:border-gray-700"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white">{String(r.name)}</span>
-                <RAGBadge rag={String(r.rag)} />
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">{String(r.domain)} · {String(r.frequency)}</p>
-            </div>
-          ))}
-          {!loading && !filtered.length && (
-            <p className="text-gray-500 text-sm py-4 text-center">No reports match filter</p>
-          )}
-        </div>
-        <p className="text-gray-600 text-xs">{filtered.length} reports</p>
-      </div>
-
-      {/* Right: report viewer */}
-      <div className="col-span-2 bg-gray-900 rounded-lg border border-gray-700 flex flex-col overflow-hidden">
-        {!activeSlug && (
-          <div className="flex-1 flex items-center justify-center text-gray-600 text-sm">
-            Select a report to view
-          </div>
-        )}
-        {activeSlug && (
-          <>
-            <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
-              <span className="text-sm font-medium text-white">
-                {reports.find((r) => r.slug === activeSlug)?.name as string || activeSlug}
-              </span>
-              {activeData && (
-                <button
-                  onClick={() => activeData && downloadCSV(activeData, `${activeSlug}.csv`)}
-                  className="text-xs text-blue-400 hover:text-blue-300 px-3 py-1 border border-blue-800 rounded"
-                >
-                  Export CSV
-                </button>
-              )}
-            </div>
-            <div className="flex-1 overflow-auto">
-              {activeLoading && (
-                <p className="text-gray-400 text-sm px-4 py-4 animate-pulse">Fetching...</p>
-              )}
-              {activeError && (
-                <p className="text-red-400 text-sm px-4 py-4 font-mono">{activeError}</p>
-              )}
-              {activeData && !activeLoading && <DataTable data={activeData} />}
-            </div>
-          </>
-        )}
+        </Sec>
+        <Sec title="RDTI by FY" n={(data["maat_rdti"] || []).length}>
+          <DT rows={data["maat_rdti"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fy</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">rd_spend</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">rdti_refund</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">refund_rate</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["fy"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["rd_spend"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["rdti_refund"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["refund_rate"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Director Loan" n={(data["maat_director_loan"] || []).length}>
+          <DT rows={data["maat_director_loan"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fy</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">opening_balance</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">repayments</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">closing_balance</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["fy"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["opening_balance"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["repayments"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["closing_balance"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Personal Tax Position" n={(data["maat_personal_tax"] || []).length}>
+          <DT rows={data["maat_personal_tax"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fy</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">taxable_income</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">tax_payable</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">paye_withheld</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">net_position</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["fy"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["taxable_income"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["tax_payable"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["paye_withheld"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["net_position"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="BAS Periods" n={(data["maat_bas"] || []).length}>
+          <DT rows={data["maat_bas"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">period_label</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">gst_collected</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">gst_paid</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">net_gst</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">lodged_at</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["period_label"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["status"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["gst_collected"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["gst_paid"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["net_gst"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["lodged_at"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Invoices by FY" n={(data["maat_invoices_summary"] || []).length}>
+          <DT rows={data["maat_invoices_summary"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fy</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">invoice_count</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">total_invoiced</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">total_paid</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">outstanding</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["fy"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["invoice_count"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["total_invoiced"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["total_paid"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["outstanding"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="Corporate Tax Position" n={(data["maat_tax_position"] || []).length}>
+          <DT rows={data["maat_tax_position"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">fy</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">revenue</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">taxable_income</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">tax_payable</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">credits</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">net_tax</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["fy"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["revenue"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["taxable_income"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["tax_payable"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["credits"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["net_tax"] ?? "—")}</td></tr>}
+          />
+        </Sec>
+        <Sec title="R&D Claim Readiness" n={(data["maat_claim_readiness"] || []).length}>
+          <DT rows={data["maat_claim_readiness"]} ld={ld}
+            head={() => <tr className="border-b border-slate-700 bg-slate-900/50"><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">claim_id</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">claim_title</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">rd_spend</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">completeness_score</th><th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">status</th></tr>}
+            row={(r, i) => <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20"><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["claim_id"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["claim_title"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["rd_spend"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["completeness_score"] ?? "—")}</td><td className="px-3 py-2 text-xs text-slate-300 max-w-xs truncate">{String(r["status"] ?? "—")}</td></tr>}
+          />
+        </Sec>
       </div>
     </div>
   );
-}
-
-function Wave1Tab() {
-  const [status, setStatus] = useState<Record<string, string>>({});
-  const [generating, setGenerating] = useState(false);
-
-  const generatePack = async () => {
-    setGenerating(true);
-    const newStatus: Record<string, string> = {};
-    for (const slug of WAVE1_SLUGS) {
-      newStatus[slug] = "loading";
-      setStatus({ ...newStatus });
-      try {
-        const result = await renderReport(slug);
-        newStatus[slug] = result?.error ? "error" : "ok";
-      } catch {
-        newStatus[slug] = "error";
-      }
-      setStatus({ ...newStatus });
-    }
-    setGenerating(false);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
-        <div>
-          <h3 className="text-white font-medium">Wave 1 Pack — Gordon McKirdy</h3>
-          <p className="text-gray-400 text-sm mt-1">
-            Hales Redden & Partners · 11 priority documents · Action required
-          </p>
-        </div>
-        <button
-          onClick={generatePack}
-          disabled={generating}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded font-medium text-sm transition-colors"
-        >
-          {generating ? "Generating..." : "Generate Pack"}
-        </button>
-      </div>
-
-      <div className="space-y-2">
-        {WAVE1_SLUGS.map((slug, i) => {
-          const s = status[slug];
-          return (
-            <div key={slug} className="border border-gray-700 rounded-lg overflow-hidden">
-              <div className="flex items-center gap-3 px-4 py-3">
-                <span className="text-gray-600 text-xs font-mono w-5 text-right">{i + 1}</span>
-                <span className="flex-1 text-sm text-white">{WAVE1_LABELS[slug]}</span>
-                <span className="text-xs text-gray-500 font-mono">{slug}</span>
-                <span className={`text-xs font-mono w-16 text-right ${
-                  s === "ok" ? "text-emerald-400" :
-                  s === "error" ? "text-red-400" :
-                  s === "loading" ? "text-yellow-400 animate-pulse" :
-                  "text-gray-600"
-                }`}>
-                  {s === "ok" ? "✓ ready" : s === "error" ? "✗ error" : s === "loading" ? "..." : "pending"}
-                </span>
-              </div>
-              {s === "ok" && (
-                <div className="px-4 pb-3">
-                  <ReportPanel slug={slug} label={WAVE1_LABELS[slug]} />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="p-4 bg-gray-900 rounded-lg border border-gray-700 text-sm text-gray-400">
-        <p className="font-medium text-white mb-2">Send pack to Gordon</p>
-        <p>gordon@halesredden.com.au — attach CSV exports from each report, or share CC access link.</p>
-        <p className="mt-2 text-yellow-400">
-          ⚠ Manual items: Director Consulting Invoices ($308,760), Super Payment Confirmations — not DB-backed, attach from files.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-export default function AccountantPage() {
-  const [tab, setTab] = useState<"wave1" | "live">("wave1");
-  const [deadlines, setDeadlines] = useState<Record<string, unknown>[]>([]);
-
-  useEffect(() => {
-    bridge("SELECT * FROM v_maat_api_deadlines ORDER BY due_date LIMIT 5").then(setDeadlines);
-  }, []);
-
-  return (
-    <div className="flex flex-col h-full bg-gray-950 text-white p-4 gap-4 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Accountant Pack</h1>
-          <p className="text-gray-400 text-sm">Gordon McKirdy · Hales Redden & Partners</p>
-        </div>
-        <div className="flex gap-4">
-          {deadlines.slice(0, 3).map((d, i) => (
-            <div key={i} className="text-right">
-              <p className="text-xs text-red-400 font-medium">{String(d.deadline_name || d.name || "")}</p>
-              <p className="text-xs text-gray-500">{String(d.due_date || "")}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-900 rounded-lg p-1 w-fit">
-        {(["wave1", "live"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
-              tab === t ? "bg-gray-700 text-white" : "text-gray-400 hover:text-white"
-            }`}
-          >
-            {t === "wave1" ? "Wave 1 Pack (11)" : "Live Reports"}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-hidden">
-        {tab === "wave1" && (
-          <div className="h-full overflow-y-auto pr-1">
-            <Wave1Tab />
-          </div>
-        )}
-        {tab === "live" && <LiveReportsTab />}
-      </div>
-    </div>
-  );
-}
+};
+export default AccountantPage;
