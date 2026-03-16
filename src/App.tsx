@@ -64,6 +64,7 @@ const MissionControl = lazy(() => import("./pages/MissionControl"));
 const Governance = lazy(() => import("./pages/Governance"));
 const CapStore = lazy(() => import("./pages/CapStore"));
 const ExecSpine = lazy(() => import("./pages/ExecSpine"));
+const PostExec = lazy(() => import("./pages/PostExec"));
 const AccountantPage = lazy(() => import("./pages/AccountantPage"));
 const Octoparse = lazy(() => import("./pages/Octoparse"));
 
@@ -155,6 +156,7 @@ const App = () => (
                 <Route path="/mission-control" element={<MissionControl />} />
                 <Route path="/governance" element={<Governance />} />
                 <Route path="/exec-spine" element={<ExecSpine />} />
+                <Route path="/post-exec" element={<PostExec />} />
                 <Route path="/accountant" element={<AccountantPage />} />
 
                 <Route path="/cap-store" element={<CapStore />} />
