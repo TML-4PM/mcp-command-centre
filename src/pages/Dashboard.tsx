@@ -273,8 +273,6 @@ const Dashboard = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             {/* avg daily loaded from bridge */}
-            {/* peak usage — ⏰" />
-            <StatCard label="Uptime" value="99.9%" icon="✅" />
             <StatCard label="Growth" value="+12%" icon="📈" />
           </div>
         </div>
