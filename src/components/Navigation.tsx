@@ -12,6 +12,7 @@ const sections = [
       { to: "/cap-store", label: "Cap Store" },
       { to: "/exec-spine", label: "Exec Spine" },
       { to: "/post-exec", label: "Post Exec" },
+      { to: "/mission-control", label: "Mission" },
       { to: "/dogfood", label: "28×50 Dogfood" },
       { to: "/systems", label: "Systems" },
       { to: "/architecture", label: "Architecture" },
@@ -31,6 +32,7 @@ const sections = [
     label: "Finance",
     items: [
       { to: "/maat", label: "MAAT" },
+      { to: "/accountant", label: "Accountant" },
       { to: "/finance", label: "Finance" },
       { to: "/grants", label: "Grants" },
       { to: "/rd", label: "R&D" },
@@ -67,6 +69,7 @@ const sections = [
       { to: "/jobs", label: "Jobs" },
       { to: "/search", label: "Search" },
       { to: "/outreach", label: "Outreach" },
+      { to: "/octoparse", label: "Octoparse" },
     ],
   },
   {
