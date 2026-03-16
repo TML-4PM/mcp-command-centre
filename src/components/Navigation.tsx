@@ -58,6 +58,7 @@ const sections = [
       { to: "/tasks", label: "Tasks" },
       { to: "/metrics", label: "Metrics" },
       { to: "/cmo", label: "CMO" },
+      { to: "/dossier", label: "Dossier" },
     ],
   },
   {
@@ -80,6 +81,9 @@ const sections = [
       { to: "/connections", label: "Connections" },
       { to: "/mcp", label: "MCP" },
       { to: "/growth", label: "Growth" },
+      { to: "/portfolio", label: "Portfolio" },
+      { to: "/crawler", label: "Crawler" },
+      { to: "/commands", label: "Commands" },
     ],
   },
 ];
