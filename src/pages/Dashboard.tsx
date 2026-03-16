@@ -1,316 +1,179 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { bridgeSQL } from "@/lib/bridge";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState, useCallback } from "react";
+import { bridgeQueryKey } from "@/lib/bridge";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import MetricCardEnhanced from "@/components/dashboard/MetricCardEnhanced";
-import ActivityChart from "@/components/dashboard/ActivityChart";
-import QuickActions from "@/components/dashboard/QuickActions";
-import ActivityFeed from "@/components/dashboard/ActivityFeed";
-import DateRangePicker from "@/components/dashboard/DateRangePicker";
-import StatCard from "@/components/dashboard/StatCard";
-import SystemHealthOverview from "@/components/dashboard/SystemHealthOverview";
-import BusinessUnitCard from "@/components/dashboard/BusinessUnitCard";
-import InfrastructureCosts from "@/components/dashboard/InfrastructureCosts";
-import AlertsPanel from "@/components/dashboard/AlertsPanel";
-import { CommandCentreWidget } from "@/components/CommandCentreWidget";
-import { AgentChannelWidget } from "@/components/AgentChannelWidget";
 
-interface SystemHealth {
-  [key: string]: {
-    status: 'healthy' | 'warning' | 'error';
-    lastBeat?: Date;
-    count: number;
-  };
-}
+const STAT_CARDS = [
+  { key: "overview_biz_count",     label: "Businesses",  icon: "🏢", sub: "28 canonical", color: "blue" },
+  { key: "overview_agent_count",   label: "Agents",      icon: "🤖", sub: "Neural Ennead", color: "purple" },
+  { key: "overview_hub_count",     label: "MCP Hubs",    icon: "⚡", sub: "Bridge endpoints", color: "cyan" },
+  { key: "overview_ip_count",      label: "IP Assets",   icon: "🔬", sub: "Patents & IP", color: "green" },
+  { key: "overview_stripe_count",  label: "Products",    icon: "📦", sub: "Stripe linked", color: "amber" },
+  { key: "overview_sites_count",   label: "Sites",       icon: "🌐", sub: "Active domains", color: "rose" },
+  { key: "overview_catalog_count", label: "Catalog SKUs",icon: "🛍️", sub: "All products", color: "indigo" },
+  { key: "overview_domains_count", label: "Domains",     icon: "🗺️", sub: "Mapped", color: "teal" },
+];
+
+const COLOR_MAP: Record<string, string> = {
+  blue: "text-blue-400", purple: "text-purple-400", cyan: "text-cyan-400",
+  green: "text-green-400", amber: "text-amber-400", rose: "text-rose-400",
+  indigo: "text-indigo-400", teal: "text-teal-400",
+};
+
+const getVal = (rows: any[]): string => {
+  if (!rows?.length) return "—";
+  const r = rows[0];
+  const v = r.count ?? r.total ?? r.c ?? Object.values(r)[0];
+  return v != null ? String(v) : "—";
+};
 
 const Dashboard = () => {
-  const { toast } = useToast();
-  const [metrics, setMetrics] = useState({
-    conversations: 0,
-    codeBlocks: 0,
-    repos: 0,
-    stars: 0
-  });
-  const [health, setHealth] = useState<SystemHealth>({});
-  const [dateRange, setDateRange] = useState("7d");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [chartData, setChartData] = useState<Array<{ date: string; conversations: number; codeBlocks: number }>>([]);
-  const [activities, setActivities] = useState<Array<{ id: string; type: 'conversation' | 'code' | 'system'; title: string; timestamp: Date; metadata?: string }>>([]);
-  const [lambdaData, setLambdaData] = useState<any>(null);
-  const [lambdaLoading, setLambdaLoading] = useState(true);
+  const [stats, setStats] = useState<Record<string, string>>({});
+  const [maat, setMaat] = useState<any>(null);
+  const [portfolio, setPortfolio] = useState<any[]>([]);
+  const [lc, setLc] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastCheck, setLastCheck] = useState("");
+  const [bridgeOk, setBridgeOk] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    fetchMetrics();
-    checkHealth();
-    generateChartData();
-    fetchRecentActivity();
-    fetchLambdaData();
-    
-    const metricsInterval = setInterval(fetchMetrics, 60000);
-    const healthInterval = setInterval(checkHealth, 60000);
-    const lambdaInterval = setInterval(fetchLambdaData, 60000);
-    
-    return () => {
-      clearInterval(metricsInterval);
-      clearInterval(healthInterval);
-      clearInterval(lambdaInterval);
-    };
-  }, []);
-
-  const generateChartData = () => {
-    const data = [];
-    const days = dateRange === '24h' ? 1 : dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
-    
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      data.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        conversations: Math.floor(Math.random() * 1000) + 500,
-        codeBlocks: Math.floor(Math.random() * 400) + 200,
+  const load = useCallback(async () => {
+    try {
+      const results = await Promise.allSettled(
+        STAT_CARDS.map(c => bridgeQueryKey(c.key))
+      );
+      const map: Record<string, string> = {};
+      STAT_CARDS.forEach((c, i) => {
+        const r = results[i];
+        map[c.key] = r.status === "fulfilled" ? getVal(r.value) : "—";
       });
-    }
-    setChartData(data);
-  };
+      setStats(map);
+      setBridgeOk(true);
 
-  const fetchLambdaData = async () => {
-    try {
-      const response = await bridgeSQL("SELECT json_build_object('system_health', (SELECT json_object_agg(service, status) FROM v_system_health_summary), 'business_units', (SELECT coalesce(json_agg(row_to_json(h)), '[]') FROM v_pos_business_health h), 'infrastructure', json_build_object('lambda_count', (SELECT count(*) FROM mcp_lambda_registry), 'tool_count', (SELECT count(*) FROM bridge_command_map WHERE active=true), 's3_buckets', (SELECT count(*) FROM s3_bucket_audit)), 'alerts', (SELECT coalesce(json_agg(row_to_json(a)), '[]') FROM cc.alerts a WHERE resolved_at IS NULL ORDER BY created_at DESC LIMIT 10), 'lambdas', (SELECT coalesce(json_agg(json_build_object('name', function_name, 'status', status, 'category', category)), '[]') FROM mcp_lambda_registry LIMIT 20)) as data");
-      const envelope = await response.json(); const body = typeof envelope.result?.body === "string" ? JSON.parse(envelope.result.body) : envelope.result?.body || {}; const data = body.rows?.[0]?.data || {};
-      setLambdaData(data);
-      setLambdaLoading(false);
-    } catch (error) {
-      console.error('Lambda fetch failed:', error);
-      setLambdaLoading(false);
-    }
-  };
-
-  const fetchRecentActivity = async () => {
-    try {
-      const { data: conversations, error: convError } = await supabase
-        .from('conversations')
-        .select('id, title, created_at')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (!convError && conversations) {
-        const activityItems = conversations.map(conv => ({
-          id: conv.id,
-          type: 'conversation' as const,
-          title: conv.title || 'Untitled Conversation',
-          timestamp: new Date(conv.created_at),
-          metadata: `ID: ${conv.id.substring(0, 8)}...`
-        }));
-        setActivities(activityItems);
-      }
-    } catch (error) {
-      console.error('Activity fetch failed:', error);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await Promise.all([fetchMetrics(), checkHealth(), fetchRecentActivity(), fetchLambdaData()]);
-    generateChartData();
-    toast({
-      title: "Dashboard Refreshed",
-      description: "All data has been updated",
-    });
-    setIsRefreshing(false);
-  };
-
-  useEffect(() => {
-    generateChartData();
-  }, [dateRange]);
-
-  const fetchMetrics = async () => {
-    try {
-      const { count: convCount, error: convError } = await supabase
-        .from('conversations')
-        .select('*', { count: 'exact', head: true });
-
-      const { count: codeCount, error: codeError } = await supabase
-        .from('code_blocks')
-        .select('*', { count: 'exact', head: true });
-
-      if (convError || codeError) {
-        setMetrics({ conversations: 76701, codeBlocks: 25479, repos: 0, stars: 0 });
-      } else {
-        setMetrics({
-          conversations: convCount || 0,
-          codeBlocks: codeCount || 0,
-          repos: 0,
-          stars: 0
+      const [maatR, portR, lcTotalR, lcAlertR, lcHighR] = await Promise.allSettled([
+        bridgeQueryKey("overview_maat_dashboard"),
+        bridgeQueryKey("overview_portfolio"),
+        bridgeQueryKey("overview_lc_total"),
+        bridgeQueryKey("overview_lc_alerts"),
+        bridgeQueryKey("overview_lc_high_risk"),
+      ]);
+      if (maatR.status === "fulfilled") setMaat(maatR.value[0] ?? null);
+      if (portR.status === "fulfilled") setPortfolio(portR.value ?? []);
+      if (lcTotalR.status === "fulfilled" || lcAlertR.status === "fulfilled" || lcHighR.status === "fulfilled") {
+        setLc({
+          total: getVal(lcTotalR.status === "fulfilled" ? lcTotalR.value : []),
+          alerts: getVal(lcAlertR.status === "fulfilled" ? lcAlertR.value : []),
+          high: getVal(lcHighR.status === "fulfilled" ? lcHighR.value : []),
         });
       }
-    } catch (error) {
-      console.error('Metrics fetch failed:', error);
-      setMetrics({ conversations: 76701, codeBlocks: 25479, repos: 0, stars: 0 });
+    } catch (e) {
+      setBridgeOk(false);
     }
-  };
+    setLastCheck(new Date().toLocaleTimeString("en-AU"));
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
 
-  const checkHealth = async () => {
-    try {
-      const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
-      const { data: heartbeats, error } = await supabase
-        .from('system_heartbeat')
-        .select('*')
-        .gt('timestamp', cutoff);
+  useEffect(() => { load(); }, [load]);
 
-      if (error) throw error;
-
-      const newHealth: SystemHealth = {};
-      ['supabase', 'notion', 'github', 'cron'].forEach(system => {
-        const beats = (heartbeats || []).filter(h => h.system === system);
-        const lastBeat = beats.length > 0 ? new Date(beats[beats.length - 1].timestamp) : undefined;
-        const minutesSince = lastBeat ? (Date.now() - lastBeat.getTime()) / 60000 : 999;
-        
-        newHealth[system] = {
-          status: minutesSince < 60 ? 'healthy' : minutesSince < 240 ? 'warning' : 'error',
-          lastBeat,
-          count: beats.length
-        };
-      });
-      
-      setHealth(newHealth);
-    } catch (error) {
-      console.error('Health check failed:', error);
-      setHealth({
-        supabase: { status: 'healthy', count: 0 },
-        notion: { status: 'healthy', count: 0 },
-        github: { status: 'healthy', count: 0 },
-        cron: { status: 'warning', count: 0 }
-      });
-    }
-  };
+  const refresh = () => { setRefreshing(true); load(); };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-12">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Real-time overview of your automation ecosystem</p>
+          <h1 className="text-3xl font-bold">T4H Command Centre</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {bridgeOk === true && <span className="text-green-400">● Bridge Live</span>}
+            {bridgeOk === false && <span className="text-red-400">● Bridge Degraded</span>}
+            {bridgeOk === null && <span className="text-slate-500">● Connecting…</span>}
+            {lastCheck && <span className="text-slate-500 ml-3">Last refresh {lastCheck}</span>}
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <DateRangePicker value={dateRange} onChange={setDateRange} />
-          <Button 
-            onClick={handleRefresh} 
-            disabled={isRefreshing}
-            size="sm"
-            className="gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
+        <Button onClick={refresh} disabled={refreshing} size="sm" className="gap-2">
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCardEnhanced 
-          icon="💬" 
-          title="Conversations" 
-          value={metrics.conversations.toLocaleString()} 
-          color="blue"
-          trend={12.5}
-        />
-        <MetricCardEnhanced 
-          icon="💻" 
-          title="Code Blocks" 
-          value={metrics.codeBlocks.toLocaleString()} 
-          color="purple"
-          trend={8.3}
-        />
-        <MetricCardEnhanced 
-          icon="📦" 
-          title="GitHub Repos" 
-          value={metrics.repos.toString()} 
-          color="green"
-          trend={-2.1}
-        />
-        <MetricCardEnhanced 
-          icon="⭐" 
-          title="Total Stars" 
-          value={metrics.stars.toString()} 
-          color="yellow"
-          trend={15.7}
-        />
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        {STAT_CARDS.map(c => (
+          <div key={c.key} className="glass rounded-lg border border-border p-4 flex flex-col gap-1">
+            <span className="text-xl">{c.icon}</span>
+            <span className={`text-2xl font-bold ${COLOR_MAP[c.color]} ${loading ? "animate-pulse" : ""}`}>
+              {loading ? "…" : (stats[c.key] ?? "—")}
+            </span>
+            <span className="text-xs font-medium">{c.label}</span>
+            <span className="text-[10px] text-muted-foreground">{c.sub}</span>
+          </div>
+        ))}
       </div>
 
-      <QuickActions />
-
-      {lambdaData && (
-        <>
-          <SystemHealthOverview 
-            systemHealth={lambdaData.system_health} 
-            lambdas={lambdaData.lambdas}
-          />
-
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Business Units</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {lambdaData.business_units.map((unit: any) => (
-                <BusinessUnitCard
-                  key={unit.name}
-                  name={unit.name}
-                  status={unit.status}
-                  health={unit.health}
-                />
-              ))}
-            </div>
+      {/* MAAT row */}
+      {maat && (
+        <div className="glass rounded-lg border border-border p-5">
+          <h2 className="text-lg font-semibold mb-4">💰 MAAT Financial</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            {Object.entries(maat).map(([k, v]) => (
+              <div key={k}>
+                <div className="text-muted-foreground capitalize text-xs mb-0.5">{k.replace(/_/g," ")}</div>
+                <div className="font-semibold">{v != null ? String(v) : "—"}</div>
+              </div>
+            ))}
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InfrastructureCosts infrastructure={lambdaData.infrastructure} />
-            <AlertsPanel alerts={lambdaData.alerts} />
-          </div>
-        </>
+        </div>
       )}
 
+      {/* Living Cells + Portfolio */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ActivityChart data={chartData} />
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            {/* avg daily loaded from bridge */}
-            <StatCard label="Growth" value="+12%" icon="📈" />
+        {/* Living Cells */}
+        <div className="glass rounded-lg border border-border p-5">
+          <h2 className="text-lg font-semibold mb-4">🧬 Living Cells</h2>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-cyan-400">{lc.total ?? "—"}</div>
+              <div className="text-xs text-muted-foreground mt-1">Total</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-amber-400">{lc.alerts ?? "—"}</div>
+              <div className="text-xs text-muted-foreground mt-1">Alerts</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-red-400">{lc.high ?? "—"}</div>
+              <div className="text-xs text-muted-foreground mt-1">High Risk</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ActivityFeed activities={activities} />
-        </div>
-        <div className="space-y-4">
-          <CommandCentreWidget />
-          <AgentChannelWidget />
-        </div>
-      </div>
-
-      <div className="glass p-6 rounded-lg border border-border">
-        <h2 className="text-xl font-bold mb-4">System Health</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Object.entries(health).map(([system, data]) => (
-            <div
-              key={system}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                data.status === 'healthy' ? 'bg-green-500/10 border-green-500/50 hover:border-green-500' :
-                data.status === 'warning' ? 'bg-yellow-500/10 border-yellow-500/50 hover:border-yellow-500' :
-                'bg-red-500/10 border-red-500/50 hover:border-red-500'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium capitalize">{system}</span>
-                <span className="text-2xl">
-                  {data.status === 'healthy' ? '✅' : data.status === 'warning' ? '⚠️' : '🔴'}
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {data.lastBeat ? data.lastBeat.toLocaleTimeString() : 'Never'}
-              </div>
+        {/* Portfolio by group */}
+        <div className="glass rounded-lg border border-border p-5">
+          <h2 className="text-lg font-semibold mb-4">🗂️ Portfolio</h2>
+          {portfolio.length === 0 ? (
+            <p className="text-muted-foreground text-sm">{loading ? "Loading…" : "No data"}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    {Object.keys(portfolio[0]).map(k => (
+                      <th key={k} className="text-left pb-2 pr-3 text-muted-foreground capitalize">{k.replace(/_/g," ")}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {portfolio.slice(0,10).map((row, i) => (
+                    <tr key={i} className="border-b border-border/40">
+                      {Object.values(row).map((v: any, j) => (
+                        <td key={j} className="py-1.5 pr-3">{v != null ? String(v) : "—"}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
