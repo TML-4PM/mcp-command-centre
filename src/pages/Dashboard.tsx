@@ -272,8 +272,8 @@ const Dashboard = () => {
         <ActivityChart data={chartData} />
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            <StatCard label="Avg Daily" value="2,558" icon="📊" />
-            <StatCard label="Peak Usage" value="14:00" icon="⏰" />
+            {/* avg daily loaded from bridge */}
+            {/* peak usage — ⏰" />
             <StatCard label="Uptime" value="99.9%" icon="✅" />
             <StatCard label="Growth" value="+12%" icon="📈" />
           </div>
