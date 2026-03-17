@@ -115,6 +115,7 @@ const SpineOps = lazy(() => import("./pages/SpineOps"));
 const ThrivingKids = lazy(() => import("./pages/ThrivingKids"));
 const Trojanoz = lazy(() => import("./pages/Trojanoz"));
 const Watchdog = lazy(() => import("./pages/Watchdog"));
+const WorkfamilyPlatform = lazy(() => import("./pages/WorkfamilyPlatform"));
 const Webops = lazy(() => import("./pages/Webops"));
 
 
@@ -257,6 +258,7 @@ const App = () => (
                 <Route path="/thriving-kids" element={<ThrivingKids />} />
                 <Route path="/trojanoz" element={<Trojanoz />} />
                 <Route path="/watchdog" element={<Watchdog />} />
+                <Route path="/workfamily" element={<WorkfamilyPlatform />} />
                 <Route path="/webops" element={<Webops />} />
                 <Route path="*" element={<NotFound />} />
                             <Route path="/dossier" element={<Dossier />} />
