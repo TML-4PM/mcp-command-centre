@@ -29,7 +29,7 @@ const SQLQueries = () => {
 
   useEffect(() => {
     bridge("SELECT id, tip_key, description, sql_query, context, pillar, tags FROM sql_tips ORDER BY pillar, tip_key")
-      .then((rows) => { setTips(rows); setLoading(false); })
+      .then((rows) => { setTips(rows.rows ?? []); setLoading(false); })
       .catch((e) => { setError(e.message); setLoading(false); });
   }, []);
 
