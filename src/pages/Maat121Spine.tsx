@@ -423,6 +423,7 @@ export default function Maat121Spine() {
           <div style={{ borderLeft:"1px solid #1e2d47", paddingLeft:12, fontSize:12, color:"#6b7fa0" }}>
             {user.display_name}
           </div>
+          <a href="/maat-welcome" style={{ fontSize:11, color:"#6b7fa0", background:"transparent", border:"1px solid #1e2d47", borderRadius:4, padding:"3px 10px", cursor:"pointer", textDecoration:"none", display:"inline-flex", alignItems:"center" }}>Guide</a>
           <button onClick={handleLogout} style={{ fontSize:11, color:"#6b7fa0", background:"transparent", border:"1px solid #1e2d47", borderRadius:4, padding:"3px 10px", cursor:"pointer" }}>
             Sign out
           </button>
