@@ -118,6 +118,23 @@ const MAATPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* ── MAAT 121 Spine Widget ── */}
+      <a href="/maat-spine" style={{ display:"block", marginBottom:20, textDecoration:"none" }}>
+        <div className="bg-gradient-to-r from-cyan-950/80 to-slate-800/80 border border-cyan-800/50 rounded-xl p-4 flex items-center gap-4 hover:border-cyan-600/60 transition-colors">
+          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-900/60 border border-cyan-700/40 flex items-center justify-center">
+            <span className="text-cyan-400 text-lg font-bold">121</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-cyan-100">MAAT — 121 Document Spine</div>
+            <div className="text-xs text-slate-400 mt-0.5">Complete compliance document matrix · 85 docs · 6 waves · 50 generatable today · Accountant portal</div>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <span className="text-xs bg-green-900/40 text-green-400 border border-green-700/30 rounded px-2 py-0.5 font-mono">50 ready</span>
+            <span className="text-xs bg-orange-900/30 text-orange-400 border border-orange-700/30 rounded px-2 py-0.5 font-mono">20 partial</span>
+          </div>
+          <span className="text-slate-500 text-sm flex-shrink-0">→</span>
+        </div>
+      </a>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">MAAT</h1>
