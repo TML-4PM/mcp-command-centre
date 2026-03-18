@@ -118,6 +118,7 @@ const Watchdog = lazy(() => import("./pages/Watchdog"));
 const WorkfamilyPlatform = lazy(() => import("./pages/WorkfamilyPlatform"));
 const Webops = lazy(() => import("./pages/Webops"));
 const Maat121Spine = lazy(() => import("./pages/Maat121Spine"));
+const MaatWelcome = lazy(() => import("./pages/MaatWelcome"));
 
 
 const queryClient = new QueryClient();
@@ -262,6 +263,7 @@ const App = () => (
                 <Route path="/workfamily" element={<WorkfamilyPlatform />} />
                 <Route path="/webops" element={<Webops />} />
                 <Route path="/maat-spine" element={<Maat121Spine />} />
+                <Route path="/maat-welcome" element={<MaatWelcome />} />
                 <Route path="*" element={<NotFound />} />
                             <Route path="/dossier" element={<Dossier />} />
                             <Route path="/dogfood" element={<Dogfood />} />
