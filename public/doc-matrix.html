@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Andrew Douglas — T4H Full Doc Matrix · 85 Docs · 25 Mar 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0d0d0d;--paper:#f5f2eb;--cream:#ede9df;--rule:#c8c0b0;--accent:#b85c1a;--accent2:#2a5c3f;--muted:#7a7060;--complete:#2a5c3f;--substrate:#b85c1a;--missing:#8b1a1a;--located:#1a4a6b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font-family:"DM Sans",sans-serif;font-weight:300;min-height:100vh;}
+  body::before{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+  .pw{max-width:980px;margin:0 auto;padding:60px 40px 100px;position:relative;z-index:1;}
+  .masthead{border-top:3px solid var(--ink);border-bottom:1px solid var(--rule);padding:24px 0 20px;margin-bottom:40px;}
+  .me{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+  .mt{font-family:"Playfair Display",serif;font-size:clamp(24px,4vw,42px);font-weight:900;line-height:1.05;letter-spacing:-0.02em;}
+  .mt span{color:var(--accent);}
+  .mm{display:flex;gap:24px;margin-top:14px;font-family:"DM Mono",monospace;font-size:11px;color:var(--muted);flex-wrap:wrap;}
+  .mm strong{color:var(--ink);}
+  .rb{background:var(--accent2);color:#f0f7f3;padding:12px 20px;margin-bottom:36px;display:flex;align-items:center;gap:12px;font-family:"DM Mono",monospace;font-size:11px;}
+  .rb .dot{width:8px;height:8px;background:#4dbb7a;border-radius:50%;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--rule);margin-bottom:40px;border:1px solid var(--rule);}
+  .sc{background:var(--paper);padding:14px;text-align:center;}
+  .sn{font-family:"Playfair Display",serif;font-size:28px;font-weight:900;line-height:1;margin-bottom:4px;}
+  .sl{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+  .sc.c .sn{color:var(--complete)}.sc.l .sn{color:var(--located)}.sc.s .sn{color:var(--substrate)}.sc.m .sn{color:var(--missing)}.sc.t .sn{color:#3d2a7a;}
+  .section{margin-bottom:44px;}
+  .section-header{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .section-label{font-family:"Playfair Display",serif;font-size:17px;font-weight:700;}
+  .section-tag{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
+  .section-count{margin-left:auto;font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);}
+  .doc-table{width:100%;border-collapse:collapse;}
+  .doc-table tr.dr{border-bottom:1px solid var(--cream);}
+  .doc-table tr.dr:hover td{background:var(--cream);}
+  .doc-table td{padding:8px 6px;vertical-align:top;}
+  .dc{width:90px;padding-top:10px;}
+  .dn{font-size:12.5px;font-weight:400;color:var(--ink);line-height:1.4;}
+  .dn .note{display:block;font-size:10px;font-family:"DM Mono",monospace;color:var(--muted);margin-top:2px;font-style:italic;}
+  .dn .warn{display:block;font-size:10px;font-family:"DM Mono",monospace;color:var(--missing);margin-top:3px;font-weight:500;}
+  .sp{display:inline-block;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;white-space:nowrap;}
+  .p-complete{background:#d4ead9;color:var(--complete);}
+  .p-located{background:#d0e5f0;color:var(--located);}
+  .p-substrate{background:#fde8d4;color:var(--substrate);}
+  .p-missing{background:#f5d5d5;color:var(--missing);}
+  .p-querying{background:#e8e4f8;color:#3d2a7a;animation:blink 0.8s step-end infinite;}
+  .p-live{background:#d4ead9;color:var(--complete);}
+  .p-error{background:#f5d5d5;color:var(--missing);}
+  @keyframes blink{50%{opacity:0.5}}
+  .prio{font-family:"DM Mono",monospace;font-size:8px;padding:1px 5px;border-radius:2px;display:inline-block;margin-bottom:3px;}
+  .prio-high{background:#fde8d4;color:var(--substrate);}
+  .prio-medium{background:#e8f0fe;color:#1a4a6b;}
+  .prio-low{background:#f0f0f0;color:#7a7060;}
+  .lodged{font-family:"DM Mono",monospace;font-size:8px;padding:1px 4px;background:#fef3c7;color:#92400e;border-radius:2px;display:inline-block;margin-left:3px;}
+  .da{text-align:right;width:80px;padding-top:8px;}
+  .lb{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;padding:4px 9px;cursor:pointer;transition:background 0.15s;}
+  .lb:hover{background:var(--accent);}.lb:disabled{background:var(--muted);cursor:wait;}
+  .na{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);}
+  .urg{font-family:"DM Mono",monospace;font-size:10px;color:var(--missing);font-weight:500;}
+  .rr td{padding:0!important;background:transparent!important;}
+  .rp{background:#161613;color:#d8d4c8;font-family:"DM Mono",monospace;font-size:11px;line-height:1.7;max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s ease;}
+  .rp.open{max-height:500px;padding:16px 20px;overflow-y:auto;}
+  .rp table{width:100%;border-collapse:collapse;margin-top:6px;}
+  .rp thead th{text-align:left;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a7060;border-bottom:1px solid #2a2a27;padding:3px 6px 5px;}
+  .rp tbody td{padding:4px 6px;border-bottom:1px solid #1e1e1a;color:#b8b4a8;font-size:10px;}
+  .rp tbody tr:last-child td{border-bottom:none;}
+  .rp tbody tr:hover td{background:#1e1e1a;}
+  .pm{color:#5a5650;font-size:9px;margin-top:8px;}
+  .pe{color:#ff6b6b;}
+  .cb{float:right;background:none;border:1px solid #333;color:#5a5650;font-family:"DM Mono",monospace;font-size:9px;padding:2px 7px;cursor:pointer;margin-bottom:4px;}
+  .cb:hover{color:#fff;border-color:#666;}
+  .filter-bar{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+  .fb{font-family:"DM Mono",monospace;font-size:10px;padding:4px 12px;border:1px solid var(--rule);background:var(--paper);cursor:pointer;transition:all 0.15s;}
+  .fb:hover,.fb.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .footer{margin-top:60px;border-top:1px solid var(--rule);padding-top:16px;font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  @media(max-width:600px){.pw{padding:28px 16px 60px}.stats{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="pw">
+
+<div class="masthead">
+  <div class="me">Confidential &middot; Tech 4 Humanity Pty Ltd &middot; ABN 70 666 271 272</div>
+  <div class="mt">Accountant Briefing &mdash; Full Doc Matrix<br><span>Andrew Douglas &middot; 85 Documents</span></div>
+  <div class="mm">
+    <span><strong>Meeting:</strong> Tue 25 Mar 2026</span>
+    <span><strong>Entity:</strong> TECH 4 HUMANITY PTY LTD</span>
+    <span><strong>Verified:</strong> Live from Supabase &middot; 20 Mar 2026</span>
+  </div>
+</div>
+
+<div class="rb">
+  <div class="dot"></div>
+  <span>RDTI FY2024/25 &nbsp;&middot;&nbsp; <strong>PYV4R3VPW</strong> &nbsp;&middot;&nbsp; Submitted 20 Mar 2026 15:11 AEDT &nbsp;&middot;&nbsp; Eligible: $2,136,791 &nbsp;&middot;&nbsp; Refund: <strong>$929,504</strong> &nbsp;&middot;&nbsp; 7 sections &nbsp;&middot;&nbsp; 85 docs</span>
+</div>
+
+<div class="stats">
+  <div class="sc c"><div class="sn" id="stat-complete">&#8230;</div><div class="sl">Docs Ready</div></div>
+  <div class="sc l"><div class="sn" id="stat-located">&#8230;</div><div class="sl">Docs Located</div></div>
+  <div class="sc s"><div class="sn" id="stat-substrate">&#8230;</div><div class="sl">Auto-Generatable</div></div>
+  <div class="sc m"><div class="sn" id="stat-missing">&#8230;</div><div class="sl">Andrew Must Supply</div></div>
+  <div class="sc t"><div class="sn" id="stat-total">85</div><div class="sl">Total Docs</div></div>
+</div>
+
+<div class="filter-bar">
+  <button class="fb active" id="fb-all" onclick="filterDocs('all',this)">All 85</button>
+  <button class="fb" id="fb-complete" onclick="filterDocs('COMPLETE',this)">Complete (&mdash;)</button>
+  <button class="fb" id="fb-located" onclick="filterDocs('LOCATED',this)">Located (&mdash;)</button>
+  <button class="fb" id="fb-substrate" onclick="filterDocs('SUBSTRATE',this)">Substrate (&mdash;)</button>
+  <button class="fb" id="fb-missing" onclick="filterDocs('MISSING',this)">Missing (&mdash;)</button>
+</div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">RDTI Core Program</div>
+      <div class="section-tag">Lodgement Spine</div>
+      <div class="section-count">13 docs &middot; 2 complete &middot; 2 located &middot; 7 substrate &middot; 2 missing</div>
+    </div>
+    <table class="doc-table"><tbody>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Failure Logs</td>
+        <td><span class="sp p-complete" id="pill-w0_01">Complete</span></td>
+        <td class="da"><span class="na">&mdash;</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_01"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">R&amp;D Timeline (Gantt or milestone log)</td>
+        <td><span class="sp p-complete" id="pill-w0_02">Complete</span></td>
+        <td class="da"><span class="na">&mdash;</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_02"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Board Sign-off on R&amp;D Claim<span class="note">rdti_evidence_register</span></td>
+        <td><span class="sp p-located" id="pill-w0_03">Located</span></td>
+        <td class="da"><button class="lb" id="btn-w0_03">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_03"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Technical Uncertainty Statements<span class="note">rdti_narrative_register</span></td>
+        <td><span class="sp p-located" id="pill-w0_04">Located</span></td>
+        <td class="da"><button class="lb" id="btn-w0_04">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_04"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Internal R&amp;D Claim Justification Memo</td>
+        <td><span class="sp p-missing" id="pill-w0_05">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_05"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Version-controlled Research Plan</td>
+        <td><span class="sp p-missing" id="pill-w0_06">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_06"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Apportionment Methodology Document<span class="note">maat_rd_allocation</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_07">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_07">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_07"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Experiment Design Documents<span class="note">rdti_narrative_register</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_08">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_08">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_08"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Iteration Logs<span class="note">rdti_time_log</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_09">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_09">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_09"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">R&amp;D Activity Register (core + supporting)<span class="note">rdti_narrative_register</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_10">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_10">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_10"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">R&amp;D Cost Allocation Report<span class="note">v_rdti_by_fy</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_11">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_11">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_11"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">R&amp;D Program Register (FY by FY)<span class="note">rdti_programmes</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_12">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_12">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_12"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Technical Conclusions Summary<span class="note">rdti_narrative_register</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_13">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_13">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_13"></div></td></tr>
+    </tbody></table>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">Tax &amp; Corporate</div>
+      <div class="section-tag">Corporate &amp; ATO</div>
+      <div class="section-count">17 docs &middot; 2 located &middot; 5 substrate &middot; 10 missing</div>
+    </div>
+    <table class="doc-table"><tbody>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Director Resolutions<span class="note">rdti_evidence_register</span></td>
+        <td><span class="sp p-located" id="pill-w3_01">Located</span></td>
+        <td class="da"><button class="lb" id="btn-w3_01">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_01"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Bank Statements (All Accounts)<span class="note">maat_source_registry</span></td>
+        <td><span class="sp p-located" id="pill-w0_14">Located</span></td>
+        <td class="da"><button class="lb" id="btn-w0_14">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_14"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Income Tax Return (Company)</td>
+        <td><span class="sp p-missing" id="pill-w0_15">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_15"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">PAYG Summaries</td>
+        <td><span class="sp p-missing" id="pill-w0_16">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_16"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">BAS Statements (All Quarters)<span class="note">maat_bas_periods</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_17">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_17">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_17"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Director Loan Ledger<span class="note">maat_director_loan</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_18">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_18">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_18"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">GST Working Papers<span class="note">maat_bas_periods</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_19">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_19">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_19"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Stripe / Revenue Export<span class="note">maat_transactions</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_20">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_20">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_20"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">ASIC Registration Extract</td>
+        <td><span class="sp p-missing" id="pill-w3_02">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_02"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Company Constitution</td>
+        <td><span class="sp p-missing" id="pill-w3_03">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_03"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">IP Assignment Deed</td>
+        <td><span class="sp p-missing" id="pill-w3_04">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_04"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Loan Agreements</td>
+        <td><span class="sp p-missing" id="pill-w3_05">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_05"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Shareholder Register</td>
+        <td><span class="sp p-missing" id="pill-w3_06">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_06"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Contractor Agreements</td>
+        <td><span class="sp p-missing" id="pill-w3_07">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_07"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Employment Contracts</td>
+        <td><span class="sp p-missing" id="pill-w3_08">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_08"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Trademark Filings</td>
+        <td><span class="sp p-missing" id="pill-w3_09">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_09"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Patent Filings<span class="note">ip_prosecution_timeline</span></td>
+        <td><span class="sp p-substrate" id="pill-w3_10">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w3_10">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w3_10"></div></td></tr>
+    </tbody></table>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">MAAT Reconciliation</div>
+      <div class="section-tag">MAAT Reconciliation Closure</div>
+      <div class="section-count">18 docs &middot; 3 complete &middot; 15 substrate</div>
+    </div>
+    <table class="doc-table"><tbody>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Categorised Transaction Ledger<span class="note">maat_transactions</span></td>
+        <td><span class="sp p-complete" id="pill-w2_01">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w2_01">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_01"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">MAAT Transaction Export (Raw)<span class="note">maat_transactions</span></td>
+        <td><span class="sp p-complete" id="pill-w2_02">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w2_02">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_02"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span><span class="lodged">ATO</span></td>
+        <td class="dn">MAAT Schema Definition<span class="note">information_schema.tables</span></td>
+        <td><span class="sp p-complete" id="pill-w2_03">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w2_03">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_03"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Business Slug Mapping<span class="note">maat_entities</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_04">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_04">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_04"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Cloud Provider Invoice Match<span class="note">maat_transactions</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_05">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_05">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_05"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Cost Centre Mapping Document<span class="note">maat_chart_of_accounts</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_06">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_06">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_06"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Orphan Transaction Report<span class="note">maat_exception_queue</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_07">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_07">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_07"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span><span class="lodged">ATO</span></td>
+        <td class="dn">MAAT Change Log<span class="note">maat_decision_log</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_08">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_08">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_08"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Allocation Rules Documentation<span class="note">maat_classification_rules</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_09">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_09">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_09"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Evidence Binding Table<span class="note">maat_evidence</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_10">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_10">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_10"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Evidence Coverage Ratio Report<span class="note">v_maat_source_coverage_gaps</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_11">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_11">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_11"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Exception Register<span class="note">maat_exception_queue</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_12">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_12">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_12"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">MAAT vs Bank Reconciliation<span class="note">v_maat_source_coverage_gaps</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_13">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_13">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_13"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">MAAT vs BAS Reconciliation<span class="note">maat_bas_summary</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_14">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_14">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_14"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">MAAT vs Stripe Reconciliation<span class="note">maat_transactions</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_15">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_15">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_15"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">R&amp;D vs Non-R&amp;D Allocation Logic<span class="note">maat_rd_allocation</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_16">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_16">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_16"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Reality Ledger Classification Report<span class="note">maat_reality_classification</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_17">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_17">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_17"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">REAL / PARTIAL / PRETEND Summary<span class="note">maat_reality_classification</span></td>
+        <td><span class="sp p-substrate" id="pill-w2_18">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w2_18">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w2_18"></div></td></tr>
+    </tbody></table>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">Accountant Backbone</div>
+      <div class="section-tag">Accountant Backbone</div>
+      <div class="section-count">17 docs &middot; 4 complete &middot; 9 substrate &middot; 4 missing</div>
+    </div>
+    <table class="doc-table"><tbody>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Aged Payables Report<span class="note">maat_transactions</span></td>
+        <td><span class="sp p-complete" id="pill-w1_01">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w1_01">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_01"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Aged Receivables Report<span class="note">maat_invoice_register</span></td>
+        <td><span class="sp p-complete" id="pill-w1_02">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w1_02">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_02"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Asset Register<span class="note">maat_fixed_asset_register</span></td>
+        <td><span class="sp p-complete" id="pill-w1_03">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w1_03">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_03"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Depreciation Schedule<span class="note">maat_fixed_asset_register</span></td>
+        <td><span class="sp p-complete" id="pill-w1_04">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w1_04">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_04"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span><span class="lodged">ATO</span></td>
+        <td class="dn">Private Use Adjustments<span class="note">maat_paye_deductions</span></td>
+        <td><span class="sp p-missing" id="pill-w1_05">Missing</span></td>
+        <td class="da"><button class="lb" id="btn-w1_05">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_05"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Capital vs Expense Classification Memo</td>
+        <td><span class="sp p-missing" id="pill-w1_06">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_06"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Non-Deductible Expense Schedule</td>
+        <td><span class="sp p-missing" id="pill-w1_07">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_07"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Working Papers</td>
+        <td><span class="sp p-missing" id="pill-w1_08">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_08"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Balance Sheet<span class="note">maat_trial_balance</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_09">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_09">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_09"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Cash Flow Statement<span class="note">maat_monthly_pl</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_10">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_10">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_10"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Director Loan Movement Summary<span class="note">maat_director_loan</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_11">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_11">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_11"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Expense Breakdown by Category<span class="note">maat_category_spending</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_12">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_12">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_12"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">General Ledger<span class="note">maat_journal</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_13">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_13">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_13"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">GST Adjustment Summary<span class="note">maat_bas_periods</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_14">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_14">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_14"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Profit &amp; Loss (FY)<span class="note">v_pl_t4h_by_fy</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_15">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_15">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_15"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">R&amp;D Adjustment Schedule<span class="note">v_rdti_by_fy</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_16">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_16">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_16"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Trial Balance<span class="note">maat_trial_balance</span></td>
+        <td><span class="sp p-substrate" id="pill-w1_17">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w1_17">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w1_17"></div></td></tr>
+    </tbody></table>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">IP &amp; System Defensibility</div>
+      <div class="section-tag">IP &amp; System Defensibility</div>
+      <div class="section-count">11 docs &middot; 3 complete &middot; 3 substrate &middot; 5 missing</div>
+    </div>
+    <table class="doc-table"><tbody>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Artefact Registry<span class="note">maat_artifact_registry</span></td>
+        <td><span class="sp p-complete" id="pill-w4_01">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w4_01">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_01"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Master IP Register<span class="note">ip_assets</span></td>
+        <td><span class="sp p-complete" id="pill-w4_02">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w4_02">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_02"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Research Asset Register<span class="note">research_asset_register</span></td>
+        <td><span class="sp p-complete" id="pill-w4_03">Complete</span></td>
+        <td class="da"><button class="lb" id="btn-w4_03">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_03"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Integrity Stack Lifecycle Documentation</td>
+        <td><span class="sp p-missing" id="pill-w4_04">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_04"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">System Architecture Master Diagram</td>
+        <td><span class="sp p-missing" id="pill-w4_05">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_05"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-medium">Medium</span></td>
+        <td class="dn">Claim Registry<span class="note">maat_claim</span></td>
+        <td><span class="sp p-substrate" id="pill-w4_06">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w4_06">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_06"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">ConsentX Governance Layer Docs</td>
+        <td><span class="sp p-missing" id="pill-w4_07">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_07"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">MyNeuralSignal Research Logs</td>
+        <td><span class="sp p-missing" id="pill-w4_08">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_08"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Version History Snapshots</td>
+        <td><span class="sp p-missing" id="pill-w4_09">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_09"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Export of Supabase Schema<span class="note">information_schema.tables</span></td>
+        <td><span class="sp p-substrate" id="pill-w4_10">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w4_10">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_10"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Source Code Repository Snapshot Archive<span class="note">maat_artifact_registry</span></td>
+        <td><span class="sp p-substrate" id="pill-w4_11">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w4_11">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w4_11"></div></td></tr>
+    </tbody></table>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">Audit Ready Pack</div>
+      <div class="section-tag">Lodgement Spine</div>
+      <div class="section-count">2 docs &middot; 2 substrate</div>
+    </div>
+    <table class="doc-table"><tbody>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">Contemporaneous Records Pack<span class="note">rdti_evidence_register</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_21">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_21">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_21"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-high">High</span><span class="lodged">ATO</span></td>
+        <td class="dn">R&amp;D Evidence Matrix<span class="note">rdti_evidence_register</span></td>
+        <td><span class="sp p-substrate" id="pill-w0_22">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w0_22">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w0_22"></div></td></tr>
+    </tbody></table>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">Strategic &amp; Investor Layer</div>
+      <div class="section-tag">Strategic &amp; Investor Layer</div>
+      <div class="section-count">7 docs &middot; 1 substrate &middot; 6 missing</div>
+    </div>
+    <table class="doc-table"><tbody>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Annual Research Summary Report</td>
+        <td><span class="sp p-missing" id="pill-w5_01">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w5_01"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Innovation Thesis</td>
+        <td><span class="sp p-missing" id="pill-w5_02">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w5_02"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Investor Updates</td>
+        <td><span class="sp p-missing" id="pill-w5_03">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w5_03"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">IP Commercialisation Strategy</td>
+        <td><span class="sp p-missing" id="pill-w5_04">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w5_04"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Revenue Model Mapping</td>
+        <td><span class="sp p-missing" id="pill-w5_05">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w5_05"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Technology Roadmap</td>
+        <td><span class="sp p-missing" id="pill-w5_06">Missing</span></td>
+        <td class="da"><span class="urg">Andrew scope</span></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w5_06"></div></td></tr>
+      <tr class="dr">
+        <td class="dc"><span class="prio prio-low">Low</span></td>
+        <td class="dn">Grant Application Copies<span class="note">t4h_grant_register</span></td>
+        <td><span class="sp p-substrate" id="pill-w5_07">Substrate</span></td>
+        <td class="da"><button class="lb" id="btn-w5_07">Load</button></td>
+      </tr>
+      <tr class="rr"><td colspan="4"><div class="rp" id="panel-w5_07"></div></td></tr>
+    </tbody></table>
+  </div>
+<div class="footer">
+  <span>Tech 4 Humanity Pty Ltd &middot; ABN 70 666 271 272 &middot; troy@tech4humanity.com.au</span>
+  <span>All 85 docs from maat_doc_matrix &middot; Live bridge queries &middot; 20 Mar 2026 &middot; CONFIDENTIAL</span>
+</div>
+</div>
+
+<script>
+const BRIDGE='https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
+const KEY='bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4';
+const ST={};
+const Q={
+  w0_03:"SELECT item_num, description, evidence_type, status FROM rdti_evidence_register WHERE description ILIKE '%board%' OR description ILIKE '%POL-RD%' OR description ILIKE '%resolution%' LIMIT 10",
+  w0_04:"SELECT activity_code, title, uncertainty FROM rdti_narrative_register WHERE uncertainty IS NOT NULL ORDER BY activity_code",
+  w0_07:"SELECT * FROM maat_rd_allocation LIMIT 10",
+  w0_08:"SELECT activity_code, title, methodology FROM rdti_narrative_register WHERE methodology IS NOT NULL ORDER BY activity_code",
+  w0_09:"SELECT entry_date, sub_activity, category, hours, rd_criterion, status FROM rdti_time_log ORDER BY id DESC LIMIT 20",
+  w0_10:"SELECT activity_code, programme_code, title, activity_type FROM rdti_narrative_register ORDER BY activity_code",
+  w0_11:"SELECT fy, labour, bank_rd, total_eligible, ROUND(total_eligible*0.435,2) as rdti_refund FROM v_rdti_by_fy ORDER BY fy",
+  w0_12:"SELECT programme_code, programme_name, fy_start, fy_end FROM rdti_programmes ORDER BY fy_start",
+  w0_13:"SELECT activity_code, title, outcomes FROM rdti_narrative_register WHERE outcomes IS NOT NULL ORDER BY activity_code",
+  w3_01:"SELECT item_num, description, evidence_type, status FROM rdti_evidence_register WHERE description ILIKE '%director%' OR description ILIKE '%resolution%' OR description ILIKE '%board%' LIMIT 10",
+  w0_14:"SELECT source_type, COUNT(*) as total, SUM(CASE WHEN supabase_path IS NOT NULL THEN 1 ELSE 0 END) as with_file FROM maat_source_registry GROUP BY source_type ORDER BY total DESC",
+  w0_17:"SELECT period_label, period_start, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods ORDER BY period_start",
+  w0_18:"SELECT month, subcategory, ROUND(amount::numeric,2) as amount, ROUND(running_balance::numeric,2) as balance FROM maat_director_loan ORDER BY month DESC LIMIT 20",
+  w0_19:"SELECT period_label, g1_total_sales, g2_export_sales, label_1a_gst_collected, label_1b_gst_paid FROM maat_bas_periods ORDER BY period_start",
+  w0_20:"SELECT COUNT(*) as stripe_txns FROM maat_transactions WHERE category ILIKE '%stripe%'",
+  w3_10:"SELECT * FROM ip_prosecution_timeline ORDER BY filing_date DESC LIMIT 10",
+  w2_01:"SELECT posted_at, description, ROUND(amount::numeric,2) as amount, category FROM maat_transactions ORDER BY posted_at DESC LIMIT 50",
+  w2_02:"SELECT COUNT(*) as total_txns, MIN(posted_at) as earliest, MAX(posted_at) as latest FROM maat_transactions",
+  w2_03:"SELECT table_name, table_type FROM information_schema.tables WHERE table_schema='public' AND table_name ILIKE '%maat%' ORDER BY table_name",
+  w2_04:"SELECT id, entity_name, abn, entity_type FROM maat_entities LIMIT 10",
+  w2_05:"SELECT description, ROUND(SUM(amount)::numeric,2) as total, COUNT(*) as txns FROM maat_transactions WHERE description ILIKE '%AWS%' OR description ILIKE '%Google Cloud%' OR description ILIKE '%Vercel%' GROUP BY description ORDER BY total DESC LIMIT 20",
+  w2_06:"SELECT * FROM maat_chart_of_accounts ORDER BY account_code LIMIT 20",
+  w2_07:"SELECT * FROM maat_exception_queue LIMIT 10",
+  w2_08:"SELECT * FROM maat_decision_log ORDER BY created_at DESC LIMIT 10",
+  w2_09:"SELECT * FROM maat_classification_rules LIMIT 10",
+  w2_10:"SELECT * FROM maat_evidence LIMIT 10",
+  w2_11:"SELECT * FROM v_maat_source_coverage_gaps LIMIT 10",
+  w2_12:"SELECT * FROM maat_exception_queue ORDER BY created_at DESC LIMIT 10",
+  w2_13:"SELECT * FROM v_maat_source_coverage_gaps LIMIT 10",
+  w2_14:"SELECT * FROM maat_bas_summary LIMIT 10",
+  w2_15:"SELECT COUNT(*) as stripe_txns FROM maat_transactions WHERE category ILIKE '%stripe%'",
+  w2_16:"SELECT * FROM maat_rd_allocation LIMIT 10",
+  w2_17:"SELECT classification, COUNT(*) as ct, ROUND(SUM(amount)::numeric,2) as total FROM maat_reality_classification GROUP BY classification",
+  w2_18:"SELECT classification, COUNT(*) as ct, ROUND(SUM(amount)::numeric,2) as total FROM maat_reality_classification GROUP BY classification",
+  w1_01:"SELECT posted_at, description, ROUND(amount::numeric,2) as amount, category FROM maat_transactions WHERE amount < 0 ORDER BY posted_at DESC LIMIT 20",
+  w1_02:"SELECT fy, invoice_number, from_entity, total_hours, amount_ex_gst, status FROM maat_invoice_register ORDER BY fy, invoice_number",
+  w1_03:"SELECT asset_code, asset_name, asset_class, acquisition_cost, acquisition_date FROM maat_fixed_asset_register ORDER BY asset_code",
+  w1_04:"SELECT asset_code, asset_name, acquisition_cost, depreciation_method, depreciation_rate_pct, useful_life_years FROM maat_fixed_asset_register ORDER BY asset_code",
+  w1_05:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions ORDER BY financial_year, category",
+  w1_09:"SELECT account_code, account_name, account_type, debit, credit, net FROM maat_trial_balance ORDER BY account_code",
+  w1_10:"SELECT * FROM maat_monthly_pl ORDER BY period_end DESC LIMIT 12",
+  w1_11:"SELECT month, subcategory, ROUND(amount::numeric,2) as amount, ROUND(running_balance::numeric,2) as balance FROM maat_director_loan ORDER BY month DESC LIMIT 20",
+  w1_12:"SELECT category, ROUND(SUM(amount)::numeric,2) as total, COUNT(*) as txns FROM maat_category_spending GROUP BY category ORDER BY total DESC LIMIT 30",
+  w1_13:"SELECT * FROM maat_journal ORDER BY created_at DESC LIMIT 30",
+  w1_14:"SELECT period_label, label_1a_gst_collected, label_1b_gst_paid, gst_payable FROM maat_bas_periods ORDER BY period_end DESC",
+  w1_15:"SELECT * FROM v_pl_t4h_by_fy ORDER BY fy",
+  w1_16:"SELECT fy, labour, bank_rd, total_eligible, ROUND(total_eligible*0.435,2) as rdti_refund FROM v_rdti_by_fy ORDER BY fy",
+  w1_17:"SELECT account_code, account_name, account_type, debit, credit, net FROM maat_trial_balance ORDER BY account_code",
+  w4_01:"SELECT * FROM maat_artifact_registry LIMIT 20",
+  w4_02:"SELECT asset_class, COUNT(*) as n, ROUND(SUM(replacement_value_aud)::numeric,0) as replacement FROM ip_assets GROUP BY asset_class ORDER BY replacement DESC NULLS LAST",
+  w4_03:"SELECT asset_id, asset_name, asset_type, status FROM research_asset_register WHERE status='GREEN' LIMIT 30",
+  w4_06:"SELECT * FROM maat_claim LIMIT 10",
+  w4_10:"SELECT table_name, table_type FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name LIMIT 50",
+  w4_11:"SELECT COUNT(*) as total FROM maat_artifact_registry",
+  w0_21:"SELECT item_num, description, evidence_type, status FROM rdti_evidence_register ORDER BY item_num LIMIT 30",
+  w0_22:"SELECT COUNT(*) as total, SUM(CASE WHEN status='LOCATED' THEN 1 ELSE 0 END) as located FROM rdti_evidence_register",
+  w5_07:"SELECT program_code, program_name, t4h_fit_score, action, COALESCE(closes_date::text,'rolling') as closes, status FROM t4h_grant_register ORDER BY t4h_fit_score DESC"
+};
+
+// Load stats live from maat_doc_matrix on page load
+async function loadStats(){
+  try{
+    const res=await fetch(BRIDGE,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':KEY},
+      body:JSON.stringify({fn:'troy-sql-executor',sql:"SELECT status, COUNT(*) as n FROM maat_doc_matrix GROUP BY status"})});
+    const d=await res.json();
+    if(d&&Array.isArray(d.rows)){
+      const m={};
+      d.rows.forEach(r=>m[r.status]=parseInt(r.n));
+      const c=m['COMPLETE']||0,l=m['LOCATED']||0,s=m['SUBSTRATE']||0,mi=m['MISSING']||0;
+      document.getElementById('stat-complete').textContent=c;
+      document.getElementById('stat-located').textContent=l;
+      document.getElementById('stat-substrate').textContent=s;
+      document.getElementById('stat-missing').textContent=mi;
+      document.getElementById('stat-total').textContent=c+l+s+mi;
+      document.getElementById('fb-complete').innerHTML='Complete ('+c+')';
+      document.getElementById('fb-located').innerHTML='Located ('+l+')';
+      document.getElementById('fb-substrate').innerHTML='Substrate ('+s+')';
+      document.getElementById('fb-missing').innerHTML='Missing ('+mi+')';
+    }
+  }catch(e){console.log('Stats load error:',e.message);}
+}
+loadStats();
+
+document.querySelectorAll('.lb').forEach(btn=>{
+  const id=btn.id.replace('btn-','');
+  if(Q[id]) btn.onclick=()=>toggle(id);
+});
+
+async function toggle(id){
+  const panel=document.getElementById('panel-'+id);
+  const btn=document.getElementById('btn-'+id);
+  const pill=document.getElementById('pill-'+id);
+  if(!panel||!btn)return;
+  if(ST[id]&&ST[id].open){panel.classList.remove('open');if(pill&&ST[id].oc){pill.className=ST[id].oc;pill.textContent=ST[id].ot;}btn.textContent=ST[id].ll||'Load';btn.disabled=false;ST[id].open=false;return;}
+  if(!ST[id])ST[id]={oc:pill?pill.className:'',ot:pill?pill.textContent:'',ll:btn.textContent};
+  btn.disabled=true;btn.textContent='...';
+  if(pill){pill.className='sp p-querying';pill.textContent='querying';}
+  try{
+    const res=await fetch(BRIDGE,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':KEY},body:JSON.stringify({fn:'troy-sql-executor',sql:Q[id]})});
+    const d=await res.json();
+    if(d&&(d.success||Array.isArray(d.rows))){
+      const rows=d.rows||[];
+      if(pill){pill.className='sp p-live';pill.textContent=rows.length+' rows';}
+      let h='<button class="cb" onclick="cl(\''+id+'\')">&#x2715; close</button>';
+      if(!rows.length){h+='<span style="color:#4dbb7a">&#10003;</span> No rows.';}
+      else{
+        const cols=Object.keys(rows[0]);
+        h+='<table><thead><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>';
+        rows.forEach(r=>{h+='<tr>'+cols.map(c=>{const v=r[c];if(v===null||v===undefined)return'<td style="color:#444">&#8212;</td>';const s=String(v);return'<td'+(typeof v==='number'?' style="text-align:right"':'')+'>'+esc(s.length>80?s.slice(0,80)+'&#8230;':s)+'</td>';}).join('')+'</tr>';});
+        h+='</tbody></table>';
+      }
+      h+='<div class="pm">&#8627; '+rows.length+' rows &middot; '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'</div>';
+      panel.innerHTML=h;
+    }else{
+      const msg=d?.error||d?.message||JSON.stringify(d).slice(0,200);
+      if(pill){pill.className='sp p-error';pill.textContent='error';}
+      panel.innerHTML='<button class="cb" onclick="cl(\''+id+'\')">&#x2715; close</button><span class="pe">&#10007; '+esc(msg)+'</span>';
+    }
+    panel.classList.add('open');btn.textContent='Close';btn.disabled=false;ST[id].open=true;
+  }catch(e){
+    if(pill){pill.className='sp p-error';pill.textContent='error';}
+    panel.innerHTML='<button class="cb" onclick="cl(\''+id+'\')">&#x2715; close</button><span class="pe">&#10007; '+esc(e.message)+'</span>';
+    panel.classList.add('open');btn.textContent='Retry';btn.disabled=false;ST[id].open=true;
+  }
+}
+
+function cl(id){
+  const panel=document.getElementById('panel-'+id);const btn=document.getElementById('btn-'+id);const pill=document.getElementById('pill-'+id);
+  panel.classList.remove('open');
+  if(ST[id]){if(pill&&ST[id].oc){pill.className=ST[id].oc;pill.textContent=ST[id].ot;}if(btn){btn.textContent=ST[id].ll||'Load';btn.disabled=false;}ST[id].open=false;}
+}
+
+function filterDocs(status,btn){
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.doc-table tr.dr').forEach(row=>{
+    if(status==='all'){row.style.display='';const next=row.nextElementSibling;if(next&&next.classList.contains('rr'))next.style.display='';return;}
+    const pill=row.querySelector('.sp');
+    const show=pill&&pill.textContent.trim().toLowerCase()===status.toLowerCase();
+    row.style.display=show?'':'none';
+    const next=row.nextElementSibling;
+    if(next&&next.classList.contains('rr'))next.style.display=show?'':'none';
+  });
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
