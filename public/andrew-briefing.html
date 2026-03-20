@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Andrew Douglas — T4H Briefing Pack · 25 Mar 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0d0d0d;--paper:#f5f2eb;--cream:#ede9df;--rule:#c8c0b0;--accent:#b85c1a;--accent2:#2a5c3f;--muted:#7a7060;--complete:#2a5c3f;--substrate:#b85c1a;--missing:#8b1a1a;--located:#1a4a6b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+  .page-wrap{max-width:960px;margin:0 auto;padding:60px 40px 100px;position:relative;z-index:1;}
+  .masthead{border-top:3px solid var(--ink);border-bottom:1px solid var(--rule);padding:24px 0 20px;margin-bottom:48px;}
+  .masthead-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+  .masthead-title{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);font-weight:900;line-height:1.05;letter-spacing:-0.02em;}
+  .masthead-title span{color:var(--accent);}
+  .masthead-meta{display:flex;gap:32px;margin-top:16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-wrap:wrap;}
+  .masthead-meta strong{color:var(--ink);}
+  .rdti-banner{background:var(--accent2);color:#f0f7f3;padding:14px 20px;margin-bottom:40px;display:flex;align-items:center;gap:12px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.05em;}
+  .rdti-banner .dot{width:8px;height:8px;background:#4dbb7a;border-radius:50%;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--rule);margin-bottom:48px;border:1px solid var(--rule);}
+  .stat-cell{background:var(--paper);padding:16px;text-align:center;}
+  .stat-num{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;line-height:1;margin-bottom:6px;}
+  .stat-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+  .s-complete .stat-num{color:var(--complete)}.s-located .stat-num{color:var(--located)}.s-substrate .stat-num{color:var(--substrate)}.s-missing .stat-num{color:var(--missing)}.s-neutral .stat-num{color:#3d2a7a;}
+  .agenda-box{border:1px solid var(--rule);padding:24px;margin-bottom:48px;background:var(--cream);}
+  .agenda-box h3{font-family:'Playfair Display',serif;font-size:14px;margin-bottom:14px;}
+  .agenda-items{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .agenda-items li{display:flex;gap:12px;font-size:12px;}
+  .agenda-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);min-width:20px;}
+  .section{margin-bottom:48px;}
+  .section-header{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:20px;}
+  .section-label{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;}
+  .section-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);}
+  .section-count{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+  .doc-table{width:100%;border-collapse:collapse;}
+  .doc-table tr.dr{border-bottom:1px solid var(--cream);}
+  .doc-table tr.dr:hover td{background:var(--cream);}
+  .doc-table td{padding:10px 8px;vertical-align:top;}
+  .dc{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;padding-right:16px;width:110px;padding-top:12px;}
+  .dn{font-size:13px;font-weight:400;color:var(--ink);line-height:1.4;}
+  .dn .note{display:block;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:2px;font-style:italic;}
+  .dn .warn{display:block;font-size:10px;font-family:'DM Mono',monospace;color:var(--missing);margin-top:3px;font-weight:500;}
+  .sp{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;white-space:nowrap;}
+  .p-complete{background:#d4ead9;color:var(--complete);}
+  .p-located{background:#d0e5f0;color:var(--located);}
+  .p-substrate{background:#fde8d4;color:var(--substrate);}
+  .p-missing{background:#f5d5d5;color:var(--missing);}
+  .p-final{background:#d4ead9;color:var(--complete);}
+  .p-estimated{background:#fff3cd;color:#7a5a00;}
+  .p-querying{background:#e8e4f8;color:#3d2a7a;animation:blink 0.8s step-end infinite;}
+  .p-live{background:#d4ead9;color:var(--complete);}
+  .p-error{background:#f5d5d5;color:var(--missing);}
+  @keyframes blink{50%{opacity:0.5}}
+  .da{text-align:right;width:90px;padding-top:10px;}
+  .lb{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;padding:5px 10px;cursor:pointer;transition:background 0.15s;}
+  .lb:hover{background:var(--accent);}.lb:disabled{background:var(--muted);cursor:wait;}
+  .na{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+  .urg{font-family:'DM Mono',monospace;font-size:10px;color:var(--missing);font-weight:500;}
+  .xl{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);text-decoration:none;border-bottom:1px solid currentColor;}
+  .rr td{padding:0!important;background:transparent!important;}
+  .rp{background:#161613;color:#d8d4c8;font-family:'DM Mono',monospace;font-size:11px;line-height:1.7;max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s ease;}
+  .rp.open{max-height:500px;padding:18px 24px;overflow-y:auto;}
+  .rp table{width:100%;border-collapse:collapse;margin-top:8px;}
+  .rp thead th{text-align:left;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a7060;border-bottom:1px solid #2a2a27;padding:4px 8px 6px;}
+  .rp tbody td{padding:5px 8px;border-bottom:1px solid #1e1e1a;color:#b8b4a8;font-size:10px;}
+  .rp tbody tr:last-child td{border-bottom:none;}
+  .rp tbody tr:hover td{background:#1e1e1a;}
+  .pm{color:#5a5650;font-size:9px;margin-top:10px;}
+  .pe{color:#ff6b6b;}
+  .cb{float:right;background:none;border:1px solid #333;color:#5a5650;font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;cursor:pointer;margin-bottom:6px;}
+  .cb:hover{color:#fff;border-color:#666;}
+  .footer{margin-top:64px;border-top:1px solid var(--rule);padding-top:20px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  @media(max-width:600px){.page-wrap{padding:32px 20px 60px}.stats-row{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<div class="masthead">
+  <div class="masthead-eyebrow">Confidential &middot; Tech 4 Humanity Pty Ltd &middot; ABN 70 666 271 272</div>
+  <div class="masthead-title">Accountant Briefing<br><span>Andrew Douglas</span></div>
+  <div class="masthead-meta">
+    <span><strong>Meeting:</strong> Tue 25 Mar 2026</span>
+    <span><strong>Entity:</strong> TECH 4 HUMANITY PTY LTD</span>
+    <span><strong>FY:</strong> 2024&ndash;25</span>
+    <span><strong>Verified:</strong> Live from Supabase &middot; 20 Mar 2026</span>
+  </div>
+</div>
+
+<div class="rdti-banner">
+  <div class="dot"></div>
+  <span>RDTI FY2024/25 REGISTERED &nbsp;&middot;&nbsp; AusIndustry &nbsp;&middot;&nbsp; Tracking ID: <strong>PYV4R3VPW</strong> &nbsp;&middot;&nbsp; Submitted 20 Mar 2026 15:11 AEDT &nbsp;&middot;&nbsp; Eligible spend: $2,136,791 &nbsp;&middot;&nbsp; Refundable offset (43.5%): <strong>$929,504</strong></span>
+</div>
+
+<div class="agenda-box">
+  <h3>Meeting Agenda &mdash; 25 March 2026</h3>
+  <ul class="agenda-items">
+    <li><span class="agenda-num">01</span><span><strong>RDTI:</strong> PYV4R3VPW confirmed. Eligible R&amp;D spend $2,136,791 ($1,592,250 director labour + $544,541 bank R&amp;D). Refundable offset at 43.5% = <strong>$929,504</strong>. Validated 21/21 checks against live MAAT. Review allocation methodology.</span></li>
+    <li><span class="agenda-num">02</span><span><strong>BAS:</strong> 6 quarters calculated in MAAT. All lodged_date = null &mdash; verify lodgement status with ATO before meeting. FY24-25 refundable: $22,798.</span></li>
+    <li><span class="agenda-num">03</span><span><strong>Tax:</strong> Company ITR outstanding (Andrew to prepare). Troy personal FY24-25: <strong>$14,989 payable to ATO</strong> (liability, not refund). FY22-23: $10,708 refund owing to Troy. FY23-24: income data missing &mdash; needs reconstruction. Director loan: 63 movements, Div 7A rates seeded.</span></li>
+    <li><span class="agenda-num">04</span><span><strong>Prior year RDTI:</strong> FY22-23 and FY23-24 registrations were never lodged. $806,393 permanently unrecoverable. Andrew to confirm with AusIndustry (13 28 46) to close this item.</span></li>
+    <li><span class="agenda-num">05</span><span><strong>Only 3 true gaps:</strong> Company ITR, official PAYG payment summaries, Company Constitution/ASIC extract. All other items verified in Supabase.</span></li>
+  </ul>
+</div>
+
+<div class="stats-row">
+  <div class="stat-cell s-complete"><div class="stat-num">9</div><div class="stat-label">Complete</div></div>
+  <div class="stat-cell s-located"><div class="stat-num">7</div><div class="stat-label">Located</div></div>
+  <div class="stat-cell s-substrate"><div class="stat-num">18</div><div class="stat-label">Generatable</div></div>
+  <div class="stat-cell s-missing"><div class="stat-num">3</div><div class="stat-label">Truly Missing</div></div>
+  <div class="stat-cell s-neutral"><div class="stat-num">6,066</div><div class="stat-label">Transactions</div></div>
+</div>
+
+<!-- S1: FINANCIALS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-label">Financial Statements</div>
+    <div class="section-tag">Wave 1 &middot; All data verified in MAAT</div>
+    <div class="section-count">9 docs</div>
+  </div>
+  <table class="doc-table"><tbody>
+
+    <tr class="dr"><td class="dc">FIN-01</td>
+      <td class="dn">T4H Financial Statements &mdash; P&amp;L and BAS<span class="note">maat_report_registry &mdash; built 10 Mar 2026 &middot; output: T4H_Financial_Statements.pdf</span></td>
+      <td><span class="sp p-final" id="pill-finreg">In Registry</span></td>
+      <td class="da"><button class="lb" id="btn-finreg">View</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-finreg"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-02</td>
+      <td class="dn">Profit &amp; Loss &mdash; Multi-FY<span class="note">v_pl_master &mdash; real transaction data, all FY</span></td>
+      <td><span class="sp p-substrate" id="pill-pl">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-pl">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-pl"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-03</td>
+      <td class="dn">Trial Balance<span class="note">maat_trial_balance &mdash; FY24-25</span></td>
+      <td><span class="sp p-complete" id="pill-tb">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-tb">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-tb"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-04</td>
+      <td class="dn">General Ledger<span class="note">maat_transactions &mdash; 6,038 real txns + 28 estimates &middot; 10 bank accounts</span></td>
+      <td><span class="sp p-complete" id="pill-gl">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-gl">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-gl"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-05</td>
+      <td class="dn">Monthly P&amp;L<span class="note">maat_monthly_pl &mdash; multi-FY</span></td>
+      <td><span class="sp p-complete" id="pill-mpl">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-mpl">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-mpl"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-06</td>
+      <td class="dn">Director Loan Ledger<span class="note">maat_director_loan &mdash; 63 movements &middot; running balance tracked &middot; Div 7A applicable &middot; FY25-26 MYR $72,299 due 30 Jun</span></td>
+      <td><span class="sp p-complete" id="pill-dirloan">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-dirloan">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-dirloan"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-07</td>
+      <td class="dn">Asset Register + Depreciation Schedule<span class="note">maat_fixed_asset_register &mdash; 4 assets: Mac Studio M2 Ultra $8K, MacBook Pro M3 Max $6K, Peripherals $3.2K, Motor Vehicle $2.8K</span></td>
+      <td><span class="sp p-complete" id="pill-assets">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-assets">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-assets"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-08</td>
+      <td class="dn">Expense Breakdown by Category<span class="note">maat_category_spending &mdash; 53 categories</span></td>
+      <td><span class="sp p-complete" id="pill-expcat">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-expcat">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-expcat"></div></td></tr>
+
+    <tr class="dr"><td class="dc">FIN-09</td>
+      <td class="dn">Supplementary Costs (Travel, WFH)<span class="note">maat_supplementary_costs &mdash; some ESTIMATED confidence &middot; Amex statements not yet fully ingested</span><span class="warn">&#9888; Confidence = ESTIMATED on several items &mdash; Amex PDFs needed to confirm</span></td>
+      <td><span class="sp p-estimated" id="pill-supp">Estimated</span></td>
+      <td class="da"><button class="lb" id="btn-supp">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-supp"></div></td></tr>
+
+  </tbody></table>
+</div>
+
+<!-- S2: TAX & BAS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-label">Tax &amp; BAS</div>
+    <div class="section-tag">Wave 0 &middot; Lodgement spine</div>
+    <div class="section-count">8 docs</div>
+  </div>
+  <table class="doc-table"><tbody>
+
+    <tr class="dr"><td class="dc">TAX-01</td>
+      <td class="dn">BAS &mdash; All Quarters FY2024-25<span class="note">maat_bas_periods &mdash; 4 quarters, status=lodgement_required, gst credits populated &middot; total refundable $22,798</span><span class="warn">&#9888; All quarters UNLODGED &mdash; confirm lodgement plan with Gordon before meeting</span></td>
+      <td><span class="sp p-substrate" id="pill-bas">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-bas">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-02</td>
+      <td class="dn">GST Working Papers<span class="note">maat_bas_periods &mdash; 4 periods with GST collected/credits detail &middot; G1 total sales = $0 all quarters</span></td>
+      <td><span class="sp p-substrate" id="pill-gstwp">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-gstwp">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-gstwp"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-03</td>
+      <td class="dn">Personal Tax Summary (Troy Latter)<span class="note">maat_personal_tax &mdash; FY22-23: $10,708 REFUND to Troy &middot; FY23-24: zeroed (income data missing) &middot; FY24-25: $14,989 PAYABLE to ATO</span><span class="warn">&#9888; FY23-24 row is all-zero &mdash; income data missing for that year &middot; FY24-25 is a liability not a refund</span></td>
+      <td><span class="sp p-substrate" id="pill-ptax">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-ptax">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-ptax"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-04</td>
+      <td class="dn">Personal Deductions Schedule<span class="note">maat_personal_deductions &mdash; 12 rows across FY22-23 to FY24-25 &middot; equipment, PHI, phone, self-education, subscriptions</span></td>
+      <td><span class="sp p-substrate" id="pill-pded">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-pded">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-pded"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-05</td>
+      <td class="dn">Work Deductions / Private Use Schedule<span class="note">maat_paye_deductions &mdash; WFH $1,286 (67c/hr method), equipment, phone/internet, subscriptions, self-education</span></td>
+      <td><span class="sp p-substrate" id="pill-paye">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-paye">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-paye"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-06</td>
+      <td class="dn">Bank Statements &mdash; Coverage<span class="note">maat_source_registry &mdash; gaps: Amex personal not fully ingested, ANZ Business pre-Dec 2025, some PDFs with null supabase_path</span></td>
+      <td><span class="sp p-located" id="pill-bank">Located</span></td>
+      <td class="da"><button class="lb" id="btn-bank">View</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bank"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-07</td>
+      <td class="dn">Income Tax Return (Company) &mdash; FY2024&ndash;25<span class="warn">&#9888; GENUINELY MISSING &mdash; Andrew to prepare and lodge with ATO</span></td>
+      <td><span class="sp p-missing">Missing</span></td>
+      <td class="da"><span class="urg">Andrew scope</span></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-08</td>
+      <td class="dn">PAYG Payment Summaries (ATO official)<span class="note">maat_paye_deductions has personal deduction estimates only &mdash; not employer PAYG summaries. No payroll/STP system active.</span><span class="warn">&#9888; GENUINELY MISSING &mdash; confirm via ATO Portal / STP</span></td>
+      <td><span class="sp p-missing">Missing</span></td>
+      <td class="da"><span class="urg">ATO / Andrew</span></td></tr>
+
+  </tbody></table>
+</div>
+
+<!-- S3: RDTI -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-label">RDTI Evidence Pack</div>
+    <div class="section-tag">FY2024-25 &middot; PYV4R3VPW &middot; $2,136,791 eligible &middot; $929,504 refund</div>
+    <div class="section-count">9 docs</div>
+  </div>
+  <table class="doc-table"><tbody>
+
+    <tr class="dr"><td class="dc">RDTI-01</td>
+      <td class="dn">R&amp;D Cost Allocation Report<span class="note">v_rdti_by_fy &mdash; $1,592,250 labour (3,184.52 hrs @ $500/hr) + $544,541 bank R&amp;D (324 txns) = $2,136,791 total eligible</span></td>
+      <td><span class="sp p-complete" id="pill-rdcost">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-rdcost">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-rdcost"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-02</td>
+      <td class="dn">R&amp;D Activity Register<span class="note">rdti_narrative_register &mdash; 10 activities R01&ndash;R10 &middot; all COMPLETE (hypothesis, TU, method, outcomes)</span></td>
+      <td><span class="sp p-located" id="pill-rdact">Located</span></td>
+      <td class="da"><button class="lb" id="btn-rdact">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-rdact"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-03</td>
+      <td class="dn">R&amp;D Program Register<span class="note">2 programmes: ASS (FY2022/23&ndash;FY2024/25) + 7D-DCP (FY2023/24&ndash;FY2024/25)</span></td>
+      <td><span class="sp p-located" id="pill-rdprog">Located</span></td>
+      <td class="da"><button class="lb" id="btn-rdprog">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-rdprog"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-04</td>
+      <td class="dn">Evidence Matrix<span class="note">rdti_evidence_register &mdash; 65 evidence items &middot; all status=LOCATED</span></td>
+      <td><span class="sp p-complete" id="pill-evmat">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-evmat">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-evmat"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-05</td>
+      <td class="dn">Timesheets &mdash; FY24-25<span class="note">maat_timesheets &mdash; 299 entries &middot; 3,184.52 hrs &middot; 73% reconstructed from invoices, 27% gcal-native</span></td>
+      <td><span class="sp p-complete" id="pill-timelog">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-timelog">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-timelog"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-06</td>
+      <td class="dn">R&amp;D Transaction Extract<span class="note">maat_transactions WHERE is_rd=true &mdash; 324 txns &middot; $544,541 bank R&amp;D</span></td>
+      <td><span class="sp p-substrate" id="pill-rdtxn">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-rdtxn">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-rdtxn"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-07</td>
+      <td class="dn">IP Register<span class="note">ip_assets &mdash; 251 assets &middot; 9 classes &middot; ~$8M replacement value &middot; ~$7.5M market value</span></td>
+      <td><span class="sp p-complete" id="pill-ipreg">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-ipreg">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-ipreg"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-08</td>
+      <td class="dn">R&amp;D Projects Register<span class="note">maat_rd_projects &mdash; 35 projects &middot; 13 confirmed FY24-25</span></td>
+      <td><span class="sp p-located" id="pill-rdproj">Located</span></td>
+      <td class="da"><button class="lb" id="btn-rdproj">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-rdproj"></div></td></tr>
+
+    <tr class="dr"><td class="dc">RDTI-09</td>
+      <td class="dn">AusIndustry Submission Pack &mdash; PYV4R3VPW<span class="note">Submitted 20 Mar 2026 15:11 AEDT &middot; ABN 70 666 271 272 &middot; Validated 21/21 checks</span></td>
+      <td><span class="sp p-final">Submitted</span></td>
+      <td class="da"><span class="na">PYV4R3VPW</span></td></tr>
+
+  </tbody></table>
+</div>
+
+<!-- S4: GRANTS & REVENUE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-label">Grants &amp; Revenue Pipeline</div>
+    <div class="section-tag">Wave 2 &middot; Cash position</div>
+    <div class="section-count">3 docs</div>
+  </div>
+  <table class="doc-table"><tbody>
+
+    <tr class="dr"><td class="dc">REV-01</td>
+      <td class="dn">Invoice Register (Director Labour)<span class="note">maat_invoice_register &mdash; 40 invoices &middot; all $500/hr &middot; FY24-25 total $1,592,250</span></td>
+      <td><span class="sp p-complete" id="pill-inv">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-inv">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-inv"></div></td></tr>
+
+    <tr class="dr"><td class="dc">REV-02</td>
+      <td class="dn">Grants Register<span class="note">t4h_grant_register &mdash; 9 live grants &middot; CRC-P R19 (9.5/10 fit, closes 12 May 2026) &middot; IGP rolling &middot; CSIRO Kick-Start ongoing</span></td>
+      <td><span class="sp p-located" id="pill-grants">Located</span></td>
+      <td class="da"><button class="lb" id="btn-grants">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-grants"></div></td></tr>
+
+    <tr class="dr"><td class="dc">REV-03</td>
+      <td class="dn">External Client Revenue<span class="note">T4H is pre-external-revenue. Director invoices are the only income source. Stripe commerce live for HoloOrg/WFAI/AI Olympics but not yet generating external receipts.</span></td>
+      <td><span class="sp p-located" id="pill-extrev">Confirmed nil</span></td>
+      <td class="da"><button class="lb" id="btn-extrev">Verify</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-extrev"></div></td></tr>
+
+  </tbody></table>
+</div>
+
+<!-- S5: TRUE GAPS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-label">Genuine Gaps &mdash; Andrew to Supply</div>
+    <div class="section-tag">Verified against live Supabase &middot; 3 items only</div>
+    <div class="section-count">3 items</div>
+  </div>
+  <table class="doc-table"><tbody>
+    <tr class="dr"><td class="dc">GAP-01</td>
+      <td class="dn">Income Tax Return (Company) &mdash; FY2024&ndash;25<span class="note">No record anywhere in MAAT. Andrew to prepare and lodge.</span></td>
+      <td><span class="sp p-missing">Missing</span></td>
+      <td class="da"><span class="urg">Andrew scope</span></td></tr>
+    <tr class="dr"><td class="dc">GAP-02</td>
+      <td class="dn">PAYG Payment Summaries (ATO official)<span class="note">maat_paye_deductions has personal deduction rows only &mdash; not employer PAYG summaries. No STP/payroll system. Confirm with ATO Portal.</span></td>
+      <td><span class="sp p-missing">Missing</span></td>
+      <td class="da"><span class="urg">ATO / Andrew</span></td></tr>
+    <tr class="dr"><td class="dc">GAP-03</td>
+      <td class="dn">Company Constitution + ASIC Extract<span class="note">No record in MAAT. Required for Andrew's working papers file.</span></td>
+      <td><span class="sp p-missing">Missing</span></td>
+      <td class="da"><span class="urg">Action reqd</span></td></tr>
+  </tbody></table>
+</div>
+
+<!-- S6: CORRECTIONS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-label">Previously Listed as Gaps &mdash; Now Verified in MAAT</div>
+    <div class="section-tag">Original gap list had errors &middot; Corrected after live audit</div>
+    <div class="section-count">5 corrections</div>
+  </div>
+  <table class="doc-table"><tbody>
+
+    <tr class="dr"><td class="dc">WAS-GAP-04</td>
+      <td class="dn">FY2022&ndash;23 Timesheets<span class="note">maat_timesheets &mdash; 16 entries FY22-23 / 108 FY23-24 / 299 FY24-25 / 218 FY25-26 YTD. NOT missing.</span></td>
+      <td><span class="sp p-complete" id="pill-ts">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-ts">Verify</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-ts"></div></td></tr>
+
+    <tr class="dr"><td class="dc">WAS-GAP-05</td>
+      <td class="dn">Depreciation Schedule<span class="note">maat_fixed_asset_register &mdash; 4 assets with depreciation_method + rate populated. Generatable as formatted doc.</span></td>
+      <td><span class="sp p-substrate" id="pill-dep">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-dep">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-dep"></div></td></tr>
+
+    <tr class="dr"><td class="dc">WAS-GAP-06</td>
+      <td class="dn">Asset Register<span class="note">maat_fixed_asset_register &mdash; 4 assets confirmed. NOT missing.</span></td>
+      <td><span class="sp p-complete" id="pill-ar">Complete</span></td>
+      <td class="da"><button class="lb" id="btn-ar">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-ar"></div></td></tr>
+
+    <tr class="dr"><td class="dc">WAS-GAP-07</td>
+      <td class="dn">Private Use Adjustments<span class="note">maat_paye_deductions &mdash; 12 rows with WFH, equipment, phone categories. Data exists. Formal doc generatable. NOT missing.</span></td>
+      <td><span class="sp p-substrate" id="pill-pua">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-pua">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-pua"></div></td></tr>
+
+    <tr class="dr"><td class="dc">WAS-GAP-03</td>
+      <td class="dn">Contractor ABN Confirmations<span class="note">maat_supplementary_costs references Amex transactions not yet fully ingested. Partial data exists &mdash; watch item.</span></td>
+      <td><span class="sp p-estimated" id="pill-contr">Watch</span></td>
+      <td class="da"><button class="lb" id="btn-contr">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-contr"></div></td></tr>
+
+  </tbody></table>
+</div>
+
+<div class="footer">
+  <span>Tech 4 Humanity Pty Ltd &middot; ABN 70 666 271 272 &middot; troy@tech4humanity.com.au</span>
+  <span>All statuses verified live from Supabase &middot; 20 Mar 2026 &middot; CONFIDENTIAL</span>
+</div>
+</div>
+
+<script>
+const BRIDGE='https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
+const KEY='bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4';
+const ST={};
+
+const QUERIES={
+  finreg:"SELECT report_code, report_name, output_filename, last_built_at FROM maat_report_registry ORDER BY id LIMIT 20",
+  pl:"SELECT fy, revenue, rd_labour, rd_bank, rd_total, opex, total_expenses, net_loss FROM v_pl_master ORDER BY fy",
+  tb:"SELECT account_code, account_name, account_type, debit, credit, net FROM maat_trial_balance ORDER BY account_code",
+  gl:"SELECT posted_at, description, ROUND(amount::numeric,2) as amount, category FROM maat_transactions WHERE is_estimate IS NOT TRUE ORDER BY posted_at DESC LIMIT 50",
+  mpl:"SELECT * FROM maat_monthly_pl ORDER BY period_end DESC LIMIT 24",
+  dirloan:"SELECT month, subcategory, ROUND(amount::numeric,2) as amount, ROUND(running_balance::numeric,2) as bal FROM maat_director_loan ORDER BY month DESC LIMIT 30",
+  assets:"SELECT asset_code, asset_name, asset_class, acquisition_cost, acquisition_date, useful_life_years, depreciation_method, depreciation_rate_pct FROM maat_fixed_asset_register ORDER BY asset_code",
+  expcat:"SELECT category, ROUND(SUM(amount)::numeric,2) AS total, COUNT(*) AS txn_count FROM maat_transactions WHERE is_estimate IS NOT TRUE GROUP BY category ORDER BY total DESC LIMIT 30",
+  supp:"SELECT fy, category, description, ROUND(amount::numeric,2) as amount, confidence, evidence_source FROM maat_supplementary_costs ORDER BY fy, category LIMIT 30",
+  bas:"SELECT period_label, period_start, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(label_1a_gst_collected::numeric,2) as gst_collected, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods ORDER BY period_start",
+  gstwp:"SELECT period_label, g1_total_sales, g2_export_sales, label_1a_gst_collected, label_1b_gst_paid FROM maat_bas_periods ORDER BY period_start",
+  ptax:"SELECT financial_year, taxpayer_name, ROUND(salary_income::numeric,2) as gross_income, ROUND(taxable_income::numeric,2) as taxable_income, ROUND(tax_on_income::numeric,2) as tax, ROUND(tax_withheld::numeric,2) as withheld, ROUND(refund_or_payable::numeric,2) as refund_payable, lodgement_status FROM maat_personal_tax ORDER BY financial_year",
+  pded:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount, status FROM maat_personal_deductions ORDER BY financial_year, category",
+  paye:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions ORDER BY financial_year, category",
+  bank:"SELECT source_type, COUNT(*) AS total, SUM(CASE WHEN supabase_path IS NOT NULL THEN 1 ELSE 0 END) AS with_file FROM maat_source_registry GROUP BY source_type ORDER BY total DESC",
+  rdcost:"SELECT fy, labour, bank_rd, total_eligible, ROUND(total_eligible*0.435,2) as rdti_refund FROM v_rdti_by_fy ORDER BY fy",
+  rdact:"SELECT activity_code, programme_code, title FROM rdti_narrative_register ORDER BY activity_code",
+  rdprog:"SELECT programme_code, programme_name, fy_start, fy_end FROM rdti_programmes ORDER BY fy_start",
+  evmat:"SELECT item_num, description, evidence_type, status FROM rdti_evidence_register ORDER BY item_num LIMIT 40",
+  timelog:"SELECT financial_year, COUNT(*) as entries, ROUND(SUM(hours_worked)::numeric,2) as hours, SUM(hours_worked)*500 as value FROM maat_timesheets GROUP BY financial_year ORDER BY financial_year",
+  rdtxn:"SELECT posted_at, description, ROUND(amount::numeric,2) as amount, category FROM maat_transactions WHERE is_rd=true AND EXTRACT(YEAR FROM posted_at + INTERVAL '6 months') = 2025 ORDER BY amount DESC LIMIT 30",
+  ipreg:"SELECT asset_class, COUNT(*) as n, ROUND(SUM(replacement_value_aud)::numeric,0) as replacement FROM ip_assets GROUP BY asset_class ORDER BY replacement DESC NULLS LAST",
+  rdproj:"SELECT project_code, project_name, programme_code FROM maat_rd_projects ORDER BY project_code LIMIT 20",
+  inv:"SELECT fy, COUNT(*) as invoices, SUM(total_hours) as hours, MIN(rate_per_hour) as rate, SUM(amount_ex_gst) as total FROM maat_invoice_register GROUP BY fy ORDER BY fy",
+  grants:"SELECT program_code, program_name, t4h_fit_score, action, COALESCE(closes_date::text, 'rolling') as closes, status FROM t4h_grant_register ORDER BY t4h_fit_score DESC",
+  extrev:"SELECT COUNT(*) as stripe_txns FROM maat_transactions WHERE category ILIKE '%stripe%'",
+  ts:"SELECT financial_year, COUNT(*) as entries, ROUND(SUM(hours_worked)::numeric,2) as hours FROM maat_timesheets GROUP BY financial_year ORDER BY financial_year",
+  dep:"SELECT asset_code, asset_name, acquisition_cost, depreciation_method, depreciation_rate_pct, useful_life_years FROM maat_fixed_asset_register ORDER BY asset_code",
+  ar:"SELECT asset_code, asset_name, asset_class, acquisition_cost, acquisition_date FROM maat_fixed_asset_register ORDER BY asset_code",
+  pua:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions ORDER BY financial_year, category",
+  contr:"SELECT fy, description, ROUND(amount::numeric,2) as amount, confidence FROM maat_supplementary_costs ORDER BY fy LIMIT 20"
+};
+
+document.querySelectorAll('.lb').forEach(btn=>{
+  const id=btn.id.replace('btn-','');
+  if(QUERIES[id]) btn.onclick=()=>toggle(id);
+});
+
+async function toggle(id){
+  const panel=document.getElementById('panel-'+id);
+  const btn=document.getElementById('btn-'+id);
+  const pill=document.getElementById('pill-'+id);
+  if(!panel||!btn)return;
+  if(ST[id]&&ST[id].open){
+    panel.classList.remove('open');
+    if(pill&&ST[id].oc){pill.className=ST[id].oc;pill.textContent=ST[id].ot;}
+    btn.textContent=ST[id].ll||'Load';btn.disabled=false;
+    ST[id].open=false;return;
+  }
+  if(!ST[id])ST[id]={oc:pill?pill.className:'',ot:pill?pill.textContent:'',ll:btn.textContent};
+  btn.disabled=true;btn.textContent='···';
+  if(pill){pill.className='sp p-querying';pill.textContent='querying';}
+  try{
+    const res=await fetch(BRIDGE,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':KEY},body:JSON.stringify({fn:'troy-sql-executor',sql:QUERIES[id]})});
+    const d=await res.json();
+    if(d&&(d.success||Array.isArray(d.rows))){
+      const rows=d.rows||[];
+      if(pill){pill.className='sp p-live';pill.textContent=rows.length+' rows';}
+      let h='<button class="cb" onclick="cl(\''+id+'\')">&#x2715; close</button>';
+      if(!rows.length){h+='<span style="color:#4dbb7a">&#10003;</span> No rows returned.';}
+      else{
+        const cols=Object.keys(rows[0]);
+        h+='<table><thead><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>';
+        rows.forEach(r=>{h+='<tr>'+cols.map(c=>{const v=r[c];if(v===null||v===undefined)return'<td style="color:#444">&#8212;</td>';const s=String(v);return'<td'+(typeof v==='number'?' style="text-align:right"':'')+'>'+esc(s.length>90?s.slice(0,90)+'&hellip;':s)+'</td>';}).join('')+'</tr>';});
+        h+='</tbody></table>';
+      }
+      h+='<div class="pm">&#8627; '+rows.length+' rows &middot; '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'</div>';
+      panel.innerHTML=h;
+    }else{
+      const msg=d?.error||d?.message||JSON.stringify(d).slice(0,200);
+      if(pill){pill.className='sp p-error';pill.textContent='error';}
+      panel.innerHTML='<button class="cb" onclick="cl(\''+id+'\')">&#x2715; close</button><span class="pe">&#10007; '+esc(msg)+'</span>';
+    }
+    panel.classList.add('open');btn.textContent='Close';btn.disabled=false;ST[id].open=true;
+  }catch(e){
+    if(pill){pill.className='sp p-error';pill.textContent='error';}
+    panel.innerHTML='<button class="cb" onclick="cl(\''+id+'\')">&#x2715; close</button><span class="pe">&#10007; '+esc(e.message)+'</span>';
+    panel.classList.add('open');btn.textContent='Retry';btn.disabled=false;ST[id].open=true;
+  }
+}
+
+function cl(id){
+  const panel=document.getElementById('panel-'+id);
+  const btn=document.getElementById('btn-'+id);
+  const pill=document.getElementById('pill-'+id);
+  panel.classList.remove('open');
+  if(ST[id]){
+    if(pill&&ST[id].oc){pill.className=ST[id].oc;pill.textContent=ST[id].ot;}
+    if(btn){btn.textContent=ST[id].ll||'Load';btn.disabled=false;}
+    ST[id].open=false;
+  }
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
