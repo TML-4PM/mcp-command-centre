@@ -3,692 +3,543 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>T4H · Accountant Portal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Andrew Douglas — T4H Briefing Pack · 25 Mar 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* ── TOKENS ── */
-:root {
-  --bg:       #0d0d0d;
-  --surface:  #141414;
-  --surface2: #1a1a1a;
-  --border:   #252525;
-  --border2:  #2e2e2e;
-  --text:     #e8e8e8;
-  --muted:    #5a5a5a;
-  --sub:      #3a3a3a;
-  --accent:   #e05a2b;
-  --blue:     #4a8fff;
-  --green:    #3dbb6c;
-  --amber:    #f0a32a;
-  --red:      #e05a2b;
-  --mono: 'IBM Plex Mono', monospace;
-  --sans: 'IBM Plex Sans', sans-serif;
-}
+  :root {
+    --ink: #0d0d0d; --paper: #f5f2eb; --cream: #ede9df; --rule: #c8c0b0;
+    --accent: #b85c1a; --accent2: #2a5c3f; --muted: #7a7060;
+    --complete: #2a5c3f; --substrate: #b85c1a; --missing: #8b1a1a; --located: #1a4a6b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; font-weight:300; min-height:100vh; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; }
+  .page-wrap { max-width:960px; margin:0 auto; padding:60px 40px 100px; position:relative; z-index:1; }
 
-/* ── RESET ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 14px; }
-body { font-family: var(--mono); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
-button { font-family: var(--mono); cursor: pointer; border: none; background: none; }
-input { font-family: var(--mono); }
-a { color: inherit; text-decoration: none; }
+  .masthead { border-top:3px solid var(--ink); border-bottom:1px solid var(--rule); padding:24px 0 20px; margin-bottom:48px; }
+  .masthead-eyebrow { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+  .masthead-title { font-family:'Playfair Display',serif; font-size:clamp(28px,5vw,48px); font-weight:900; line-height:1.05; letter-spacing:-0.02em; }
+  .masthead-title span { color:var(--accent); }
+  .masthead-meta { display:flex; gap:32px; margin-top:16px; font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); flex-wrap:wrap; }
+  .masthead-meta strong { color:var(--ink); }
 
-/* ── AUTH ── */
-#auth {
-  position: fixed; inset: 0; z-index: 200;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-}
-.auth-inner { width: 360px; }
-.auth-wordmark {
-  font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 40px;
-}
-.auth-heading {
-  font-family: var(--sans); font-weight: 300; font-size: 28px;
-  color: var(--text); line-height: 1.2; margin-bottom: 6px;
-}
-.auth-sub { font-size: 11px; color: var(--muted); margin-bottom: 36px; }
-.auth-field {
-  border-bottom: 1px solid var(--border2);
-  padding-bottom: 10px; margin-bottom: 24px;
-}
-.auth-field input {
-  width: 100%; background: none; border: none; outline: none;
-  font-size: 13px; color: var(--text); letter-spacing: .04em;
-}
-.auth-field input::placeholder { color: var(--sub); }
-.auth-submit {
-  width: 100%; padding: 11px;
-  background: var(--accent); color: #fff;
-  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
-  border: none; transition: opacity .15s;
-}
-.auth-submit:hover { opacity: .85; }
-.auth-err { margin-top: 14px; font-size: 11px; color: var(--accent); min-height: 14px; }
+  .rdti-banner { background:var(--accent2); color:#f0f7f3; padding:14px 20px; margin-bottom:40px; display:flex; align-items:center; gap:12px; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.05em; }
+  .rdti-banner .dot { width:8px; height:8px; background:#4dbb7a; border-radius:50%; flex-shrink:0; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ── SHELL ── */
-#app { display: none; }
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule); margin-bottom:48px; border:1px solid var(--rule); }
+  .stat-cell { background:var(--paper); padding:20px; text-align:center; }
+  .stat-num { font-family:'Playfair Display',serif; font-size:36px; font-weight:900; line-height:1; margin-bottom:6px; }
+  .stat-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .s-complete .stat-num{color:var(--complete)} .s-located .stat-num{color:var(--located)} .s-substrate .stat-num{color:var(--substrate)} .s-missing .stat-num{color:var(--missing)}
 
-/* ── TOPBAR ── */
-.top {
-  height: 44px; position: sticky; top: 0; z-index: 100;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px;
-}
-.top-left { display: flex; align-items: center; gap: 20px; }
-.top-brand { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
-.top-pipe { width: 1px; height: 16px; background: var(--border2); }
-.top-ctx { font-size: 11px; color: var(--muted); }
-.top-right { display: flex; align-items: center; gap: 14px; }
-.top-ts { font-size: 10px; color: var(--sub); }
-.top-live { font-size: 9px; letter-spacing: .14em; color: var(--green); }
+  .agenda-box { border:1px solid var(--rule); padding:24px; margin-bottom:48px; background:var(--cream); }
+  .agenda-box h3 { font-family:'Playfair Display',serif; font-size:14px; margin-bottom:14px; }
+  .agenda-items { list-style:none; display:flex; flex-direction:column; gap:8px; }
+  .agenda-items li { display:flex; gap:12px; font-size:12px; }
+  .agenda-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); min-width:20px; }
 
-/* ── LAYOUT ── */
-.shell { display: grid; grid-template-columns: 240px 1fr; height: calc(100vh - 44px); }
+  .section { margin-bottom:48px; }
+  .section-header { display:flex; align-items:baseline; gap:16px; border-bottom:1px solid var(--rule); padding-bottom:10px; margin-bottom:20px; }
+  .section-label { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; }
+  .section-tag { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); }
+  .section-count { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
 
-/* ── SIDEBAR ── */
-.nav {
-  background: var(--surface); border-right: 1px solid var(--border);
-  overflow-y: auto; padding: 20px 0;
-  display: flex; flex-direction: column; gap: 0;
-}
-.nav-search {
-  margin: 0 16px 16px;
-  border-bottom: 1px solid var(--border2);
-  padding-bottom: 8px;
-}
-.nav-search input {
-  width: 100%; background: none; border: none; outline: none;
-  font-size: 11px; color: var(--text); padding: 4px 0;
-}
-.nav-search input::placeholder { color: var(--sub); }
-.nav-group-label {
-  font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--sub); padding: 12px 20px 6px;
-}
-.nav-item {
-  display: flex; align-items: center; gap: 9px;
-  padding: 7px 20px; cursor: pointer;
-  font-size: 11px; color: var(--muted);
-  border-left: 2px solid transparent;
-  transition: color .1s, background .1s;
-  line-height: 1.35;
-}
-.nav-item:hover { color: var(--text); background: var(--surface2); }
-.nav-item.active { color: var(--text); border-left-color: var(--accent); background: var(--surface2); }
-.nav-item.dim { color: var(--sub); }
-.nav-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.nav-dot.g { background: var(--green); }
-.nav-dot.a { background: var(--amber); }
-.nav-dot.r { background: var(--red); }
-.nav-dot.d { background: var(--sub); }
-.nav-freq { margin-left: auto; font-size: 9px; color: var(--sub); flex-shrink: 0; }
+  .doc-table { width:100%; border-collapse:collapse; }
+  .doc-table tr.data-row { border-bottom:1px solid var(--cream); }
+  .doc-table tr.data-row:hover td { background:var(--cream); }
+  .doc-table td { padding:10px 8px; vertical-align:top; }
+  .doc-code { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); white-space:nowrap; padding-right:16px; width:110px; padding-top:12px; }
+  .doc-name { font-size:13px; font-weight:400; color:var(--ink); line-height:1.4; }
+  .doc-name .note { display:block; font-size:10px; font-family:'DM Mono',monospace; color:var(--muted); margin-top:2px; font-style:italic; }
 
-/* ── MAIN ── */
-.main { overflow-y: auto; background: var(--bg); }
-.main-inner { padding: 36px 44px; max-width: 960px; }
+  .status-pill { display:inline-block; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:2px 7px; border-radius:2px; white-space:nowrap; }
+  .pill-complete  { background:#d4ead9; color:var(--complete); }
+  .pill-located   { background:#d0e5f0; color:var(--located); }
+  .pill-substrate { background:#fde8d4; color:var(--substrate); }
+  .pill-missing   { background:#f5d5d5; color:var(--missing); }
+  .pill-final     { background:#d4ead9; color:var(--complete); }
+  .pill-draft     { background:#fde8d4; color:var(--substrate); }
+  .pill-querying  { background:#e8e4f8; color:#3d2a7a; animation:blink 0.8s step-end infinite; }
+  .pill-live      { background:#d4ead9; color:var(--complete); }
+  .pill-error     { background:#f5d5d5; color:var(--missing); }
+  @keyframes blink { 50%{opacity:0.5} }
 
-/* ── HERO ── */
-.hero { margin-bottom: 32px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
-.hero-label { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-.hero-title { font-family: var(--sans); font-weight: 300; font-size: 32px; color: var(--text); line-height: 1.15; margin-bottom: 16px; }
-.hero-meta { display: flex; flex-wrap: wrap; gap: 24px; }
-.hero-kv { font-size: 11px; color: var(--muted); }
-.hero-kv span { color: var(--text); }
+  .doc-action { text-align:right; width:90px; padding-top:10px; }
+  .load-btn { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; background:var(--ink); color:var(--paper); border:none; padding:5px 10px; cursor:pointer; transition:background 0.15s; }
+  .load-btn:hover { background:var(--accent); }
+  .load-btn:disabled { background:var(--muted); cursor:wait; }
+  .na-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+  .urgent-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--missing); font-weight:500; }
+  .ext-link { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); text-decoration:none; border-bottom:1px solid currentColor; }
 
-/* ── KPIS ── */
-.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 28px; }
-.kpi { background: var(--surface); padding: 18px 20px; }
-.kpi-label { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-.kpi-val { font-family: var(--sans); font-size: 24px; font-weight: 300; color: var(--text); line-height: 1; }
-.kpi-val.acc { color: var(--accent); }
-.kpi-val.grn { color: var(--green); }
-.kpi-sub { font-size: 10px; color: var(--sub); margin-top: 5px; }
+  /* result panel */
+  .result-row td { padding:0 !important; background:transparent !important; }
+  .result-panel { background:#161613; color:#d8d4c8; font-family:'DM Mono',monospace; font-size:11px; line-height:1.7; max-height:0; overflow:hidden; transition:max-height 0.4s ease, padding 0.3s ease; }
+  .result-panel.open { max-height:500px; padding:18px 24px; overflow-y:auto; }
+  .result-panel table { width:100%; border-collapse:collapse; margin-top:8px; }
+  .result-panel thead th { text-align:left; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#7a7060; border-bottom:1px solid #2a2a27; padding:4px 8px 6px; }
+  .result-panel tbody td { padding:5px 8px; border-bottom:1px solid #1e1e1a; color:#b8b4a8; font-size:10px; }
+  .result-panel tbody tr:last-child td { border-bottom:none; }
+  .result-panel tbody tr:hover td { background:#1e1e1a; }
+  .panel-meta { color:#5a5650; font-size:9px; margin-top:10px; }
+  .panel-err { color:#ff6b6b; }
+  .panel-ok  { color:#4dbb7a; }
+  .close-btn { float:right; background:none; border:1px solid #333; color:#5a5650; font-family:'DM Mono',monospace; font-size:9px; padding:2px 8px; cursor:pointer; margin-bottom:6px; }
+  .close-btn:hover { color:#fff; border-color:#666; }
 
-/* ── ALERT ── */
-.alert {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; margin-bottom: 28px;
-  border: 1px solid #3d2010; border-left: 3px solid var(--accent);
-  background: #1a0f08;
-}
-.alert-text { font-size: 11px; color: #c88060; }
-.alert-date { font-size: 11px; color: var(--accent); font-weight: 500; white-space: nowrap; margin-left: 16px; }
-
-/* ── SECTION ── */
-.section { margin-bottom: 44px; }
-.section-head {
-  display: flex; align-items: baseline; gap: 12px;
-  margin-bottom: 16px; padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-.section-title { font-family: var(--sans); font-size: 16px; font-weight: 400; color: var(--text); }
-.section-count { font-size: 11px; color: var(--muted); }
-
-/* ── WAVE1 GRID ── */
-.wave1 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 32px; }
-.w1-card {
-  background: var(--surface); padding: 16px 18px;
-  cursor: pointer; transition: background .1s;
-  position: relative;
-}
-.w1-card:hover { background: var(--surface2); }
-.w1-card.urg { border-top: 2px solid var(--accent); }
-.w1-num { font-size: 10px; color: var(--sub); margin-bottom: 6px; }
-.w1-name { font-size: 12px; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
-.w1-slug { font-size: 10px; color: var(--muted); font-style: italic; }
-.w1-urg { position: absolute; top: 12px; right: 12px; font-size: 9px; letter-spacing: .1em; color: var(--accent); border: 1px solid currentColor; padding: 2px 6px; }
-
-/* ── REPORT ROW ── */
-.report {
-  border: 1px solid var(--border);
-  margin-bottom: 8px;
-  transition: border-color .1s;
-}
-.report:hover { border-color: var(--border2); }
-.report-head {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; cursor: pointer;
-}
-.report-idx { font-size: 10px; color: var(--sub); width: 22px; flex-shrink: 0; text-align: right; }
-.report-info { flex: 1; min-width: 0; }
-.report-name { font-size: 12px; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.report-slug { font-size: 10px; color: var(--muted); font-style: italic; }
-.report-acts { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.btn-sm {
-  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
-  padding: 5px 12px; border: 1px solid var(--border2); color: var(--muted);
-  transition: all .12s;
-}
-.btn-sm:hover { border-color: var(--text); color: var(--text); }
-.btn-sm.primary { background: var(--surface2); border-color: var(--border2); color: var(--text); }
-.btn-sm.csv { border-color: var(--blue); color: var(--blue); }
-.btn-sm.csv:hover { background: var(--blue); color: var(--bg); }
-.chev { font-size: 9px; color: var(--sub); transition: transform .15s; width: 14px; text-align: center; }
-.chev.open { transform: rotate(180deg); }
-
-/* ── REPORT BODY ── */
-.report-body { display: none; border-top: 1px solid var(--border); }
-.report-body.open { display: block; }
-.body-loading { padding: 16px; font-size: 11px; color: var(--muted); }
-.body-err { padding: 16px; font-size: 11px; color: var(--accent); }
-
-/* ── TABLE ── */
-.tbl-wrap { overflow-x: auto; }
-table.t { width: 100%; border-collapse: collapse; font-size: 11px; }
-table.t th {
-  text-align: left; padding: 8px 14px;
-  background: var(--surface); color: var(--sub);
-  font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
-  white-space: nowrap; border-bottom: 1px solid var(--border);
-  font-weight: 400;
-}
-table.t td {
-  padding: 8px 14px; border-bottom: 1px solid var(--border);
-  color: var(--text); white-space: nowrap;
-  max-width: 260px; overflow: hidden; text-overflow: ellipsis;
-}
-table.t tr:last-child td { border-bottom: none; }
-table.t tr:nth-child(even) td { background: var(--surface); }
-.tbl-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; background: var(--surface);
-  border-top: 1px solid var(--border); font-size: 10px; color: var(--sub);
-}
-
-/* ── REQUEST ROW ── */
-.req-row {
-  border: 1px dashed var(--border); margin-bottom: 8px;
-  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-}
-.req-badge {
-  font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--sub); border: 1px solid var(--border); padding: 3px 8px;
-  white-space: nowrap; flex-shrink: 0;
-}
-.req-info { flex: 1; min-width: 0; }
-.req-name { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
-.req-slug { font-size: 10px; color: var(--sub); font-style: italic; }
-.btn-req {
-  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
-  padding: 5px 12px; border: 1px dashed var(--border); color: var(--sub);
-  flex-shrink: 0; transition: all .12s;
-}
-.btn-req:hover { border-color: var(--blue); color: var(--blue); }
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 3px; height: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-/* ── ANIM ── */
-@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
-.loading-pulse { animation: pulse 1.4s ease-in-out infinite; }
+  .footer { margin-top:64px; border-top:1px solid var(--rule); padding-top:20px; font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  @media(max-width:600px){.page-wrap{padding:32px 20px 60px}.stats-row{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
+<div class="page-wrap">
 
-<!-- AUTH -->
-<div id="auth">
-  <div class="auth-inner">
-    <div class="auth-wordmark">Tech 4 Humanity Pty Ltd · ABN 61 605 746 618</div>
-    <div class="auth-heading">Financial<br>Intelligence</div>
-    <div class="auth-sub">Accountant Portal · Restricted Access</div>
-    <div class="auth-field">
-      <input type="password" id="tok" placeholder="Access token" autocomplete="off">
+  <div class="masthead">
+    <div class="masthead-eyebrow">Confidential · Tech 4 Humanity Pty Ltd · ABN 61 605 746 618</div>
+    <div class="masthead-title">Accountant Briefing<br><span>Andrew Douglas</span></div>
+    <div class="masthead-meta">
+      <span><strong>Meeting:</strong> Tue 25 Mar 2026</span>
+      <span><strong>Entity:</strong> TECH 4 HUMANITY PTY LTD</span>
+      <span><strong>FY:</strong> 2024–25</span>
+      <span><strong>Prepared:</strong> 20 Mar 2026</span>
     </div>
-    <button class="auth-submit" id="auth-btn" onclick="doAuth()">Enter</button>
-    <div class="auth-err" id="auth-err"></div>
+  </div>
+
+  <div class="rdti-banner">
+    <div class="dot"></div>
+    <span>RDTI FY2024/25 REGISTERED &nbsp;·&nbsp; AusIndustry &nbsp;·&nbsp; Tracking ID: <strong>PYV4R3VPW</strong> &nbsp;·&nbsp; Submitted 20 Mar 2026 15:11 AEDT</span>
+  </div>
+
+  <div class="agenda-box">
+    <h3>Meeting Agenda — 25 March 2026</h3>
+    <ul class="agenda-items">
+      <li><span class="agenda-num">01</span><span><strong>RDTI:</strong> Registration confirmed (PYV4R3VPW). Review claim quantum, R&D cost allocation, AusIndustry next steps.</span></li>
+      <li><span class="agenda-num">02</span><span><strong>BAS:</strong> Q1–Q3 FY2024/25 + outstanding periods. GST working papers provided.</span></li>
+      <li><span class="agenda-num">03</span><span><strong>Tax Return:</strong> Company ITR FY2024/25. Director loan position (Div 7A). PAYG status.</span></li>
+      <li><span class="agenda-num">04</span><span><strong>Gap items:</strong> 6 contractors without ABNs (~$47,500). FY2022–23 timesheets missing. Private use adjustments needed.</span></li>
+    </ul>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-cell s-complete"><div class="stat-num">6</div><div class="stat-label">Complete / Located</div></div>
+    <div class="stat-cell s-substrate"><div class="stat-num">41</div><div class="stat-label">Substrate (live)</div></div>
+    <div class="stat-cell s-missing"><div class="stat-num">28</div><div class="stat-label">Missing</div></div>
+    <div class="stat-cell s-located"><div class="stat-num">1</div><div class="stat-label">In registry</div></div>
+  </div>
+
+  <!-- SECTION 1: ACCOUNTANT BACKBONE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">Accountant Backbone</div>
+      <div class="section-tag">Wave 1 · Andrew's primary pack</div>
+      <div class="section-count">9 docs</div>
+    </div>
+    <table class="doc-table">
+      <tbody id="tbody-accountant">
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-01</td>
+          <td class="doc-name">Profit &amp; Loss (FY2024–25)<span class="note">v_pl_t4h_by_fy + maat_invoice_register</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-pl">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-pl" onclick="toggle('pl','SELECT fy, revenue_total, expense_total, ROUND(revenue_total - expense_total,2) AS net FROM v_pl_t4h_by_fy ORDER BY fy')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-pl"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-02</td>
+          <td class="doc-name">Trial Balance<span class="note">maat_trial_balance</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-tb">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-tb" onclick="toggle('tb','SELECT account_code, account_name, debit, credit FROM maat_trial_balance ORDER BY account_code LIMIT 50')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-tb"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-03</td>
+          <td class="doc-name">General Ledger (last 100 txns)<span class="note">maat_transactions — T4H entity</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-gl">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-gl" onclick="toggle('gl',`SELECT txn_date, description, amount, category FROM maat_transactions ORDER BY txn_date DESC LIMIT 100`)">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-gl"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-06</td>
+          <td class="doc-name">Director Loan Movement Summary<span class="note">maat_director_loan</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-dirloan">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-dirloan" onclick="toggle('dirloan','SELECT * FROM maat_director_loan ORDER BY transaction_date DESC LIMIT 50')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-dirloan"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-07</td>
+          <td class="doc-name">GST Adjustment Summary<span class="note">maat_bas_periods</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-gst">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-gst" onclick="toggle('gst','SELECT period_label, gst_collected, gst_credits, net_gst, bas_lodged FROM maat_bas_periods ORDER BY period_end DESC LIMIT 20')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-gst"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-08</td>
+          <td class="doc-name">R&amp;D Adjustment Schedule<span class="note">v_rdti_by_fy</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-rdadj">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-rdadj" onclick="toggle('rdadj','SELECT * FROM v_rdti_by_fy ORDER BY fy')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-rdadj"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-09</td>
+          <td class="doc-name">Expense Breakdown by Category<span class="note">maat_category_spending</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-expcat">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-expcat" onclick="toggle('expcat','SELECT category, SUM(amount) AS total, COUNT(*) AS txn_count FROM maat_category_spending GROUP BY category ORDER BY total DESC LIMIT 30')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-expcat"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-10</td>
+          <td class="doc-name">Depreciation Schedule</td>
+          <td><span class="status-pill pill-missing">Missing</span></td>
+          <td class="doc-action"><span class="na-label">Manual req.</span></td>
+        </tr>
+        <tr class="data-row">
+          <td class="doc-code">RD-W1-11</td>
+          <td class="doc-name">Asset Register</td>
+          <td><span class="status-pill pill-missing">Missing</span></td>
+          <td class="doc-action"><span class="na-label">Manual req.</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 2: TAX & COMPLIANCE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">Tax &amp; Compliance</div>
+      <div class="section-tag">Wave 0 · Lodgement spine</div>
+      <div class="section-count">7 docs</div>
+    </div>
+    <table class="doc-table">
+      <tbody>
+        <tr class="data-row">
+          <td class="doc-code">FIN-PL-BAS</td>
+          <td class="doc-name">T4H Financial Statements — P&amp;L and BAS<span class="note">maat_report_registry — last built 10 Mar 2026</span></td>
+          <td><span class="status-pill pill-final" id="pill-finreg">In Registry</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-finreg" onclick="toggle('finreg','SELECT report_code, report_name, output_filename, last_built_at FROM maat_report_registry ORDER BY id')">View</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-finreg"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-TAX-01</td>
+          <td class="doc-name">ATO BAS Statements — All Quarters<span class="note">maat_bas_submissions</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-bas">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-bas" onclick="toggle('bas','SELECT * FROM maat_bas_submissions ORDER BY period_end DESC LIMIT 20')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-bas"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-TAX-02</td>
+          <td class="doc-name">GST Working Papers<span class="note">maat_bas_periods</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-gstwp">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-gstwp" onclick="toggle('gstwp','SELECT * FROM maat_bas_periods ORDER BY period_end DESC LIMIT 20')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-gstwp"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-TAX-03</td>
+          <td class="doc-name">Bank Statements — All Accounts<span class="note">maat_source_registry — 19 PDFs; Amex + ANZ pre-Dec 25 gaps</span></td>
+          <td><span class="status-pill pill-located" id="pill-bank">Located</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-bank" onclick="toggle('bank',`SELECT account_name, account_number, statement_period_start, statement_period_end, supabase_path FROM maat_source_registry WHERE source_type='BANK_STATEMENT' ORDER BY statement_period_end DESC LIMIT 30`)">View</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-bank"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-TAX-04</td>
+          <td class="doc-name">Director Loan Ledger<span class="note">maat_director_loan</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-dirl2">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-dirl2" onclick="toggle('dirl2','SELECT transaction_date, description, amount, running_balance FROM maat_director_loan ORDER BY transaction_date DESC LIMIT 40')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-dirl2"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-TAX-05</td>
+          <td class="doc-name">Income Tax Return (Company)</td>
+          <td><span class="status-pill pill-missing">Missing</span></td>
+          <td class="doc-action"><span class="na-label">Andrew's scope</span></td>
+        </tr>
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-TAX-06</td>
+          <td class="doc-name">PAYG Summaries</td>
+          <td><span class="status-pill pill-missing">Missing</span></td>
+          <td class="doc-action"><span class="na-label">Andrew's scope</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 3: RDTI PACK -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">RDTI Evidence Pack</div>
+      <div class="section-tag">Wave 0 · AusIndustry + ATO audit ready</div>
+      <div class="section-count">8 docs</div>
+    </div>
+    <table class="doc-table">
+      <tbody>
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-RD-04</td>
+          <td class="doc-name">R&amp;D Cost Allocation Report<span class="note">v_rdti_by_fy — source of truth for RDTI figures</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-rdcost">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-rdcost" onclick="toggle('rdcost','SELECT * FROM v_rdti_by_fy ORDER BY fy')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-rdcost"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-RD-02</td>
+          <td class="doc-name">R&amp;D Activity Register<span class="note">rdti_narrative_register</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-rdact">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-rdact" onclick="toggle('rdact','SELECT activity_name, activity_type, uncertainty, outcomes FROM rdti_narrative_register ORDER BY activity_name LIMIT 30')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-rdact"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-P10-07</td>
+          <td class="doc-name">Evidence Matrix<span class="note">rdti_evidence_register</span></td>
+          <td><span class="status-pill pill-final" id="pill-evmat">Final</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-evmat" onclick="toggle('evmat','SELECT item_num, description, evidence_type, status FROM rdti_evidence_register ORDER BY item_num LIMIT 40')">View</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-evmat"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-P10-08</td>
+          <td class="doc-name">MAAT Transaction Extract (R&amp;D)<span class="note">maat_transactions WHERE include_in_rdti = true</span></td>
+          <td><span class="status-pill pill-draft" id="pill-rdtxn">Draft</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-rdtxn" onclick="toggle('rdtxn','SELECT txn_date, description, amount, category FROM maat_transactions WHERE include_in_rdti = true ORDER BY txn_date DESC LIMIT 50')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-rdtxn"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-P20-12</td>
+          <td class="doc-name">IP Register Extract<span class="note">research_asset_register — 810 rows, 74 GREEN</span></td>
+          <td><span class="status-pill pill-final" id="pill-ipreg">Final</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-ipreg" onclick="toggle('ipreg','SELECT asset_id, asset_name, asset_type, status FROM research_asset_register WHERE status = \'GREEN\' ORDER BY asset_id LIMIT 40')">View</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-ipreg"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-RECON-01</td>
+          <td class="doc-name">FY2024–25 R&amp;D Spend Reconciliation<span class="note">github:TML-4PM/mcp-scripts — built 28 Feb 2026</span></td>
+          <td><span class="status-pill pill-final">Final</span></td>
+          <td class="doc-action"><a class="ext-link" href="https://github.com/TML-4PM/mcp-scripts" target="_blank">GitHub ↗</a></td>
+        </tr>
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-RD-05</td>
+          <td class="doc-name">Board Sign-off on R&amp;D Claim<span class="note">rdti_evidence_register — located</span></td>
+          <td><span class="status-pill pill-located" id="pill-board">Located</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-board" onclick="toggle('board',`SELECT item_num, description, status FROM rdti_evidence_register WHERE description ILIKE '%board%' OR description ILIKE '%POL-RD%' LIMIT 10`)">View</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-board"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">RD-W0-RD-03</td>
+          <td class="doc-name">Technical Uncertainty Statements<span class="note">rdti_narrative_register.uncertainty</span></td>
+          <td><span class="status-pill pill-located" id="pill-unc">Located</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-unc" onclick="toggle('unc','SELECT activity_name, uncertainty FROM rdti_narrative_register WHERE uncertainty IS NOT NULL ORDER BY activity_name LIMIT 30')">View</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-unc"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 4: MAAT RECONCILIATION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">MAAT Reconciliation</div>
+      <div class="section-tag">Wave 2 · Transaction integrity</div>
+      <div class="section-count">8 docs</div>
+    </div>
+    <table class="doc-table">
+      <tbody>
+        <tr class="data-row">
+          <td class="doc-code">W2-M-01</td>
+          <td class="doc-name">Transaction Export (Raw)<span class="note">maat_transactions — most recent 100</span></td>
+          <td><span class="status-pill pill-complete" id="pill-txnraw">Complete</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-txnraw" onclick="toggle('txnraw','SELECT txn_date, description, amount, category FROM maat_transactions ORDER BY txn_date DESC LIMIT 100')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-txnraw"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">W2-M-04</td>
+          <td class="doc-name">Bank Coverage Gaps<span class="note">v_maat_source_coverage_gaps</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-covgap">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-covgap" onclick="toggle('covgap','SELECT * FROM v_maat_source_coverage_gaps LIMIT 30')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-covgap"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">W2-M-05</td>
+          <td class="doc-name">MAAT vs BAS Reconciliation<span class="note">maat_bas_periods</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-basvsm">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-basvsm" onclick="toggle('basvsm','SELECT period_label, gst_collected, gst_credits, net_gst, bas_lodged FROM maat_bas_periods ORDER BY period_end DESC LIMIT 20')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-basvsm"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">W2-M-07</td>
+          <td class="doc-name">REAL / PARTIAL / PRETEND Classification<span class="note">maat_reality_classification</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-rp">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-rp" onclick="toggle('rp','SELECT classification, COUNT(*) AS count, SUM(amount) AS total FROM maat_reality_classification GROUP BY classification ORDER BY total DESC')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-rp"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">W2-M-08</td>
+          <td class="doc-name">R&amp;D vs Non-R&amp;D Allocation<span class="note">maat_rd_allocation</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-rdalloc">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-rdalloc" onclick="toggle('rdalloc','SELECT * FROM maat_rd_allocation ORDER BY created_at DESC LIMIT 30')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-rdalloc"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">W2-M-12</td>
+          <td class="doc-name">Invoice Register (Stripe / Revenue)<span class="note">maat_invoice_register</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-inv">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-inv" onclick="toggle('inv','SELECT invoice_date, client_name, amount_aud, gst_amount, status FROM maat_invoice_register ORDER BY invoice_date DESC LIMIT 30')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-inv"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">W2-M-06</td>
+          <td class="doc-name">Exception / Orphan Queue<span class="note">maat_exception_queue</span></td>
+          <td><span class="status-pill pill-substrate" id="pill-exc">Substrate</span></td>
+          <td class="doc-action"><button class="load-btn" id="btn-exc" onclick="toggle('exc','SELECT * FROM maat_exception_queue ORDER BY created_at DESC LIMIT 30')">Load</button></td>
+        </tr>
+        <tr class="result-row"><td colspan="4"><div class="result-panel" id="panel-exc"></div></td></tr>
+
+        <tr class="data-row">
+          <td class="doc-code">W2-M-03</td>
+          <td class="doc-name">MAAT Schema Definition<span class="note">maat_report_registry — MAAT schema doc</span></td>
+          <td><span class="status-pill pill-complete">Complete</span></td>
+          <td class="doc-action"><span class="na-label">Supabase</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 5: GAPS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-label">Gaps — Andrew to Supply</div>
+      <div class="section-tag">Cannot auto-generate · External input required</div>
+      <div class="section-count">8 items</div>
+    </div>
+    <table class="doc-table">
+      <tbody>
+        <tr class="data-row"><td class="doc-code">GAP-01</td><td class="doc-name">Income Tax Return (Company) — FY2024–25</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Action reqd</span></td></tr>
+        <tr class="data-row"><td class="doc-code">GAP-02</td><td class="doc-name">PAYG Summaries — all FYs</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Action reqd</span></td></tr>
+        <tr class="data-row"><td class="doc-code">GAP-03</td><td class="doc-name">Contractor ABN confirmations (6 contractors, ~$47,500 RDTI exposure)</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Urgent</span></td></tr>
+        <tr class="data-row"><td class="doc-code">GAP-04</td><td class="doc-name">FY2022–23 Timesheets (zero rows in MAAT — ATO exposure)</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Urgent</span></td></tr>
+        <tr class="data-row"><td class="doc-code">GAP-05</td><td class="doc-name">Depreciation Schedule</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Action reqd</span></td></tr>
+        <tr class="data-row"><td class="doc-code">GAP-06</td><td class="doc-name">Asset Register</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Action reqd</span></td></tr>
+        <tr class="data-row"><td class="doc-code">GAP-07</td><td class="doc-name">Private Use Adjustments</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Action reqd</span></td></tr>
+        <tr class="data-row"><td class="doc-code">GAP-08</td><td class="doc-name">Company Constitution + ASIC Extract</td><td><span class="status-pill pill-missing">Missing</span></td><td class="doc-action"><span class="urgent-label">Action reqd</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span>Tech 4 Humanity Pty Ltd · ABN 61 605 746 618 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="364244594f764253555e025e435b57585f424f1855595b185743">[email&#160;protected]</a></span>
+    <span>Live data via T4H Bridge · 20 Mar 2026 · CONFIDENTIAL</span>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <!-- TOPBAR -->
-  <div class="top">
-    <div class="top-left">
-      <div class="top-brand">T4H · Financial</div>
-      <div class="top-pipe"></div>
-      <div class="top-ctx" id="ctx-user">—</div>
-    </div>
-    <div class="top-right">
-      <div class="top-ts" id="top-ts"></div>
-      <div class="top-live">● live</div>
-    </div>
-  </div>
-
-  <!-- SHELL -->
-  <div class="shell">
-    <!-- NAV -->
-    <nav class="nav" id="nav">
-      <div class="nav-search">
-        <input id="nav-search" placeholder="Filter reports…" oninput="onSearch(this.value)">
-      </div>
-      <div id="nav-items"></div>
-    </nav>
-
-    <!-- MAIN -->
-    <main class="main">
-      <div class="main-inner">
-
-        <!-- HERO -->
-        <div class="hero">
-          <div class="hero-label">Accountant · Read-Only View</div>
-          <div class="hero-title">Financial Intelligence<br>Portal</div>
-          <div class="hero-meta">
-            <div class="hero-kv">Entity <span>Tech 4 Humanity Pty Ltd</span></div>
-            <div class="hero-kv">ABN <span>61 605 746 618</span></div>
-            <div class="hero-kv">Tax Agent <span id="agent-name">—</span></div>
-            <div class="hero-kv">Primary FY <span>2024–25</span></div>
-          </div>
-        </div>
-
-        <!-- KPIS -->
-        <div class="kpis">
-          <div class="kpi">
-            <div class="kpi-label">Live Reports</div>
-            <div class="kpi-val grn" id="k-live">—</div>
-            <div class="kpi-sub">from Supabase views</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">On Request</div>
-            <div class="kpi-val" id="k-req">—</div>
-            <div class="kpi-sub">manual / drive</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">RDTI Claim</div>
-            <div class="kpi-val acc">$921K</div>
-            <div class="kpi-sub">FY24–25 · 43.5% offset</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">BAS Refund</div>
-            <div class="kpi-val acc">$22,798</div>
-            <div class="kpi-sub">4 quarters · overdue</div>
-          </div>
-        </div>
-
-        <!-- ALERT -->
-        <div class="alert">
-          <div class="alert-text">AusIndustry R&D registration required — FY2024–25 RDTI claim ($921K at 43.5% offset)</div>
-          <div class="alert-date">30 Apr 2026</div>
-        </div>
-
-        <!-- CONTENT -->
-        <div id="content"></div>
-
-      </div>
-    </main>
-  </div>
-</div>
-
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const BRIDGE = 'https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
-const API_KEY = 'bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4';
+const KEY = 'bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4';
+const state = {}; // id -> { open, origPillClass, origPillText }
 
-const WAVE1 = [
-  't4h-financial-position','acct.annual.financial_stmts','acct.annual.trial_balance',
-  'maat.api.director_loan','t4h-div7a-fy26-repayment','t4h-bas-fy25-lodgement',
-  't4h-rdti-fy25-lodgement','t4h-director-consulting-invoices',
-  'maat.api.tax_position','maat.rd_summary_corrected','rd.ondemand.contemporaneous_pack'
-];
-const URGENT = new Set(['t4h-bas-fy25-lodgement','t4h-rdti-fy25-lodgement','t4h-div7a-fy26-repayment']);
+async function toggle(id, sql) {
+  const panel = document.getElementById('panel-' + id);
+  const btn   = document.getElementById('btn-' + id);
+  const pill  = document.getElementById('pill-' + id);
+  if (!panel || !btn) return;
 
-let reports = [], search = '', activeGroup = 'priority', cache = {};
+  // Close if already open
+  if (state[id] && state[id].open) {
+    panel.classList.remove('open');
+    pill.className = state[id].origPillClass;
+    pill.textContent = state[id].origPillText;
+    btn.textContent = btn.dataset.loadLabel || 'Load';
+    btn.disabled = false;
+    state[id].open = false;
+    return;
+  }
 
-async function sq(query) {
-  const r = await fetch(BRIDGE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
-    body: JSON.stringify({ fn: 'troy-sql-executor', sql: query })
-  });
-  return (await r.json()).rows || [];
-}
+  // Save original pill state
+  if (!state[id]) {
+    state[id] = { origPillClass: pill.className, origPillText: pill.textContent };
+    btn.dataset.loadLabel = btn.textContent;
+  }
 
-/* AUTH */
-async function doAuth() {
-  const tok = document.getElementById('tok').value.trim();
-  if (!tok) return;
-  const btn = document.getElementById('auth-btn');
-  btn.textContent = '…';
+  btn.disabled = true;
+  btn.textContent = '···';
+  pill.className = 'status-pill pill-querying';
+  pill.textContent = 'querying';
+
   try {
-    const rows = await sq(`SELECT validate_guest_token('${tok.replace(/'/g,"''")}')`);
-    if (!rows.length) throw new Error('No response');
-    const v = rows[0][Object.keys(rows[0])[0]];
-    if (!v.valid) throw new Error(v.error || 'Invalid token');
-    sessionStorage.setItem('gTok', tok);
-    sessionStorage.setItem('gInfo', JSON.stringify(v));
-    boot(v);
-  } catch(e) {
-    document.getElementById('auth-err').textContent = e.message;
-    btn.textContent = 'Enter';
-  }
-}
-
-document.getElementById('tok').onkeydown = e => { if (e.key === 'Enter') doAuth(); };
-
-async function boot(info) {
-  document.getElementById('auth').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('ctx-user').textContent = info.label;
-  document.getElementById('agent-name').textContent = info.label;
-
-  const tick = () => {
-    const n = new Date();
-    document.getElementById('top-ts').textContent =
-      n.toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
-      n.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  };
-  tick(); setInterval(tick, 30000);
-
-  reports = await sq(`
-    SELECT r.slug, r.name, r.domain, r.frequency, r.rag, r.notes,
-      CASE WHEN t.table_name IS NOT NULL OR r.source_type='supabase_rpc' THEN 'live' ELSE 'request' END as avail
-    FROM rpt_report r
-    LEFT JOIN information_schema.tables t ON t.table_schema='public' AND t.table_name=r.source_ref
-    WHERE r.audience @> '["accountant"]' OR r.audience::text ILIKE '%accountant%'
-    ORDER BY r.tier, r.domain, r.name
-  `);
-
-  document.getElementById('k-live').textContent = reports.filter(r=>r.avail==='live').length;
-  document.getElementById('k-req').textContent = reports.filter(r=>r.avail==='request').length;
-
-  buildNav();
-  renderContent('priority');
-}
-
-/* NAV */
-function buildNav() {
-  const container = document.getElementById('nav-items');
-  const visible = filtered();
-  const domains = ['priority', ...new Set(visible.map(r=>r.domain))].sort((a,b) => a==='priority'?-1:a.localeCompare(b));
-
-  container.innerHTML = '';
-
-  for (const d of domains) {
-    const grp = d === 'priority' ? WAVE1.map(s=>reports.find(r=>r.slug===s)).filter(Boolean) : visible.filter(r=>r.domain===d);
-    if (!grp.length) continue;
-
-    const lbl = document.createElement('div');
-    lbl.className = 'nav-group-label';
-    lbl.textContent = d;
-    container.appendChild(lbl);
-
-    for (const r of grp) {
-      const el = document.createElement('div');
-      el.className = `nav-item ${r.avail==='request'?'dim':''} ${activeGroup===r.slug?'active':''}`;
-      const dot = r.avail==='request' ? 'd' : r.rag==='green' ? 'g' : r.rag==='amber' ? 'a' : 'r';
-      el.innerHTML = `
-        <span class="nav-dot ${dot}"></span>
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</span>
-        <span class="nav-freq">${r.frequency==='on_demand'?'⊙':r.frequency.slice(0,3)}</span>
-      `;
-      el.onclick = () => scrollTo(r.slug);
-      container.appendChild(el);
-    }
-  }
-}
-
-function filtered() {
-  if (!search) return reports;
-  const q = search.toLowerCase();
-  return reports.filter(r => r.name.toLowerCase().includes(q) || r.slug.includes(q));
-}
-
-function onSearch(v) {
-  search = v;
-  buildNav();
-  renderContent(activeGroup);
-}
-
-function scrollTo(slug) {
-  const el = document.getElementById('r-' + slug.replace(/\./g,'_'));
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-/* CONTENT */
-function renderContent(group) {
-  activeGroup = group;
-  const content = document.getElementById('content');
-  const visible = filtered();
-  content.innerHTML = '';
-
-  // Priority wave1 section
-  if (!search) {
-    const w1 = WAVE1.map(s=>reports.find(r=>r.slug===s)).filter(Boolean);
-    content.appendChild(buildSection('Priority Pack', '11 reports — send to Gordon', w1, true));
-  }
-
-  // Domain sections
-  const domains = [...new Set(visible.map(r=>r.domain))].sort();
-  for (const d of domains) {
-    const grp = visible.filter(r=>r.domain===d);
-    if (!grp.length) continue;
-    content.appendChild(buildSection(
-      d.charAt(0).toUpperCase() + d.slice(1),
-      `${grp.length} reports`,
-      grp, false
-    ));
-  }
-}
-
-function buildSection(title, subtitle, items, isWave1) {
-  const sec = document.createElement('div');
-  sec.className = 'section';
-
-  const head = document.createElement('div');
-  head.className = 'section-head';
-  head.innerHTML = `<div class="section-title">${title}</div><div class="section-count">${subtitle}</div>`;
-  sec.appendChild(head);
-
-  if (isWave1) {
-    const grid = document.createElement('div');
-    grid.className = 'wave1';
-    items.forEach((r, i) => {
-      const card = document.createElement('div');
-      card.className = `w1-card ${URGENT.has(r.slug)?'urg':''}`;
-      card.innerHTML = `
-        <div class="w1-num">${String(i+1).padStart(2,'0')}</div>
-        <div class="w1-name">${r.name}</div>
-        <div class="w1-slug">${r.slug}</div>
-        ${URGENT.has(r.slug)?'<div class="w1-urg">urgent</div>':''}
-      `;
-      card.onclick = () => scrollTo(r.slug);
-      grid.appendChild(card);
+    const res = await fetch(BRIDGE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + KEY,
+        'x-api-key': KEY
+      },
+      body: JSON.stringify({ fn: 'troy-sql-executor', sql })
     });
-    sec.appendChild(grid);
-    return sec;
-  }
 
-  items.forEach((r, i) => {
-    sec.appendChild(r.avail === 'live' ? buildRow(r, i) : buildReqRow(r, i));
-  });
+    const envelope = await res.json();
+    let data;
+    try {
+      data = typeof envelope.body === 'string' ? JSON.parse(envelope.body) : (envelope.body || envelope);
+    } catch(e) { data = envelope; }
 
-  return sec;
-}
+    if (data && data.success && Array.isArray(data.rows)) {
+      const rows = data.rows;
+      pill.className = 'status-pill pill-live';
+      pill.textContent = rows.length + ' rows';
 
-function buildRow(r, i) {
-  const div = document.createElement('div');
-  div.className = 'report';
-  div.id = 'r-' + r.slug.replace(/\./g,'_');
+      let html = `<button class="close-btn" onclick="toggle('${id}','${sql.replace(/'/g,"\'")}')">✕ close</button>`;
+      if (rows.length === 0) {
+        html += '<span class="panel-ok">✓</span> No rows returned — table empty or no match.';
+      } else {
+        const cols = Object.keys(rows[0]);
+        html += '<table><thead><tr>' + cols.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>';
+        rows.forEach(r => {
+          html += '<tr>' + cols.map(c => {
+            const v = r[c];
+            if (v === null || v === undefined) return '<td style="color:#444">—</td>';
+            const s = String(v);
+            const display = s.length > 90 ? s.slice(0, 90) + '…' : s;
+            const isNum = typeof v === 'number';
+            return `<td${isNum ? ' style="text-align:right"' : ''}>${esc(display)}</td>`;
+          }).join('') + '</tr>';
+        });
+        html += '</tbody></table>';
+      }
+      html += `<div class="panel-meta">↳ ${rows.length} rows · fetched ${new Date().toLocaleTimeString('en-AU', {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;
+      panel.innerHTML = html;
 
-  const head = document.createElement('div');
-  head.className = 'report-head';
-  head.innerHTML = `
-    <div class="report-idx">${String(i+1).padStart(2,'0')}</div>
-    <div class="report-info">
-      <div class="report-name">${r.name}</div>
-      <div class="report-slug">${r.slug} · ${r.frequency}</div>
-    </div>
-    <div class="report-acts">
-      <span class="nav-dot ${r.rag==='green'?'g':r.rag==='amber'?'a':'r'}" style="width:6px;height:6px"></span>
-      <button class="btn-sm primary" onclick="loadReport(event,'${r.slug}')">Load</button>
-      <span class="chev" id="chev_${r.slug.replace(/\W/g,'_')}">▼</span>
-    </div>
-  `;
+    } else {
+      const msg = data?.error || data?.message || JSON.stringify(data).slice(0, 200);
+      pill.className = 'status-pill pill-error';
+      pill.textContent = 'error';
+      panel.innerHTML = `<button class="close-btn" onclick="toggle('${id}','${sql.replace(/'/g,"\'")}')">✕ close</button><span class="panel-err">✗ ${esc(msg)}</span>`;
+    }
 
-  const body = document.createElement('div');
-  body.className = 'report-body';
-  body.id = 'body_' + r.slug.replace(/\W/g,'_');
+    panel.classList.add('open');
+    btn.textContent = 'Close';
+    btn.disabled = false;
+    state[id].open = true;
 
-  div.appendChild(head);
-  div.appendChild(body);
-
-  head.addEventListener('click', e => {
-    if (e.target.tagName === 'BUTTON') return;
-    toggleRow(r.slug);
-  });
-
-  return div;
-}
-
-function toggleRow(slug) {
-  const id = slug.replace(/\W/g,'_');
-  const body = document.getElementById('body_' + id);
-  const chev = document.getElementById('chev_' + id);
-  const opening = !body.classList.contains('open');
-  body.classList.toggle('open');
-  chev && chev.classList.toggle('open');
-  if (opening && !body.dataset.loaded) doLoad(slug);
-}
-
-function loadReport(e, slug) {
-  e.stopPropagation();
-  const id = slug.replace(/\W/g,'_');
-  const body = document.getElementById('body_' + id);
-  const chev = document.getElementById('chev_' + id);
-  if (!body.classList.contains('open')) {
-    body.classList.add('open');
-    chev && chev.classList.add('open');
-  }
-  if (!body.dataset.loaded) doLoad(slug);
-}
-
-async function doLoad(slug) {
-  const id = slug.replace(/\W/g,'_');
-  const body = document.getElementById('body_' + id);
-  body.innerHTML = `<div class="body-loading loading-pulse">Loading ${slug}…</div>`;
-  body.dataset.loaded = '1';
-
-  if (cache[slug]) { renderTable(body, cache[slug], slug); return; }
-
-  try {
-    const rows = await sq(`SELECT cmd_render_report('${slug}')`);
-    if (!rows.length) throw new Error('Empty response');
-    const res = rows[0][Object.keys(rows[0])[0]];
-    if (res.error) throw new Error(res.error);
-    const data = Array.isArray(res.data) ? res.data : [res.data];
-    cache[slug] = { data, ts: res.generated_at };
-    renderTable(body, cache[slug], slug);
-  } catch(e) {
-    body.innerHTML = `<div class="body-err">${e.message}</div>`;
-  }
-}
-
-function renderTable(container, { data, ts }, slug) {
-  if (!data?.length) { container.innerHTML = '<div class="body-loading">No data</div>'; return; }
-  const cols = Object.keys(data[0]);
-  let html = `<div class="tbl-wrap"><table class="t"><thead><tr>${cols.map(c=>`<th>${c.replace(/_/g,' ')}</th>`).join('')}</tr></thead><tbody>`;
-  for (const row of data.slice(0,100)) {
-    html += `<tr>${cols.map(c=>`<td title="${esc(row[c])}">${fmt(row[c],c)}</td>`).join('')}</tr>`;
-  }
-  html += `</tbody></table></div>`;
-  html += `<div class="tbl-foot"><span>${data.length} rows · ${new Date(ts).toLocaleString('en-AU')}</span><button class="btn-sm csv" onclick="dlCSV('${slug}')">Export CSV</button></div>`;
-  container.innerHTML = html;
-}
-
-function esc(v) { return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
-function fmt(v, col) {
-  if (v==null) return '<span style="color:var(--sub)">—</span>';
-  const s = String(v);
-  if (typeof v==='number' && /amount|spend|balance|cost|revenue|loan|salary/i.test(col)) {
-    return '$'+v.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
-  }
-  if (s.match(/^\d{4}-\d{2}-\d{2}/)) try { return new Date(s).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}); } catch(_){}
-  return s.length > 80 ? s.slice(0,80)+'…' : s;
-}
-
-function dlCSV(slug) {
-  const c = cache[slug];
-  if (!c?.data?.length) return;
-  const cols = Object.keys(c.data[0]);
-  const rows = c.data.map(r => cols.map(c => `"${String(r[c]??'').replace(/"/g,'""')}"`).join(','));
-  const blob = new Blob([[cols.join(','), ...rows].join('\n')], {type:'text/csv'});
-  const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:`${slug}.csv`});
-  a.click(); URL.revokeObjectURL(a.href);
-}
-
-function buildReqRow(r, i) {
-  const div = document.createElement('div');
-  div.className = 'req-row';
-  div.id = 'r-' + r.slug.replace(/\./g,'_');
-  div.innerHTML = `
-    <div class="report-idx">${String(i+1).padStart(2,'0')}</div>
-    <div class="req-info">
-      <div class="req-name">${r.name}</div>
-      <div class="req-slug">${r.slug} · manual upload</div>
-    </div>
-    <div class="req-badge">On Request</div>
-    <button class="btn-req" onclick="sendReq('${r.slug}','${r.name.replace(/'/g,"\\'")}')">Request →</button>
-  `;
-  return div;
-}
-
-function sendReq(slug, name) {
-  const sub = encodeURIComponent(`Document Request: ${name}`);
-  const body = encodeURIComponent(`Hi Troy,\n\nPlease provide the following from T4H Financial Intelligence:\n\n  Report: ${name}\n  Slug:   ${slug}\n\nRegards,\nGordon`);
-  window.open(`mailto:troy.latter@gmail.com?subject=${sub}&body=${body}`);
-}
-
-/* SESSION RESTORE */
-const saved = sessionStorage.getItem('gTok');
-if (saved) {
-  const info = JSON.parse(sessionStorage.getItem('gInfo') || '{}');
-  if (info.valid) boot(info);
-}
-</script>
-</body>
-</html>
+  } catch(err) {
+    pill.className = 'status-pill pill-error';
+    pill.textContent = 'error';
+    panel.innerHTML = `<button class="close-btn" onclick="toggle('${id}','${sql.replace(/'/g,"\'")}')">✕ close</button><span class="panel-err">✗ ${esc(err.message)}</span>`;
+    panel.classLis
