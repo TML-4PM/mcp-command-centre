@@ -107,11 +107,11 @@
 </div>
 
 <div class="stats-row">
-  <div class="stat-cell s-complete"><div class="stat-num">9</div><div class="stat-label">Complete</div></div>
-  <div class="stat-cell s-located"><div class="stat-num">7</div><div class="stat-label">Located</div></div>
-  <div class="stat-cell s-substrate"><div class="stat-num">18</div><div class="stat-label">Generatable</div></div>
-  <div class="stat-cell s-missing"><div class="stat-num">3</div><div class="stat-label">Truly Missing</div></div>
-  <div class="stat-cell s-neutral"><div class="stat-num">6,066</div><div class="stat-label">Transactions</div></div>
+  <div class="stat-cell s-complete"><div class="stat-num">9</div><div class="stat-label">Docs Ready to Send</div></div>
+  <div class="stat-cell s-located"><div class="stat-num">7</div><div class="stat-label">Docs Located / Verified</div></div>
+  <div class="stat-cell s-substrate"><div class="stat-num">18</div><div class="stat-label">Docs Auto-Generatable</div></div>
+  <div class="stat-cell s-missing"><div class="stat-num">3</div><div class="stat-label">Docs Andrew Must Supply</div></div>
+  <div class="stat-cell s-neutral"><div class="stat-num">6,066</div><div class="stat-label">Bank Transactions in MAAT</div></div>
 </div>
 
 <!-- S1: FINANCIALS -->
@@ -189,16 +189,46 @@
   </div>
   <table class="doc-table"><tbody>
 
-    <tr class="dr"><td class="dc">TAX-01</td>
-      <td class="dn">BAS &mdash; All Quarters FY2024-25<span class="note">maat_bas_periods &mdash; 4 quarters, status=lodgement_required, gst credits populated &middot; total refundable $22,798</span><span class="warn">&#9888; All quarters UNLODGED &mdash; confirm lodgement plan with Gordon before meeting</span></td>
-      <td><span class="sp p-substrate" id="pill-bas">Substrate</span></td>
-      <td class="da"><button class="lb" id="btn-bas">Load</button></td></tr>
-    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas"></div></td></tr>
+    <tr class="dr"><td class="dc">TAX-01a</td>
+      <td class="dn">BAS — Q1 FY2024-25 (Jul–Sep 2024)<span class="note">Period: 2024-07-01 to 2024-09-30 &middot; GST credits: $3,544 &middot; Status: UNLODGED</span><span class="warn">&#9888; Overdue &mdash; lodge with Gordon</span></td>
+      <td><span class="sp p-substrate" id="pill-bas1">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-bas1">Load Q1</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas1"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-01b</td>
+      <td class="dn">BAS — Q2 FY2024-25 (Oct–Dec 2024)<span class="note">Period: 2024-10-01 to 2024-12-31 &middot; GST credits: $5,468 &middot; Status: UNLODGED</span><span class="warn">&#9888; Overdue &mdash; lodge with Gordon</span></td>
+      <td><span class="sp p-substrate" id="pill-bas2">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-bas2">Load Q2</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas2"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-01c</td>
+      <td class="dn">BAS — Q3 FY2024-25 (Jan–Mar 2025)<span class="note">Period: 2025-01-01 to 2025-03-31 &middot; GST credits: $6,211 &middot; Status: UNLODGED</span><span class="warn">&#9888; Overdue &mdash; lodge with Gordon</span></td>
+      <td><span class="sp p-substrate" id="pill-bas3">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-bas3">Load Q3</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas3"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-01d</td>
+      <td class="dn">BAS — Q4 FY2024-25 (Apr–Jun 2025)<span class="note">Period: 2025-04-01 to 2025-06-30 &middot; GST credits: $7,575 &middot; Status: UNLODGED</span><span class="warn">&#9888; Overdue &mdash; lodge with Gordon</span></td>
+      <td><span class="sp p-substrate" id="pill-bas4">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-bas4">Load Q4</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas4"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-01e</td>
+      <td class="dn">BAS — Q1 FY2025-26 (Jul–Sep 2025)<span class="note">Period: 2025-07-01 to 2025-09-30 &middot; Status: OVERDUE (due Oct 2025)</span><span class="warn">&#9888; OVERDUE &mdash; urgent</span></td>
+      <td><span class="sp p-missing" id="pill-bas5">Overdue</span></td>
+      <td class="da"><button class="lb" id="btn-bas5">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas5"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-01f</td>
+      <td class="dn">BAS — Q2 FY2025-26 (Oct–Dec 2025)<span class="note">Period: 2025-10-01 to 2025-12-31 &middot; Status: OVERDUE (due Feb 2026)</span><span class="warn">&#9888; OVERDUE &mdash; urgent</span></td>
+      <td><span class="sp p-missing" id="pill-bas6">Overdue</span></td>
+      <td class="da"><button class="lb" id="btn-bas6">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-bas6"></div></td></tr>
 
     <tr class="dr"><td class="dc">TAX-02</td>
-      <td class="dn">GST Working Papers<span class="note">maat_bas_periods &mdash; 4 periods with GST collected/credits detail &middot; G1 total sales = $0 all quarters</span></td>
+      <td class="dn">GST Working Papers — All Quarters<span class="note">G1 total sales = $0 all quarters &middot; GST collected = $0 &middot; Pre-revenue position confirmed</span></td>
       <td><span class="sp p-substrate" id="pill-gstwp">Substrate</span></td>
-      <td class="da"><button class="lb" id="btn-gstwp">Load</button></td></tr>
+      <td class="da"><button class="lb" id="btn-gstwp">Load All</button></td></tr>
     <tr class="rr"><td colspan="4"><div class="rp" id="panel-gstwp"></div></td></tr>
 
     <tr class="dr"><td class="dc">TAX-03</td>
@@ -213,11 +243,35 @@
       <td class="da"><button class="lb" id="btn-pded">Load</button></td></tr>
     <tr class="rr"><td colspan="4"><div class="rp" id="panel-pded"></div></td></tr>
 
-    <tr class="dr"><td class="dc">TAX-05</td>
-      <td class="dn">Work Deductions / Private Use Schedule<span class="note">maat_paye_deductions &mdash; WFH $1,286 (67c/hr method), equipment, phone/internet, subscriptions, self-education</span></td>
-      <td><span class="sp p-substrate" id="pill-paye">Substrate</span></td>
-      <td class="da"><button class="lb" id="btn-paye">Load</button></td></tr>
-    <tr class="rr"><td colspan="4"><div class="rp" id="panel-paye"></div></td></tr>
+    <tr class="dr"><td class="dc">TAX-05a</td>
+      <td class="dn">PAYE — Work From Home (67c/hr method)<span class="note">FY24-25: $1,286 claimed &middot; Recurring annual deduction</span></td>
+      <td><span class="sp p-substrate" id="pill-paye1">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-paye1">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-paye1"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-05b</td>
+      <td class="dn">PAYE — Equipment &amp; Technology<span class="note">Mac Studio, MacBook, peripherals &middot; Work-use portion &middot; Recurring annual deduction</span></td>
+      <td><span class="sp p-substrate" id="pill-paye2">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-paye2">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-paye2"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-05c</td>
+      <td class="dn">PAYE — Phone &amp; Internet (Work %)<span class="note">Work-use portion of phone + internet &middot; Recurring annual deduction</span></td>
+      <td><span class="sp p-substrate" id="pill-paye3">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-paye3">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-paye3"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-05d</td>
+      <td class="dn">PAYE — Self-Education &amp; Professional Development<span class="note">Courses, certifications, conferences &middot; Recurring annual deduction</span></td>
+      <td><span class="sp p-substrate" id="pill-paye4">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-paye4">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-paye4"></div></td></tr>
+
+    <tr class="dr"><td class="dc">TAX-05e</td>
+      <td class="dn">PAYE — Professional Subscriptions<span class="note">Software, tools, professional memberships &middot; Recurring annual deduction</span></td>
+      <td><span class="sp p-substrate" id="pill-paye5">Substrate</span></td>
+      <td class="da"><button class="lb" id="btn-paye5">Load</button></td></tr>
+    <tr class="rr"><td colspan="4"><div class="rp" id="panel-paye5"></div></td></tr>
 
     <tr class="dr"><td class="dc">TAX-06</td>
       <td class="dn">Bank Statements &mdash; Coverage<span class="note">maat_source_registry &mdash; gaps: Amex personal not fully ingested, ANZ Business pre-Dec 2025, some PDFs with null supabase_path</span></td>
@@ -440,7 +494,18 @@ const QUERIES={
   dep:"SELECT asset_code, asset_name, acquisition_cost, depreciation_method, depreciation_rate_pct, useful_life_years FROM maat_fixed_asset_register ORDER BY asset_code",
   ar:"SELECT asset_code, asset_name, asset_class, acquisition_cost, acquisition_date FROM maat_fixed_asset_register ORDER BY asset_code",
   pua:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions ORDER BY financial_year, category",
-  contr:"SELECT fy, description, ROUND(amount::numeric,2) as amount, confidence FROM maat_supplementary_costs ORDER BY fy LIMIT 20"
+  contr:"SELECT fy, description, ROUND(amount::numeric,2) as amount, confidence FROM maat_supplementary_costs ORDER BY fy LIMIT 20",
+  bas1:"SELECT period_label, period_start, period_end, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(label_1a_gst_collected::numeric,2) as gst_collected, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods WHERE period_start = '2024-07-01'",
+  bas2:"SELECT period_label, period_start, period_end, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(label_1a_gst_collected::numeric,2) as gst_collected, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods WHERE period_start = '2024-10-01'",
+  bas3:"SELECT period_label, period_start, period_end, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(label_1a_gst_collected::numeric,2) as gst_collected, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods WHERE period_start = '2025-01-01'",
+  bas4:"SELECT period_label, period_start, period_end, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(label_1a_gst_collected::numeric,2) as gst_collected, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods WHERE period_start = '2025-04-01'",
+  bas5:"SELECT period_label, period_start, period_end, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods WHERE period_start = '2025-07-01'",
+  bas6:"SELECT period_label, period_start, period_end, ROUND(label_1b_gst_paid::numeric,2) as gst_credits, ROUND(ABS(gst_payable)::numeric,2) as refundable, status FROM maat_bas_periods WHERE period_start = '2025-10-01'",
+  paye1:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions WHERE category ILIKE '%wfh%' OR category ILIKE '%home%' ORDER BY financial_year",
+  paye2:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions WHERE category ILIKE '%equip%' OR category ILIKE '%tech%' OR category ILIKE '%computer%' ORDER BY financial_year",
+  paye3:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions WHERE category ILIKE '%phone%' OR category ILIKE '%internet%' ORDER BY financial_year",
+  paye4:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions WHERE category ILIKE '%education%' OR category ILIKE '%course%' ORDER BY financial_year",
+  paye5:"SELECT financial_year, category, description, ROUND(amount::numeric,2) as amount FROM maat_paye_deductions WHERE category ILIKE '%subscription%' OR category ILIKE '%member%' ORDER BY financial_year"
 };
 
 document.querySelectorAll('.lb').forEach(btn=>{
