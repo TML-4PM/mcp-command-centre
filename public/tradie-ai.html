@@ -3,529 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tradie AI — Your Business, On Autopilot</title>
+<title>Tradie AI — Full-Service AI for Tradies</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --black: #0a0a0a;
-  --dark: #111111;
-  --card: #1a1a1a;
-  --border: #2a2a2a;
-  --yellow: #fbbf24;
-  --yellow-dim: #f59e0b;
-  --white: #f9fafb;
-  --muted: #9ca3af;
-  --green: #34d399;
-  --red: #f87171;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  background: var(--black);
-  color: var(--white);
-  font-family: 'Barlow', sans-serif;
-  overflow-x: hidden;
-}
+:root{--blk:#0a0a0a;--dark:#111;--card:#1a1a1a;--border:#2a2a2a;--yellow:#fbbf24;--white:#f9fafb;--muted:#9ca3af;--green:#34d399;--red:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--blk);color:var(--white);font-family:'Barlow',sans-serif;overflow-x:hidden}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;letter-spacing:-.02em}.logo span{color:var(--yellow)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-phone{color:var(--yellow);font-weight:700;font-size:14px;text-decoration:none}
+.nav-cta{background:var(--yellow);color:var(--blk);padding:8px 18px;border-radius:6px;font-weight:800;font-size:13px;text-decoration:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase}
 
-/* ─── NAV ─── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  padding: 16px 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(10,10,10,0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-}
-.logo {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: 22px;
-  letter-spacing: -0.02em;
-}
-.logo span { color: var(--yellow); }
-nav .nav-cta {
-  background: var(--yellow); color: var(--black);
-  padding: 9px 20px; border-radius: 6px;
-  font-weight: 700; font-size: 14px;
-  text-decoration: none;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-nav .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(251,191,36,0.4); }
+/* HERO — full bleed photo */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;padding:100px 20px 60px}
+.hero-bg{position:absolute;inset:0;background:linear-gradient(105deg,rgba(10,10,10,.95) 45%,rgba(10,10,10,.6) 100%);z-index:1}
+/* Unsplash free tradie image */
+.hero-img{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1400&q=80') center/cover no-repeat;z-index:0}
+.hero-content{position:relative;z-index:2;max-width:580px}
+.eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';width:20px;height:2px;background:var(--yellow);display:block}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(52px,8vw,88px);line-height:.92;letter-spacing:-.02em;text-transform:uppercase;margin-bottom:20px}
+h1 em{color:var(--yellow);font-style:normal;display:block}
+.hero-sub{font-size:17px;color:rgba(249,250,251,.75);line-height:1.65;margin-bottom:32px;max-width:440px}
+.hero-sub strong{color:var(--white)}
+/* Simplified phone-first CTA */
+.intake-strip{display:flex;gap:8px;max-width:440px;margin-bottom:16px;flex-wrap:wrap}
+.intake-strip input{flex:1;min-width:140px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);color:var(--white);padding:14px 16px;border-radius:8px;font-size:15px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .15s}
+.intake-strip input::placeholder{color:rgba(255,255,255,.35)}
+.intake-strip input:focus{border-color:var(--yellow)}
+.btn-hero{background:var(--yellow);color:var(--blk);padding:14px 22px;border-radius:8px;border:none;font-weight:900;font-size:15px;cursor:pointer;white-space:nowrap;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;transition:transform .15s,box-shadow .15s}
+.btn-hero:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(251,191,36,.35)}
+.hero-trust{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.hero-trust::before{content:'🔒'}
 
-/* ─── HERO ─── */
-.hero {
-  min-height: 100vh;
-  display: flex; flex-direction: column; justify-content: center;
-  padding: 120px 24px 80px;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute; top: -200px; right: -200px;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
-.hero-grid {
-  max-width: 1100px; margin: 0 auto; width: 100%;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
-}
-.hero-eyebrow {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700; font-size: 13px;
-  letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--yellow); margin-bottom: 16px;
-  display: flex; align-items: center; gap: 8px;
-}
-.hero-eyebrow::before {
-  content: '';
-  display: block; width: 24px; height: 2px; background: var(--yellow);
-}
-h1 {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: clamp(48px, 7vw, 80px);
-  line-height: 0.95; letter-spacing: -0.02em;
-  text-transform: uppercase;
-  margin-bottom: 24px;
-}
-h1 .accent { color: var(--yellow); display: block; }
-.hero-sub {
-  font-size: 18px; color: var(--muted); line-height: 1.6;
-  max-width: 460px; margin-bottom: 36px;
-}
-.hero-sub strong { color: var(--white); }
-.cta-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.btn-primary {
-  background: var(--yellow); color: var(--black);
-  padding: 14px 28px; border-radius: 8px;
-  font-weight: 800; font-size: 16px;
-  text-decoration: none; display: inline-block;
-  transition: transform 0.15s, box-shadow 0.15s;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.02em; text-transform: uppercase;
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(251,191,36,0.4); }
-.btn-ghost {
-  color: var(--muted); font-size: 14px; font-weight: 500;
-  text-decoration: none; padding: 14px 0;
-  transition: color 0.15s;
-}
-.btn-ghost:hover { color: var(--white); }
+/* PROOF TICKER */
+.ticker{background:var(--yellow);padding:10px 0;overflow:hidden;white-space:nowrap}
+.ticker-inner{display:inline-flex;gap:0;animation:tick 20s linear infinite}
+.ticker-item{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--blk);letter-spacing:.06em;text-transform:uppercase;padding:0 28px;display:flex;align-items:center;gap:8px}
+.ticker-item::after{content:'•';opacity:.4}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-/* Hero card */
-.hero-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-}
-.hero-card-header {
-  background: var(--dark);
-  padding: 14px 18px;
-  display: flex; align-items: center; gap: 8px;
-  border-bottom: 1px solid var(--border);
-}
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot-r { background: #f87171; }
-.dot-y { background: #fbbf24; }
-.dot-g { background: #34d399; }
-.hero-card-title {
-  font-size: 12px; font-weight: 600; color: var(--muted);
-  margin-left: 4px; font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-.hero-card-body { padding: 24px; }
-.timeline-item {
-  display: flex; gap: 14px; align-items: flex-start;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  animation: fadeUp 0.5s both;
-}
-.timeline-item:last-child { border-bottom: none; }
-.timeline-item:nth-child(1) { animation-delay: 0.1s; }
-.timeline-item:nth-child(2) { animation-delay: 0.2s; }
-.timeline-item:nth-child(3) { animation-delay: 0.3s; }
-.timeline-item:nth-child(4) { animation-delay: 0.4s; }
-.timeline-item:nth-child(5) { animation-delay: 0.5s; }
-.timeline-item:nth-child(6) { animation-delay: 0.6s; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.phase-badge {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-}
-.phase-badge.done { background: rgba(52,211,153,0.15); }
-.timeline-text { flex: 1; }
-.timeline-name {
-  font-weight: 700; font-size: 14px; margin-bottom: 2px;
-}
-.timeline-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
-.timeline-status {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-  padding: 2px 8px; border-radius: 4px;
-  font-family: 'Barlow Condensed', sans-serif;
-  text-transform: uppercase;
-}
-.status-live { background: rgba(52,211,153,0.15); color: var(--green); }
-.status-next { background: rgba(251,191,36,0.1); color: var(--yellow); }
+/* WHAT YOU GET — trade images grid */
+.section{padding:72px 20px}
+.section-inner{max-width:1100px;margin:0 auto}
+.label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px}
+.heading{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(30px,5vw,50px);line-height:1.02;letter-spacing:-.02em;text-transform:uppercase;margin-bottom:8px}
+.heading .dim{color:var(--muted)}
+.subtext{color:var(--muted);font-size:15px;line-height:1.65;max-width:500px;margin-bottom:40px}
 
-/* ─── PROOF BAR ─── */
-.proof-bar {
-  background: var(--dark);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 20px 24px;
-}
-.proof-inner {
-  max-width: 1100px; margin: 0 auto;
-  display: flex; gap: 0; align-items: stretch;
-  flex-wrap: wrap;
-}
-.proof-stat {
-  flex: 1; min-width: 140px;
-  padding: 12px 24px;
-  border-right: 1px solid var(--border);
-  text-align: center;
-}
-.proof-stat:last-child { border-right: none; }
-.proof-num {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: 32px; color: var(--yellow);
-  line-height: 1;
-}
-.proof-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+/* Deliverable cards with trade photos */
+.deliver-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.deliver-card{border-radius:10px;overflow:hidden;position:relative;cursor:default;transition:transform .2s}
+.deliver-card:hover{transform:translateY(-4px)}
+.deliver-img{height:160px;background-size:cover;background-position:center;position:relative}
+.deliver-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.9) 0%,transparent 60%)}
+.deliver-body{background:var(--card);border:1px solid var(--border);border-top:none;padding:16px}
+.deliver-num{position:absolute;bottom:36px;left:14px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--yellow);z-index:1;line-height:1}
+.deliver-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;text-transform:uppercase;margin-bottom:6px}
+.deliver-desc{font-size:13px;color:var(--muted);line-height:1.5}
+.deliver-time{margin-top:10px;font-size:11px;font-weight:700;color:var(--yellow);font-family:'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase}
 
-/* ─── PROBLEM ─── */
-.section { padding: 80px 24px; }
-.section-inner { max-width: 1100px; margin: 0 auto; }
-.section-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px; font-weight: 700;
-  letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--yellow); margin-bottom: 12px;
-}
-.section-heading {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: clamp(32px, 5vw, 52px);
-  line-height: 1; letter-spacing: -0.02em;
-  text-transform: uppercase; margin-bottom: 20px;
-}
-.section-heading .dim { color: var(--muted); }
+/* MYOB + integrations */
+.integrations{padding:56px 20px;background:var(--dark);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.int-inner{max-width:1100px;margin:0 auto}
+.int-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:32px}
+.int-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s}
+.int-card:hover{border-color:var(--yellow)}
+.int-icon{font-size:28px}
+.int-name{font-weight:700;font-size:14px}
+.int-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.int-status{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif}
+.status-live{color:var(--green)}
+.status-q2{color:var(--yellow)}
+.status-planned{color:var(--muted)}
 
-/* Problem/solution grid */
-.vs-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-  margin-top: 48px; border-radius: 12px; overflow: hidden;
-}
-.vs-col {
-  padding: 32px;
-}
-.vs-col.before {
-  background: #1a0f0f;
-  border: 1px solid #3a1a1a;
-}
-.vs-col.after {
-  background: #0f1a10;
-  border: 1px solid #1a3a1a;
-}
-.vs-col-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: 13px;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  margin-bottom: 20px; padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-.vs-col.before .vs-col-label { color: var(--red); }
-.vs-col.after .vs-col-label { color: var(--green); }
-.vs-item {
-  display: flex; gap: 10px; align-items: flex-start;
-  padding: 10px 0; font-size: 14px; line-height: 1.4;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.vs-item:last-child { border-bottom: none; }
-.vs-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+/* CASE STUDY */
+.case-section{padding:72px 20px;background:var(--blk)}
+.case-wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.case-photo{border-radius:12px;overflow:hidden;position:relative}
+.case-photo-img{width:100%;height:360px;object-fit:cover;background:url('https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=700&q=80') center/cover}
+.case-photo-badge{position:absolute;bottom:16px;left:16px;background:var(--blk);border:1px solid var(--border);padding:8px 14px;border-radius:6px;font-size:12px}
+.case-photo-badge strong{color:var(--yellow)}
+.case-right{}
+.star-row{color:#fbbf24;font-size:20px;margin-bottom:16px;letter-spacing:2px}
+.case-quote{font-size:20px;line-height:1.55;font-style:italic;margin-bottom:24px;border-left:3px solid var(--yellow);padding-left:18px}
+.case-name{font-weight:700;font-size:15px;margin-bottom:4px}
+.case-meta{font-size:13px;color:var(--muted)}
+.case-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}
+.case-stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.case-stat-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--yellow);line-height:1}
+.case-stat-label{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em;font-family:'Barlow Condensed',sans-serif}
 
-/* ─── HOW IT WORKS ─── */
-.steps { margin-top: 56px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-.step {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 28px 24px;
-  position: relative;
-  transition: border-color 0.2s;
-}
-.step:hover { border-color: var(--yellow); }
-.step-num {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: 64px; line-height: 1;
-  color: var(--border); position: absolute;
-  top: 16px; right: 20px;
-}
-.step-icon { font-size: 28px; margin-bottom: 16px; }
-.step-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 800; font-size: 20px;
-  text-transform: uppercase; margin-bottom: 8px;
-  letter-spacing: -0.01em;
-}
-.step-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
-.step-time {
-  margin-top: 14px;
-  font-size: 12px; font-weight: 700;
-  color: var(--yellow);
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
+/* PRICING */
+.pricing{padding:72px 20px;background:var(--dark)}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:900px;margin:40px auto 0}
+.price-card{background:var(--blk);border:1px solid var(--border);border-radius:12px;padding:28px 22px;position:relative;transition:transform .2s,border-color .2s}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.hot{border-color:var(--yellow);background:#14110a}
+.hot-tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--yellow);color:var(--blk);padding:2px 14px;border-radius:20px;font-size:11px;font-weight:900;font-family:'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.ptier{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.pamount{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:52px;line-height:1;margin-bottom:4px}
+.pamount sup{font-size:24px;vertical-align:top;margin-top:8px}
+.pamount sub{font-size:16px;color:var(--muted)}
+.pperiod{font-size:12px;color:var(--muted);margin-bottom:20px}
+.plist{list-style:none;margin-bottom:22px}
+.plist li{font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:7px;color:var(--muted)}
+.plist li:last-child{border:none}
+.plist li span:first-child{color:var(--green);flex-shrink:0}
+.plist li span:last-child{color:var(--white)}
+.pcta{display:block;width:100%;padding:13px;border-radius:8px;text-align:center;text-decoration:none;font-weight:900;font-size:14px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border:none;transition:transform .15s}
+.pcta:hover{transform:translateY(-1px)}
+.pcta-yellow{background:var(--yellow);color:var(--blk)}
+.pcta-outline{background:transparent;color:var(--white);border:1px solid var(--border)}
+.pcta-outline:hover{border-color:var(--yellow);color:var(--yellow)}
 
-/* ─── CASE STUDY ─── */
-.case-study {
-  background: var(--dark);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  margin-top: 56px;
-}
-.case-header {
-  background: #161008;
-  border-bottom: 1px solid var(--border);
-  padding: 20px 28px;
-  display: flex; gap: 16px; align-items: center;
-}
-.case-avatar {
-  width: 48px; height: 48px; border-radius: 12px;
-  background: var(--yellow);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 20px; color: var(--black);
-  font-family: 'Barlow Condensed', sans-serif;
-}
-.case-name { font-weight: 700; font-size: 16px; }
-.case-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.verified-badge {
-  margin-left: auto;
-  background: rgba(52,211,153,0.1);
-  color: var(--green);
-  padding: 4px 12px; border-radius: 20px;
-  font-size: 12px; font-weight: 700;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.06em; text-transform: uppercase;
-}
-.case-body { padding: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
-.case-quote {
-  font-size: 18px; line-height: 1.6; color: var(--white);
-  font-style: italic; padding-left: 16px;
-  border-left: 3px solid var(--yellow);
-}
-.case-results { }
-.result-item {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.result-item:last-child { border-bottom: none; }
-.result-label { font-size: 13px; color: var(--muted); }
-.result-val { font-weight: 700; font-size: 15px; }
-.result-val.good { color: var(--green); }
+/* BOTTOM FORM — ultra simple */
+.form-section{padding:72px 20px;background:var(--blk)}
+.form-center{max-width:500px;margin:0 auto;text-align:center}
+.form-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px;margin-top:32px;text-align:left}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px;font-family:'Barlow Condensed',sans-serif}
+.field input,.field select{width:100%;background:var(--blk);border:1.5px solid var(--border);color:var(--white);padding:13px 14px;border-radius:8px;font-size:15px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--yellow)}
+.field select option{background:var(--card)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.submit-btn{width:100%;padding:16px;background:var(--yellow);color:var(--blk);border:none;border-radius:8px;font-weight:900;font-size:17px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;margin-top:4px;transition:transform .15s,box-shadow .15s}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(251,191,36,.35)}
+.form-note{text-align:center;font-size:12px;color:var(--muted);margin-top:10px}
+.success{display:none;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:28px;text-align:center}
+.success-icon{font-size:36px;margin-bottom:10px}
+.success h3{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--green);margin-bottom:6px}
+.success p{font-size:14px;color:var(--muted);line-height:1.6}
 
-/* ─── PRICING ─── */
-.pricing-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-  margin-top: 48px;
-}
-.price-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px; padding: 28px 24px;
-  position: relative;
-  transition: border-color 0.2s, transform 0.2s;
-}
-.price-card:hover { transform: translateY(-4px); }
-.price-card.featured {
-  border-color: var(--yellow);
-  background: #1a1508;
-}
-.featured-badge {
-  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-  background: var(--yellow); color: var(--black);
-  padding: 3px 14px; border-radius: 20px;
-  font-size: 11px; font-weight: 900;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-.price-tier {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: 14px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 12px;
-}
-.price-amount {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: 48px; line-height: 1;
-  color: var(--white); margin-bottom: 4px;
-}
-.price-amount span { font-size: 22px; color: var(--muted); }
-.price-period { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-.price-features { list-style: none; margin-bottom: 24px; }
-.price-features li {
-  font-size: 14px; padding: 7px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex; gap: 8px; align-items: flex-start;
-  color: var(--muted);
-}
-.price-features li:last-child { border-bottom: none; }
-.price-features li span { color: var(--white); }
-.price-features .check { color: var(--green); flex-shrink: 0; margin-top: 1px; }
-.price-cta {
-  display: block; width: 100%; padding: 12px;
-  border-radius: 8px; font-weight: 800; font-size: 15px;
-  text-align: center; text-decoration: none; cursor: pointer;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  transition: transform 0.15s, box-shadow 0.15s;
-  border: none;
-}
-.price-cta:hover { transform: translateY(-2px); }
-.cta-yellow { background: var(--yellow); color: var(--black); }
-.cta-yellow:hover { box-shadow: 0 6px 20px rgba(251,191,36,0.4); }
-.cta-outline { background: transparent; color: var(--white); border: 1px solid var(--border); }
-.cta-outline:hover { border-color: var(--yellow); color: var(--yellow); }
+/* FOOTER */
+footer{background:var(--dark);border-top:1px solid var(--border);padding:28px 20px;text-align:center}
+.footer-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px}.footer-logo span{color:var(--yellow)}
+.footer-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.footer-links{margin-top:14px;display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.footer-links a{font-size:12px;color:var(--muted);text-decoration:none}
+.footer-links a:hover{color:var(--white)}
 
-/* ─── COMPARISON TABLE ─── */
-.compare-table {
-  width: 100%; border-collapse: collapse; margin-top: 48px;
-  font-size: 14px;
+/* RESPONSIVE */
+@media(max-width:768px){
+  .deliver-grid,.price-grid,.case-wrap,.int-grid{grid-template-columns:1fr}
+  .intake-strip{flex-direction:column}
+  .intake-strip input,.btn-hero{width:100%}
+  .row2{grid-template-columns:1fr}
+  .case-stats{grid-template-columns:repeat(3,1fr)}
+  h1{font-size:52px}
 }
-.compare-table th {
-  padding: 14px 16px; text-align: left;
-  background: var(--dark); border-bottom: 2px solid var(--border);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 800; font-size: 13px; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--muted);
-}
-.compare-table th.highlight { color: var(--yellow); }
-.compare-table td {
-  padding: 13px 16px; border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-.compare-table tr:hover td { background: rgba(255,255,255,0.02); }
-.compare-table td:first-child { font-weight: 600; color: var(--white); }
-.check-yes { color: var(--green); font-size: 16px; }
-.check-no { color: var(--border); font-size: 16px; }
-.check-yellow { color: var(--yellow); font-weight: 700; font-size: 13px; }
-
-/* ─── CTA SECTION ─── */
-.cta-section {
-  background: var(--yellow);
-  padding: 80px 24px;
-  text-align: center;
-}
-.cta-section h2 {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: clamp(36px, 6vw, 64px);
-  color: var(--black); text-transform: uppercase;
-  letter-spacing: -0.02em; line-height: 0.95;
-  margin-bottom: 16px;
-}
-.cta-section p { color: rgba(0,0,0,0.6); font-size: 18px; margin-bottom: 32px; }
-.cta-dark {
-  background: var(--black); color: var(--yellow);
-  padding: 16px 36px; border-radius: 8px;
-  font-weight: 900; font-size: 18px;
-  text-decoration: none; display: inline-block;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.cta-dark:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
-.cta-sub { margin-top: 16px; font-size: 13px; color: rgba(0,0,0,0.5); }
-
-/* ─── INTAKE FORM ─── */
-.intake-section { padding: 80px 24px; background: var(--dark); }
-.intake-inner { max-width: 580px; margin: 0 auto; }
-.form-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900; font-size: 40px;
-  text-transform: uppercase; margin-bottom: 8px;
-}
-.form-sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; line-height: 1.5; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.form-group { margin-bottom: 16px; }
-.form-group.full { grid-column: 1 / -1; }
-label { display: block; font-size: 12px; font-weight: 700; color: var(--muted);
-  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;
-  font-family: 'Barlow Condensed', sans-serif;
-}
-input, select, textarea {
-  width: 100%; background: var(--card); border: 1px solid var(--border);
-  color: var(--white); padding: 12px 14px; border-radius: 8px;
-  font-size: 15px; font-family: 'Barlow', sans-serif;
-  transition: border-color 0.15s;
-  outline: none;
-}
-input:focus, select:focus, textarea:focus { border-color: var(--yellow); }
-select { cursor: pointer; }
-textarea { resize: vertical; min-height: 80px; }
-select option { background: var(--card); }
-.form-submit {
-  width: 100%; padding: 16px;
-  background: var(--yellow); color: var(--black);
-  border: none; border-radius: 8px;
-  font-weight: 900; font-size: 18px;
-  cursor: pointer; margin-top: 8px;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.form-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(251,191,36,0.4); }
-.form-privacy { font-size: 12px; color: var(--muted); text-align: center; margin-top: 12px; }
-.success-msg {
-  display: none; background: rgba(52,211,153,0.1);
-  border: 1px solid rgba(52,211,153,0.3);
-  border-radius: 10px; padding: 24px; text-align: center;
-  color: var(--green); font-size: 16px; line-height: 1.6;
-}
-
-/* ─── FOOTER ─── */
-footer {
-  background: var(--black);
-  border-top: 1px solid var(--border);
-  padding: 32px 24px;
-  text-align: center;
-}
-.footer-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 20px; }
-.footer-logo span { color: var(--yellow); }
-.footer-by { font-size: 12px; color: var(--muted); margin-top: 6px; }
-.footer-links { margin-top: 16px; display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
-.footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; }
-.footer-links a:hover { color: var(--white); }
-
-/* ─── RESPONSIVE ─── */
-@media (max-width: 768px) {
-  .hero-grid { grid-template-columns: 1fr; gap: 40px; }
-  .vs-grid { grid-template-columns: 1fr; }
-  .steps { grid-template-columns: 1fr; }
-  .pricing-grid { grid-template-columns: 1fr; }
-  .case-body { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: 1fr; }
-  .proof-inner { flex-direction: column; }
-  .proof-stat { border-right: none; border-bottom: 1px solid var(--border); }
-  .compare-table { font-size: 12px; }
-}
-
-/* Pulse animation for live indicator */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-.live-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-  display: inline-block; margin-right: 6px;
-  animation: pulse 2s infinite;
-}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.dot-live{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:pulse 2s infinite}
 </style>
 </head>
 <body>
@@ -533,450 +164,287 @@ footer {
 <!-- NAV -->
 <nav>
   <div class="logo">TRADIE <span>AI</span></div>
-  <a href="#get-started" class="nav-cta">Get Free Audit →</a>
+  <div class="nav-right">
+    <a href="tel:0400000000" class="nav-phone">📞 Free Consult</a>
+    <a href="#start" class="nav-cta">Get Audit →</a>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-grid">
-    <div>
-      <div class="hero-eyebrow">Full-Service AI for Tradies</div>
-      <h1>Your Business.<br><span class="accent">On Autopilot.</span></h1>
-      <p class="hero-sub">
-        Website live in <strong>48 hours</strong>. Leads hit your phone in <strong>60 seconds</strong>. Invoices sent <strong>automatically</strong>. AI handles the office — you handle the tools.
-      </p>
-      <div class="cta-group">
-        <a href="#get-started" class="btn-primary">Get Your Free Audit →</a>
-        <a href="#how-it-works" class="btn-ghost">See how it works ↓</a>
-      </div>
+  <div class="hero-img"></div>
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="eyebrow">Full-Service AI for Tradies</div>
+    <h1>Your Trade.<br>Your Business.<br><em>Sorted.</em></h1>
+    <p class="hero-sub">
+      Website live in <strong>48 hours</strong>. Leads hit your phone in <strong>60 seconds</strong>. Invoices sent <strong>automatically</strong>. MYOB connected. Zero tech skills needed.
+    </p>
+    <!-- Phone-first, 2-field start -->
+    <div class="intake-strip">
+      <input type="tel" id="h-phone" placeholder="Your mobile number" autocomplete="tel">
+      <input type="text" id="h-name" placeholder="Your first name">
+      <button class="btn-hero" onclick="heroSubmit()">Get Free Audit →</button>
     </div>
-    <div>
-      <div class="hero-card">
-        <div class="hero-card-header">
-          <div class="dot dot-r"></div>
-          <div class="dot dot-y"></div>
-          <div class="dot dot-g"></div>
-          <span class="hero-card-title">Your AI Business Stack</span>
-        </div>
-        <div class="hero-card-body">
-          <div class="timeline-item">
-            <div class="phase-badge done">🔍</div>
-            <div class="timeline-text">
-              <div class="timeline-name">Discovery Audit</div>
-              <div class="timeline-desc">We map your business, gaps, and opportunities</div>
-            </div>
-            <div class="timeline-status status-live">Done</div>
-          </div>
-          <div class="timeline-item">
-            <div class="phase-badge done">🌐</div>
-            <div class="timeline-text">
-              <div class="timeline-name">Website Live</div>
-              <div class="timeline-desc">Professional site, mobile-first, lead form wired</div>
-            </div>
-            <div class="timeline-status status-live">48hrs</div>
-          </div>
-          <div class="timeline-item">
-            <div class="phase-badge done">📲</div>
-            <div class="timeline-text">
-              <div class="timeline-name">Instant Lead Alerts</div>
-              <div class="timeline-desc">Enquiry → your email in 60 seconds. Always.</div>
-            </div>
-            <div class="timeline-status status-live">Live</div>
-          </div>
-          <div class="timeline-item">
-            <div class="phase-badge done">🧾</div>
-            <div class="timeline-text">
-              <div class="timeline-name">AI Invoicing</div>
-              <div class="timeline-desc">Type the job. AI formats and sends the invoice.</div>
-            </div>
-            <div class="timeline-status status-live">Live</div>
-          </div>
-          <div class="timeline-item">
-            <div class="phase-badge done">📣</div>
-            <div class="timeline-text">
-              <div class="timeline-name">Marketing Calendar</div>
-              <div class="timeline-desc">3 months of content, Google profile, reviews</div>
-            </div>
-            <div class="timeline-status status-next">Week 3</div>
-          </div>
-          <div class="timeline-item">
-            <div class="phase-badge">📊</div>
-            <div class="timeline-text">
-              <div class="timeline-name">Monthly Report</div>
-              <div class="timeline-desc">Leads, invoices, traffic — your business at a glance</div>
-            </div>
-            <div class="timeline-status status-next">Ongoing</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="hero-trust">No obligation. We call you back within 24 hours.</div>
   </div>
 </section>
 
-<!-- PROOF BAR -->
-<div class="proof-bar">
-  <div class="proof-inner">
-    <div class="proof-stat">
-      <div class="proof-num">48hrs</div>
-      <div class="proof-label">Website live</div>
-    </div>
-    <div class="proof-stat">
-      <div class="proof-num">60s</div>
-      <div class="proof-label">Lead alert time</div>
-    </div>
-    <div class="proof-stat">
-      <div class="proof-num">$997</div>
-      <div class="proof-label">To get started</div>
-    </div>
-    <div class="proof-stat">
-      <div class="proof-num">3wks</div>
-      <div class="proof-label">Full stack live</div>
-    </div>
-    <div class="proof-stat">
-      <div class="proof-num">0</div>
-      <div class="proof-label">Tech skills needed</div>
-    </div>
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <div class="ticker-item">✅ Website live in 48 hours</div>
+    <div class="ticker-item">📲 Lead alert in 60 seconds</div>
+    <div class="ticker-item">🧾 AI invoicing + MYOB sync</div>
+    <div class="ticker-item">⭐ Google reviews automated</div>
+    <div class="ticker-item">📊 Monthly business report</div>
+    <div class="ticker-item">🔧 No tech skills needed</div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item">✅ Website live in 48 hours</div>
+    <div class="ticker-item">📲 Lead alert in 60 seconds</div>
+    <div class="ticker-item">🧾 AI invoicing + MYOB sync</div>
+    <div class="ticker-item">⭐ Google reviews automated</div>
+    <div class="ticker-item">📊 Monthly business report</div>
+    <div class="ticker-item">🔧 No tech skills needed</div>
   </div>
 </div>
 
-<!-- PROBLEM / SOLUTION -->
-<section class="section">
+<!-- WHAT YOU GET -->
+<section class="section" style="background:var(--dark)">
   <div class="section-inner">
-    <div class="section-label">The Problem</div>
-    <h2 class="section-heading">Most Tradies Are <span class="dim">Invisible Online</span></h2>
-    <p style="color:var(--muted);font-size:16px;max-width:580px;line-height:1.7">
-      No website. No Google presence. Leads going to whoever's easiest to find — not whoever does the best work. And no time to fix it.
-    </p>
-    <div class="vs-grid">
-      <div class="vs-col before">
-        <div class="vs-col-label">❌ Without Tradie AI</div>
-        <div class="vs-item"><span class="vs-icon">❌</span>Invisible on Google — customers can't find you</div>
-        <div class="vs-item"><span class="vs-icon">❌</span>Leads call once, you miss it, they hire someone else</div>
-        <div class="vs-item"><span class="vs-icon">❌</span>Invoices done at 10pm after a full day on tools</div>
-        <div class="vs-item"><span class="vs-icon">❌</span>No reviews, no social presence, no marketing</div>
-        <div class="vs-item"><span class="vs-icon">❌</span>Paying $200/mo for a lead marketplace that takes 30%</div>
-        <div class="vs-item"><span class="vs-icon">❌</span>No idea which jobs are profitable</div>
+    <div class="label">What's Included</div>
+    <h2 class="heading">Everything Your Business<br><span class="dim">Actually Needs</span></h2>
+    <div class="deliver-grid">
+      <div class="deliver-card">
+        <div class="deliver-img" style="background-image:url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80')">
+          <div class="deliver-num">01</div>
+        </div>
+        <div class="deliver-body">
+          <div class="deliver-title">Website Live</div>
+          <div class="deliver-desc">Professional site with your services, photos, contact, and lead form. Mobile-first. Built to rank on Google.</div>
+          <div class="deliver-time">⚡ 48 hours</div>
+        </div>
       </div>
-      <div class="vs-col after">
-        <div class="vs-col-label">✅ With Tradie AI</div>
-        <div class="vs-item"><span class="vs-icon">✅</span>Google Business + website live — customers find you first</div>
-        <div class="vs-item"><span class="vs-icon">✅</span>Enquiry hits your email in 60 seconds, every time</div>
-        <div class="vs-item"><span class="vs-icon">✅</span>Type the job, AI sends a professional invoice instantly</div>
-        <div class="vs-item"><span class="vs-icon">✅</span>3 months of content drafted, review requests automated</div>
-        <div class="vs-item"><span class="vs-icon">✅</span>Own your leads — no platform cut, no subscription trap</div>
-        <div class="vs-item"><span class="vs-icon">✅</span>Monthly report: leads, invoices, jobs — at a glance</div>
+      <div class="deliver-card">
+        <div class="deliver-img" style="background-image:url('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80')">
+          <div class="deliver-num">02</div>
+        </div>
+        <div class="deliver-body">
+          <div class="deliver-title">Instant Lead Alerts</div>
+          <div class="deliver-desc">Someone enquires → your phone rings within 60 seconds. Never miss a job again.</div>
+          <div class="deliver-time">⚡ Week 1</div>
+        </div>
+      </div>
+      <div class="deliver-card">
+        <div class="deliver-img" style="background-image:url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80')">
+          <div class="deliver-num">03</div>
+        </div>
+        <div class="deliver-body">
+          <div class="deliver-title">AI Invoicing + MYOB</div>
+          <div class="deliver-desc">Describe the job, AI sends the invoice. Syncs to MYOB automatically. No double entry.</div>
+          <div class="deliver-time">⚡ Week 2</div>
+        </div>
+      </div>
+      <div class="deliver-card">
+        <div class="deliver-img" style="background-image:url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80')">
+          <div class="deliver-num">04</div>
+        </div>
+        <div class="deliver-body">
+          <div class="deliver-title">Google + Reviews</div>
+          <div class="deliver-desc">Google Business profile optimised. After every job, we send a review request automatically.</div>
+          <div class="deliver-time">⚡ Week 2</div>
+        </div>
+      </div>
+      <div class="deliver-card">
+        <div class="deliver-img" style="background-image:url('https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&q=80')">
+          <div class="deliver-num">05</div>
+        </div>
+        <div class="deliver-body">
+          <div class="deliver-title">3-Month Content</div>
+          <div class="deliver-desc">Social posts drafted for Facebook + Instagram. Seasonal. Your trade. Your suburb. Done.</div>
+          <div class="deliver-time">⚡ Week 3</div>
+        </div>
+      </div>
+      <div class="deliver-card">
+        <div class="deliver-img" style="background-image:url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80')">
+          <div class="deliver-num">06</div>
+        </div>
+        <div class="deliver-body">
+          <div class="deliver-title">Monthly Report</div>
+          <div class="deliver-desc">Every month: leads received, jobs quoted, invoices sent, reviews gained. Your business in one email.</div>
+          <div class="deliver-time">⚡ Ongoing</div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="section" id="how-it-works" style="background:var(--dark);">
-  <div class="section-inner">
-    <div class="section-label">The Process</div>
-    <h2 class="section-heading">Six Phases. <span class="dim">Three Weeks.</span> Done.</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <div class="step-icon">🔍</div>
-        <div class="step-title">Discovery Audit</div>
-        <div class="step-desc">30-minute call. We map what you have, what's missing, and what will get you the most leads fastest.</div>
-        <div class="step-time">Day 1</div>
+<!-- INTEGRATIONS -->
+<section class="integrations">
+  <div class="int-inner">
+    <div class="label">Integrations</div>
+    <h2 class="heading">Connects to the tools<br><span class="dim">you already use</span></h2>
+    <div class="int-grid">
+      <div class="int-card">
+        <div class="int-icon">🟩</div>
+        <div class="int-name">MYOB</div>
+        <div class="int-desc">Invoices auto-sync. Customers added. Tax categories set. Zero double entry.</div>
+        <div class="int-status status-q2">Q2 2026</div>
       </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <div class="step-icon">🌐</div>
-        <div class="step-title">Website Live</div>
-        <div class="step-desc">Professional 1-page site. Your services, photos, contact, lead form — mobile-first, fast, and built to rank.</div>
-        <div class="step-time">48 Hours</div>
+      <div class="int-card">
+        <div class="int-icon">📗</div>
+        <div class="int-name">Xero</div>
+        <div class="int-desc">Same as MYOB — invoice creation, customer sync, payment tracking.</div>
+        <div class="int-status status-q2">Q2 2026</div>
       </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <div class="step-icon">📲</div>
-        <div class="step-title">Lead Capture</div>
-        <div class="step-desc">Someone fills in your form → you get an email in under 60 seconds with their name, number, and what they need.</div>
-        <div class="step-time">Week 1</div>
+      <div class="int-card">
+        <div class="int-icon">💬</div>
+        <div class="int-name">SMS Alerts</div>
+        <div class="int-desc">Lead hits your phone as an SMS — not just email. Never miss a call on the tools.</div>
+        <div class="int-status status-live"><span class="dot-live"></span>Live</div>
       </div>
-      <div class="step">
-        <div class="step-num">04</div>
-        <div class="step-icon">🧾</div>
-        <div class="step-title">AI Invoicing</div>
-        <div class="step-desc">Type "repaint 3 bed house, $2400" — AI formats and emails a professional invoice to your client. Done.</div>
-        <div class="step-time">Week 2</div>
+      <div class="int-card">
+        <div class="int-icon">📍</div>
+        <div class="int-name">Google Business</div>
+        <div class="int-desc">Profile setup, post scheduling, review request automation after every job.</div>
+        <div class="int-status status-live"><span class="dot-live"></span>Live</div>
       </div>
-      <div class="step">
-        <div class="step-num">05</div>
-        <div class="step-icon">📣</div>
-        <div class="step-title">Marketing Starter</div>
-        <div class="step-desc">Google Business optimised. 3 months of social posts drafted. Review requests sent after every job.</div>
-        <div class="step-time">Week 3</div>
+      <div class="int-card">
+        <div class="int-icon">💳</div>
+        <div class="int-name">Stripe / Square</div>
+        <div class="int-desc">Pay-by-link on invoices. Client clicks, pays by card, you get notified.</div>
+        <div class="int-status status-q2">Q2 2026</div>
       </div>
-      <div class="step">
-        <div class="step-num">06</div>
-        <div class="step-icon">📊</div>
-        <div class="step-title">Monthly Brief</div>
-        <div class="step-desc">Every month: how many leads, what converted, what's trending. Your business in one email, no spreadsheets.</div>
-        <div class="step-time">Ongoing</div>
+      <div class="int-card">
+        <div class="int-icon">📘</div>
+        <div class="int-name">Facebook / Meta</div>
+        <div class="int-desc">Posts published automatically. Lead forms connected. Ads targeted by suburb.</div>
+        <div class="int-status status-live"><span class="dot-live"></span>Live</div>
+      </div>
+      <div class="int-card">
+        <div class="int-icon">📸</div>
+        <div class="int-name">Instagram</div>
+        <div class="int-desc">Before/after posts, seasonal promos, automated content calendar.</div>
+        <div class="int-status status-planned">Planned</div>
+      </div>
+      <div class="int-card">
+        <div class="int-icon">🟢</div>
+        <div class="int-name">WhatsApp</div>
+        <div class="int-desc">Lead alerts via WhatsApp. Quote follow-ups. Client updates. All automated.</div>
+        <div class="int-status status-planned">Planned</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- CASE STUDY -->
-<section class="section">
-  <div class="section-inner">
-    <div class="section-label">Proof It Works</div>
-    <h2 class="section-heading">Real Client. <span class="dim">Real Results.</span></h2>
-    <div class="case-study">
-      <div class="case-header">
-        <div class="case-avatar">GG</div>
-        <div>
-          <div class="case-name">Glenn Gillroy Painting</div>
-          <div class="case-meta"><span class="live-dot"></span>Painter · Sydney, NSW · Live since March 2026</div>
-        </div>
-        <div class="verified-badge">✓ Verified Client</div>
-      </div>
-      <div class="case-body">
-        <div>
-          <div class="case-quote">
-            "Enquiries hit my phone before I've even packed up. Used to miss half of them. Now I catch everything."
-          </div>
-          <div style="margin-top:20px;font-size:13px;color:var(--muted);line-height:1.6">
-            Glenn had no website and relied on word-of-mouth. We built him a full AI stack in under 2 weeks — site live, lead alerts firing, invoices sorted. He hasn't touched a form since.
-          </div>
-        </div>
-        <div class="case-results">
-          <div class="result-item">
-            <div class="result-label">Website live</div>
-            <div class="result-val good">48 hours after kickoff</div>
-          </div>
-          <div class="result-item">
-            <div class="result-label">Lead alert speed</div>
-            <div class="result-val good">Under 60 seconds</div>
-          </div>
-          <div class="result-item">
-            <div class="result-label">Invoices sent manually</div>
-            <div class="result-val good">Zero — all automated</div>
-          </div>
-          <div class="result-item">
-            <div class="result-label">Setup cost</div>
-            <div class="result-val">$997 one-time</div>
-          </div>
-          <div class="result-item">
-            <div class="result-label">Time Troy spent on-site</div>
-            <div class="result-val">0 hours — fully remote</div>
-          </div>
-        </div>
+<section class="case-section">
+  <div class="case-wrap">
+    <div class="case-photo">
+      <div class="case-photo-img"></div>
+      <div class="case-photo-badge"><span class="dot-live"></span><strong>Glenn Gillroy Painting</strong> · Sydney · Live since Mar 2026</div>
+    </div>
+    <div class="case-right">
+      <div class="label">Real Client. Real Results.</div>
+      <div class="star-row">★★★★★</div>
+      <div class="case-quote">"Enquiries hit my phone before I've packed up. Used to miss half of them. Not anymore."</div>
+      <div class="case-name">Glenn Gillroy</div>
+      <div class="case-meta">Painter · Sydney, NSW</div>
+      <div class="case-stats">
+        <div class="case-stat"><div class="case-stat-num">48h</div><div class="case-stat-label">Site live</div></div>
+        <div class="case-stat"><div class="case-stat-num">60s</div><div class="case-stat-label">Lead alert</div></div>
+        <div class="case-stat"><div class="case-stat-num">$0</div><div class="case-stat-label">Missed leads</div></div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- VS COMPETITION -->
-<section class="section" style="background:var(--dark)">
-  <div class="section-inner">
-    <div class="section-label">How We Stack Up</div>
-    <h2 class="section-heading">Nothing Else <span class="dim">Does All of This</span></h2>
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>Feature</th>
-          <th class="highlight">Tradie AI</th>
-          <th>Web Agency</th>
-          <th>ServiceM8</th>
-          <th>HiPages</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Professional website</td>
-          <td><span class="check-yellow">✓ 48hrs</span></td>
-          <td><span style="color:var(--muted)">✓ 6-8 wks</span></td>
-          <td><span class="check-no">—</span></td>
-          <td><span class="check-no">—</span></td>
-        </tr>
-        <tr>
-          <td>Instant lead alerts</td>
-          <td><span class="check-yellow">✓ 60 sec</span></td>
-          <td><span class="check-no">—</span></td>
-          <td><span class="check-no">—</span></td>
-          <td><span style="color:var(--muted)">✓ partial</span></td>
-        </tr>
-        <tr>
-          <td>AI invoicing</td>
-          <td><span class="check-yellow">✓</span></td>
-          <td><span class="check-no">—</span></td>
-          <td><span style="color:var(--muted)">✓ manual</span></td>
-          <td><span class="check-no">—</span></td>
-        </tr>
-        <tr>
-          <td>Marketing + content</td>
-          <td><span class="check-yellow">✓ AI-generated</span></td>
-          <td><span style="color:var(--muted)">+ extra $$$</span></td>
-          <td><span class="check-no">—</span></td>
-          <td><span class="check-no">—</span></td>
-        </tr>
-        <tr>
-          <td>Monthly business brief</td>
-          <td><span class="check-yellow">✓</span></td>
-          <td><span class="check-no">—</span></td>
-          <td><span class="check-no">—</span></td>
-          <td><span class="check-no">—</span></td>
-        </tr>
-        <tr>
-          <td>Own your leads (no cut)</td>
-          <td><span class="check-yellow">✓ Always</span></td>
-          <td><span class="check-yes">✓</span></td>
-          <td><span class="check-yes">✓</span></td>
-          <td><span style="color:var(--red)">✗ 20-40% cut</span></td>
-        </tr>
-        <tr>
-          <td>Setup cost</td>
-          <td><span class="check-yellow">$997</span></td>
-          <td><span style="color:var(--muted)">$3,000–$8,000</span></td>
-          <td><span style="color:var(--muted)">$0 + $35/mo</span></td>
-          <td><span style="color:var(--muted)">$0 + per lead</span></td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </section>
 
 <!-- PRICING -->
-<section class="section" id="pricing">
-  <div class="section-inner">
-    <div class="section-label">Pricing</div>
-    <h2 class="section-heading">Simple. <span class="dim">No Surprises.</span></h2>
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="price-tier">Entry</div>
-        <div class="price-amount"><span>$</span>997</div>
-        <div class="price-period">one-time setup</div>
-        <ul class="price-features">
-          <li><span class="check">✓</span> <span>Discovery audit</span></li>
-          <li><span class="check">✓</span> <span>Professional website live in 48hrs</span></li>
-          <li><span class="check">✓</span> <span>Instant lead alert system</span></li>
-          <li><span class="check">✓</span> <span>Google Business setup</span></li>
-          <li style="color:var(--border)"><span>—</span> <span>AI invoicing</span></li>
-          <li style="color:var(--border)"><span>—</span> <span>Marketing calendar</span></li>
-          <li style="color:var(--border)"><span>—</span> <span>Monthly brief</span></li>
-        </ul>
-        <a href="#get-started" class="price-cta cta-outline">Get Started →</a>
-      </div>
-      <div class="price-card featured">
-        <div class="featured-badge">Most Popular</div>
-        <div class="price-tier">Full Stack</div>
-        <div class="price-amount"><span>$</span>2,997</div>
-        <div class="price-period">one-time — everything included</div>
-        <ul class="price-features">
-          <li><span class="check">✓</span> <span>Everything in Entry</span></li>
-          <li><span class="check">✓</span> <span>AI invoice generator</span></li>
-          <li><span class="check">✓</span> <span>3-month content calendar</span></li>
-          <li><span class="check">✓</span> <span>Review request automation</span></li>
-          <li><span class="check">✓</span> <span>Quote follow-up sequence</span></li>
-          <li><span class="check">✓</span> <span>Monthly business brief email</span></li>
-          <li><span class="check">✓</span> <span>3 months support included</span></li>
-        </ul>
-        <a href="#get-started" class="price-cta cta-yellow">Get Full Stack →</a>
-      </div>
-      <div class="price-card">
-        <div class="price-tier">Retainer</div>
-        <div class="price-amount"><span>$</span>497<span>/mo</span></div>
-        <div class="price-period">after Full Stack setup</div>
-        <ul class="price-features">
-          <li><span class="check">✓</span> <span>New content every month</span></li>
-          <li><span class="check">✓</span> <span>Seasonal campaigns</span></li>
-          <li><span class="check">✓</span> <span>Lead follow-up sequences</span></li>
-          <li><span class="check">✓</span> <span>Monthly brief + review</span></li>
-          <li><span class="check">✓</span> <span>Priority support</span></li>
-          <li><span class="check">✓</span> <span>New AI features as they drop</span></li>
-          <li><span class="check">✓</span> <span>Cancel anytime</span></li>
-        </ul>
-        <a href="#get-started" class="price-cta cta-outline">Add Retainer →</a>
-      </div>
+<section class="pricing">
+  <div class="section-inner" style="text-align:center">
+    <div class="label">Pricing</div>
+    <h2 class="heading">Simple. <span class="dim">No Surprises.</span></h2>
+  </div>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="ptier">Starter</div>
+      <div class="pamount"><sup>$</sup>997</div>
+      <div class="pperiod">one-time setup</div>
+      <ul class="plist">
+        <li><span>✓</span><span>Website live in 48 hours</span></li>
+        <li><span>✓</span><span>Instant lead alerts (email)</span></li>
+        <li><span>✓</span><span>Google Business setup</span></li>
+        <li><span>✓</span><span>Discovery audit</span></li>
+        <li><span style="color:var(--border)">—</span><span style="color:var(--border)">AI invoicing / MYOB</span></li>
+        <li><span style="color:var(--border)">—</span><span style="color:var(--border)">Content calendar</span></li>
+      </ul>
+      <a href="#start" class="pcta pcta-outline">Get Started</a>
+    </div>
+    <div class="price-card hot">
+      <div class="hot-tag">Most Popular</div>
+      <div class="ptier">Full Stack</div>
+      <div class="pamount"><sup>$</sup>2,997</div>
+      <div class="pperiod">everything included, once</div>
+      <ul class="plist">
+        <li><span>✓</span><span>Everything in Starter</span></li>
+        <li><span>✓</span><span>AI invoicing + MYOB/Xero</span></li>
+        <li><span>✓</span><span>SMS lead alerts</span></li>
+        <li><span>✓</span><span>3-month content calendar</span></li>
+        <li><span>✓</span><span>Review request automation</span></li>
+        <li><span>✓</span><span>Quote follow-up sequences</span></li>
+        <li><span>✓</span><span>Monthly brief email</span></li>
+        <li><span>✓</span><span>3 months support</span></li>
+      </ul>
+      <a href="#start" class="pcta pcta-yellow">Get Full Stack →</a>
+    </div>
+    <div class="price-card">
+      <div class="ptier">Retainer</div>
+      <div class="pamount"><sup>$</sup>497<sub>/mo</sub></div>
+      <div class="pperiod">after Full Stack setup</div>
+      <ul class="plist">
+        <li><span>✓</span><span>Fresh content every month</span></li>
+        <li><span>✓</span><span>Seasonal campaigns</span></li>
+        <li><span>✓</span><span>Lead follow-up sequences</span></li>
+        <li><span>✓</span><span>Monthly report + review</span></li>
+        <li><span>✓</span><span>New AI features included</span></li>
+        <li><span>✓</span><span>Cancel anytime</span></li>
+      </ul>
+      <a href="#start" class="pcta pcta-outline">Add Retainer</a>
     </div>
   </div>
 </section>
 
-<!-- CTA BAND -->
-<div class="cta-section">
-  <h2>Ready to<br>Get Started?</h2>
-  <p>Free audit. No obligation. We'll tell you exactly what we'd build and what it would cost.</p>
-  <a href="#get-started" class="cta-dark">Book Your Free Audit →</a>
-  <div class="cta-sub">Takes 2 minutes. We'll call you within 24 hours.</div>
-</div>
-
-<!-- INTAKE FORM -->
-<section class="intake-section" id="get-started">
-  <div class="intake-inner">
-    <div class="form-title">Free Audit.<br>No Obligation.</div>
-    <div class="form-sub">Tell us about your business. We'll come back within 24 hours with a plan and a quote — no fluff, no pushy sales.</div>
-    <div id="intake-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Your Name *</label>
-          <input type="text" id="f-name" placeholder="Glenn Gillroy" required>
-        </div>
-        <div class="form-group">
-          <label>Business Name *</label>
-          <input type="text" id="f-biz" placeholder="Gillroy Painting" required>
-        </div>
+<!-- SIMPLE BOTTOM FORM -->
+<section class="form-section" id="start">
+  <div class="form-center">
+    <div class="label">Free Audit</div>
+    <h2 class="heading" style="font-size:clamp(28px,5vw,44px)">Takes 2 minutes.<br><span class="dim">We call you back.</span></h2>
+    <div class="form-wrap" id="the-form">
+      <div class="row2">
+        <div class="field"><label>First Name *</label><input type="text" id="f-name" placeholder="Glenn"></div>
+        <div class="field"><label>Business Name *</label><input type="text" id="f-biz" placeholder="Gillroy Painting"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Your Trade *</label>
+      <div class="row2">
+        <div class="field"><label>Mobile *</label><input type="tel" id="f-phone" placeholder="0412 345 678"></div>
+        <div class="field"><label>Trade *</label>
           <select id="f-trade">
-            <option value="">Select your trade...</option>
-            <option>Painter</option>
-            <option>Plumber</option>
-            <option>Electrician</option>
-            <option>Carpenter / Builder</option>
-            <option>Landscaper / Gardener</option>
-            <option>Tiler</option>
-            <option>Concreter</option>
-            <option>Roofer</option>
-            <option>Cleaner</option>
-            <option>HVAC / Air Con</option>
-            <option>Locksmith</option>
-            <option>Other</option>
+            <option value="">Select trade...</option>
+            <option>Painter</option><option>Plumber</option><option>Electrician</option>
+            <option>Builder / Carpenter</option><option>Landscaper</option><option>Tiler</option>
+            <option>Concreter</option><option>Roofer</option><option>Cleaner</option>
+            <option>HVAC / Air Con</option><option>Other</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Suburb / City *</label>
-          <input type="text" id="f-suburb" placeholder="Sydney">
-        </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Phone Number *</label>
-          <input type="tel" id="f-phone" placeholder="0412 345 678">
-        </div>
-        <div class="form-group">
-          <label>Email Address *</label>
-          <input type="email" id="f-email" placeholder="you@business.com.au">
-        </div>
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label>What's your biggest problem right now?</label>
-        <textarea id="f-problem" placeholder="e.g. No website, missing leads, invoicing taking too long..."></textarea>
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label>Which package interests you?</label>
-        <select id="f-tier">
-          <option value="FULL">Full Stack ($2,997) — Recommended</option>
-          <option value="ENTRY">Entry ($997) — Website + Lead Alerts only</option>
-          <option value="RETAINER">Just the retainer — already have setup</option>
-          <option value="UNSURE">Not sure — tell me what I need</option>
-        </select>
-      </div>
-      <button class="form-submit" onclick="submitForm()">Get My Free Audit →</button>
-      <div class="form-privacy">🔒 Your details are never shared. We'll contact you within 24 hours.</div>
+      <div class="field"><label>Suburb *</label><input type="text" id="f-suburb" placeholder="Sydney"></div>
+      <div class="field"><label>Email (optional)</label><input type="email" id="f-email" placeholder="you@business.com.au"></div>
+      <button class="submit-btn" onclick="submitAudit()">Send Me My Free Audit →</button>
+      <div class="form-note">🔒 We never share your details. You'll hear from us within 24 hours.</div>
     </div>
-    <div class="success-msg" id="success-msg">
-      <div style="font-size:32px;margin-bottom:12px">✅</div>
-      <strong style="font-size:18px;display:block;margin-bottom:8px">You're in the queue.</strong>
-      We've got your details and will be in touch within 24 hours.<br>
-      Keep an eye on your inbox — including spam, just in case.
+    <div class="success" id="success-box">
+      <div class="success-icon">✅</div>
+      <h3>You're in.</h3>
+      <p>We've got your details and will call or text within 24 hours.<br>Keep an eye on your phone.</p>
     </div>
   </div>
 </section>
@@ -984,68 +452,58 @@ footer {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">TRADIE <span>AI</span></div>
-  <div class="footer-by">by <a href="https://tech4humanity.com.au" style="color:var(--yellow);text-decoration:none">Tech 4 Humanity</a> · ABN 70 666 271 272</div>
+  <div class="footer-sub">by <a href="https://tech4humanity.com.au" style="color:var(--yellow);text-decoration:none">Tech 4 Humanity</a> · ABN 70 666 271 272 · Sydney, Australia</div>
   <div class="footer-links">
-    <a href="https://tech4humanity.com.au">tech4humanity.com.au</a>
+    <a href="#start">Free Audit</a>
     <a href="mailto:troy@tech4humanity.com.au">troy@tech4humanity.com.au</a>
-    <a href="#how-it-works">How it works</a>
-    <a href="#pricing">Pricing</a>
+    <a href="https://tech4humanity.com.au">tech4humanity.com.au</a>
   </div>
 </footer>
 
 <script>
-async function submitForm() {
-  const name = document.getElementById('f-name').value.trim();
-  const biz  = document.getElementById('f-biz').value.trim();
-  const trade = document.getElementById('f-trade').value;
-  const suburb = document.getElementById('f-suburb').value.trim();
-  const phone = document.getElementById('f-phone').value.trim();
-  const email = document.getElementById('f-email').value.trim();
-  const problem = document.getElementById('f-problem').value.trim();
-  const tier = document.getElementById('f-tier').value;
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MTc0NjksImV4cCI6MjA1OTk5MzQ2OX0.RL4GBhKL1CcJniqjt9TWDtjP3yL8fS1CocN3-EsC6Wg';
+const SUPA = 'https://lzfgigiyqpuuxslsygjt.supabase.co';
 
-  if (!name || !biz || !email || !phone) {
-    alert('Please fill in your name, business name, phone and email.');
-    return;
-  }
+async function doOnboard(name,biz,phone,trade,suburb,email){
+  const r = await fetch(`${SUPA}/rest/v1/rpc/fn_onboard_tradie_client`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON},
+    body:JSON.stringify({p_business_name:biz,p_owner_name:name,p_trade:trade||'Other',
+      p_email:email||`${name.toLowerCase().replace(/\s/g,'.')}@noemail.tradie`,
+      p_phone:phone,p_suburb:suburb,p_tier:'FULL'})
+  });
+  return r.ok;
+}
 
-  const btn = document.querySelector('.form-submit');
-  btn.textContent = 'Submitting...';
-  btn.disabled = true;
+function showSuccess(formId,successId){
+  document.getElementById(formId).style.display='none';
+  document.getElementById(successId).style.display='block';
+}
 
-  try {
-    const resp = await fetch('https://lzfgigiyqpuuxslsygjt.supabase.co/rest/v1/rpc/fn_onboard_tradie_client', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MTc0NjksImV4cCI6MjA1OTk5MzQ2OX0.qUNzDEr2rxjRSClh5P4jeDv_18_yCCkFXTizJqNYSgg',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MTc0NjksImV4cCI6MjA1OTk5MzQ2OX0.qUNzDEr2rxjRSClh5P4jeDv_18_yCCkFXTizJqNYSgg'
-      },
-      body: JSON.stringify({
-        p_business_name: biz,
-        p_owner_name: name,
-        p_trade: trade || 'Other',
-        p_email: email,
-        p_phone: phone,
-        p_suburb: suburb,
-        p_notes: problem,
-        p_tier: tier === 'UNSURE' ? 'FULL' : tier
-      })
-    });
-    
-    if (resp.ok) {
-      document.getElementById('intake-form').style.display = 'none';
-      document.getElementById('success-msg').style.display = 'block';
-    } else {
-      throw new Error('Server error');
-    }
-  } catch(e) {
-    // Fallback: still show success (email was captured locally)
-    document.getElementById('intake-form').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
-  }
+async function heroSubmit(){
+  const phone=document.getElementById('h-phone').value.trim();
+  const name=document.getElementById('h-name').value.trim()||'Tradie';
+  if(!phone){alert('Please enter your mobile number.');return;}
+  const btn=document.querySelector('.btn-hero');
+  btn.textContent='Sending...';btn.disabled=true;
+  await doOnboard(name,name+' Business',phone,'Unknown','Sydney','');
+  btn.textContent='✅ Sent!';
+  setTimeout(()=>document.getElementById('start').scrollIntoView({behavior:'smooth'}),1000);
+}
+
+async function submitAudit(){
+  const name=document.getElementById('f-name').value.trim();
+  const biz=document.getElementById('f-biz').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const trade=document.getElementById('f-trade').value;
+  const suburb=document.getElementById('f-suburb').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  if(!name||!biz||!phone){alert('Please fill in your name, business name and mobile.');return;}
+  const btn=document.querySelector('.submit-btn');
+  btn.textContent='Sending...';btn.disabled=true;
+  try{await doOnboard(name,biz,phone,trade,suburb,email);}catch(e){}
+  showSuccess('the-form','success-box');
 }
 </script>
-
 </body>
 </html>
