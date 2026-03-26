@@ -66,6 +66,7 @@ const CapStore = lazy(() => import("./pages/CapStore"));
 const ExecSpine = lazy(() => import("./pages/ExecSpine"));
 const PostExec = lazy(() => import("./pages/PostExec"));
 const AccountantPage = lazy(() => import("./pages/AccountantPage"));
+const WidgetCatalog = lazy(() => import("./pages/WidgetCatalog"));
 const Octoparse = lazy(() => import("./pages/Octoparse"));
 const AgentCapacity = lazy(() => import("./pages/AgentCapacity"));
 const AgentOps = lazy(() => import("./pages/AgentOps"));
@@ -264,6 +265,7 @@ const App = () => (
                 <Route path="/webops" element={<Webops />} />
                 <Route path="/maat-spine" element={<Maat121Spine />} />
                 <Route path="/maat-welcome" element={<MaatWelcome />} />
+                <Route path="/widget-catalog" element={<WidgetCatalog />} />
                 <Route path="*" element={<NotFound />} />
                             <Route path="/dossier" element={<Dossier />} />
                             <Route path="/dogfood" element={<Dogfood />} />
