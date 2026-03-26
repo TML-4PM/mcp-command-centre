@@ -34,10 +34,8 @@ async function logRun(slug: string, status: string, rowCount: number, summary: s
     const now = new Date().toISOString();
     await fetch(`${SUPABASE_URL}/rest/v1/rpt_run`, {
       method: 'POST',
-      headers: {
-        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json', Prefer: 'return=minimal'
-      },
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({
         report_slug: slug, run_type: 'report', status,
         row_count: rowCount, error_summary: summary !== 'ok' ? summary : null,
@@ -56,76 +54,51 @@ export default async function handler(req: Request) {
   if (!slug) return new Response(JSON.stringify({ error: 'slug required' }), { status: 400, headers: CORS });
 
   try {
-    // 1. Lookup report
-    const reports = await supa(`rpt_report?slug=eq.${encodeURIComponent(slug)}&select=*&limit=1`);
+    // Lookup in rpt_registry (canonical table)
+    const reports = await supa(`rpt_registry?report_slug=eq.${encodeURIComponent(slug)}&select=*&limit=1`);
     if (!reports?.length) return new Response(JSON.stringify({ error: `Not found: ${slug}` }), { status: 404, headers: CORS });
     const report = reports[0];
 
-    // Draft/broken — return status without running
-    if (report.status === 'draft' || report.status === 'broken') {
+    // Draft — return status without running
+    if (report.status !== 'live') {
       return new Response(JSON.stringify({
-        slug, name: report.name, domain: report.domain, status: report.status,
-        rag: report.rag, known_issues: report.known_issues,
-        source_ref: report.source_ref, data: [], row_count: 0,
-        message: `${report.status.toUpperCase()}: ${report.known_issues || 'Source not yet created'}`
+        slug, name: report.report_name, domain: report.domain,
+        status: report.status, rag: report.rag_status,
+        notes: report.notes, source_ref: report.source_ref,
+        data: [], row_count: 0,
+        message: `${report.status.toUpperCase()}: ${report.notes || 'Source not yet live'}`
       }), { status: 200, headers: CORS });
     }
 
-    // 2. Fetch data
+    // Fetch data
     let data: any[] = [];
     let runStatus = 'success';
     let errorMsg = '';
 
     if (report.source_type === 'supabase_view' || report.source_type === 'supabase_rpc') {
-      // Try REST first
       const viewData = await supa(`${report.source_ref}?select=*&limit=500`);
       if (Array.isArray(viewData)) {
         data = viewData;
       } else {
-        // Fallback to bridge
         const sql = report.source_type === 'supabase_rpc'
           ? `SELECT * FROM ${report.source_ref}() LIMIT 500`
           : `SELECT * FROM ${report.source_ref} LIMIT 500`;
         const br = await bridge(sql);
-        if (br.success) {
-          data = br.rows || [];
-        } else {
-          runStatus = 'failed';
-          errorMsg = br.error || 'query failed';
-        }
+        if (br.success) { data = br.rows || []; }
+        else { runStatus = 'failed'; errorMsg = br.error || 'query failed'; }
       }
     }
 
-    // 3. Run checks
-    const checkLinks = await supa(
-      `rpt_report_check?report_id=eq.${report.id}&enabled=eq.true&select=*,rpt_check(code,name,severity,check_ref)`
-    );
-    const checkResults: any[] = [];
-    for (const rc of (checkLinks || [])) {
-      const chk = rc.rpt_check;
-      if (!chk) continue;
-      try {
-        const cv = await supa(`${chk.check_ref}?select=*&limit=5`);
-        const rowCount = Array.isArray(cv) ? cv.length : 0;
-        // For integrity fail views: rows = issues. For hash_chain: rows with break = issue.
-        const passed = rowCount === 0;
-        checkResults.push({ code: chk.code, name: chk.name, severity: chk.severity, passed, issue_count: rowCount });
-        if (!passed && rc.fail_blocks_export && runStatus === 'success') runStatus = 'warning';
-      } catch {
-        checkResults.push({ code: chk.code, name: chk.name, severity: chk.severity, passed: null, issue_count: null });
-      }
-    }
-
-    // 4. Log
     await logRun(slug, runStatus, data.length, errorMsg || 'ok');
 
-    const rag = runStatus === 'success' ? 'green' : runStatus === 'warning' ? 'amber' : 'red';
+    const rag: string = runStatus === 'success' ? 'green' : runStatus === 'warning' ? 'amber' : 'red';
 
     return new Response(JSON.stringify({
-      slug, name: report.name, domain: report.domain, frequency: report.frequency,
-      tier: report.tier, source_ref: report.source_ref,
-      status: runStatus, rag, row_count: data.length, data,
-      checks: checkResults, error: errorMsg || null,
+      slug, name: report.report_name, domain: report.domain,
+      frequency: report.frequency, tier: report.tier,
+      source_ref: report.source_ref, status: runStatus, rag,
+      row_count: data.length, data,
+      error: errorMsg || null,
       generated_at: new Date().toISOString()
     }), { status: 200, headers: CORS });
 
