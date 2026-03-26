@@ -13,31 +13,45 @@ export default async function handler(req: Request) {
   const tier = url.searchParams.get('tier');
   const status = url.searchParams.get('status');
 
+  const H = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+
   try {
-    let reportPath = 'rpt_report?select=slug,name,domain,frequency,tier,status,rag,source_ref,known_issues,notes&order=tier.asc,domain.asc,slug.asc&limit=200';
+    // Build report filter
+    let reportPath = 'rpt_registry?select=report_slug,report_name,domain,frequency,tier,status,rag_status,source_ref,notes&order=tier.asc,domain.asc,report_slug.asc&limit=200';
     if (domain) reportPath += `&domain=eq.${domain}`;
-    if (tier !== null) reportPath += `&tier=eq.${tier}`;
+    if (tier !== null && tier !== '') reportPath += `&tier=eq.${tier}`;
     if (status) reportPath += `&status=eq.${status}`;
 
-    const [reports, packs, checks] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/${reportPath}`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }).then(r => r.json()),
-      fetch(`${SUPABASE_URL}/rest/v1/rpt_pack?select=slug,name,kind,frequency,status,notes&order=kind.asc,slug.asc`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }).then(r => r.json()),
-      fetch(`${SUPABASE_URL}/rest/v1/rpt_check?select=code,name,domain,severity,description,check_ref`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }).then(r => r.json()),
+    const [reports, packs] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/${reportPath}`, { headers: H }).then(r => r.json()),
+      fetch(`${SUPABASE_URL}/rest/v1/rpt_pack_registry?select=pack_slug,pack_name,category,frequency,status,notes&order=category.asc,pack_slug.asc`, { headers: H }).then(r => r.json()),
     ]);
 
-    // Summary stats
-    const rags = { green: 0, amber: 0, red: 0 };
-    const statuses = { live: 0, draft: 0, legacy: 0, broken: 0, retired: 0 };
+    const rags = { green: 0, amber: 0, red: 0 } as Record<string, number>;
+    const statuses = { live: 0, draft: 0, legacy: 0, broken: 0, retired: 0 } as Record<string, number>;
     for (const r of (reports || [])) {
-      if (r.rag && rags[r.rag as keyof typeof rags] !== undefined) rags[r.rag as keyof typeof rags]++;
-      if (r.status && statuses[r.status as keyof typeof statuses] !== undefined) statuses[r.status as keyof typeof statuses]++;
+      const rag = r.rag_status || 'amber';
+      if (rags[rag] !== undefined) rags[rag]++;
+      const st = r.status || 'draft';
+      if (statuses[st] !== undefined) statuses[st]++;
     }
 
+    // Normalise field names for frontend
+    const normReports = (reports || []).map((r: any) => ({
+      slug: r.report_slug, name: r.report_name, domain: r.domain,
+      frequency: r.frequency, tier: r.tier, status: r.status,
+      rag: r.rag_status, source_ref: r.source_ref, notes: r.notes
+    }));
+
+    const normPacks = (packs || []).map((p: any) => ({
+      slug: p.pack_slug, name: p.pack_name, kind: p.category,
+      frequency: p.frequency, status: p.status, notes: p.notes
+    }));
+
     return new Response(JSON.stringify({
-      summary: { total_reports: reports?.length || 0, total_packs: packs?.length || 0, total_checks: checks?.length || 0, rag: rags, statuses },
-      reports: reports || [],
-      packs: packs || [],
-      checks: checks || [],
+      summary: { total_reports: normReports.length, total_packs: normPacks.length, rag: rags, statuses },
+      reports: normReports,
+      packs: normPacks,
       generated_at: new Date().toISOString()
     }), { status: 200, headers: CORS });
 
