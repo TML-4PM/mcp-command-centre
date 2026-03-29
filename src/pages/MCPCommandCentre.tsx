@@ -57,8 +57,8 @@ const MCPCommandCentre = () => {
       const [healthResult, results] = await Promise.all([
         checkHealth(),
         Promise.allSettled([
-          bridgeCount("SELECT count(*) FROM mcp_business_registry"),           // 0
-          bridgeCount("SELECT count(*) FROM bridge_command_map WHERE enabled=true"), // 1
+          bridgeCount("SELECT count(*) FROM t4h_canonical_28_first_pass WHERE counted_in_commercial_28=true"),           // 0
+          bridgeCount("SELECT count(*) FROM mcp_lambda_registry WHERE status='ACTIVE'"), // 1
           bridgeCount("SELECT count(*) FROM neural_ennead_members"),            // 2
           bridgeCount("SELECT count(*) FROM ip_assets"),                        // 3
           bridgeCount("SELECT count(*) FROM t4h_catalog"),                      // 4
