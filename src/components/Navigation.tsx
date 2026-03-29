@@ -177,14 +177,18 @@ const Navigation = () => {
     <nav className="glass border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between gap-4">
-          <a href="/" className="flex items-center gap-2.5 min-w-0 shrink-0 group">
-            <img
-              src="https://lzfgigiyqpuuxslsygjt.supabase.co/storage/v1/object/public/images/T4H%20Logo%201.jpg"
-              alt="T4H Logo"
-              className="w-8 h-8 rounded-md object-cover shrink-0"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
+          <a href="/" className="relative flex items-center gap-3 min-w-0 shrink-0 group no-underline">
+            <div className="absolute -left-6 top-1/2 h-20 w-20 -translate-y-1/2 rounded-full bg-blue-500/15 blur-2xl pointer-events-none" />
+            <div className="absolute left-16 top-1/2 h-16 w-20 -translate-y-1/2 rounded-full bg-violet-500/15 blur-2xl pointer-events-none" />
+            <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-white/90 shadow-[0_0_20px_rgba(79,123,255,0.25)] shrink-0">
+              <img
+                src="https://lzfgigiyqpuuxslsygjt.supabase.co/storage/v1/object/public/images/T4H%20Logo%201.jpg"
+                alt="T4H"
+                className="h-7 w-7 object-contain rounded-lg"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            </div>
+            <span className="relative text-[15px] font-semibold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent whitespace-nowrap">
               T4H Command Centre
             </span>
           </a>
