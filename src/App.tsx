@@ -13,6 +13,7 @@ import { emitRouteEnter, emitRouteComplete } from "@/lib/aiops/emitter";
 // Eager load Overview (landing page)
 import MCPCommandCentre from "./pages/MCPCommandCentre";
 
+import InternalGate from "./components/InternalGate";
 // Lazy load everything else
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Search = lazy(() => import("./pages/Search"));
@@ -252,7 +253,7 @@ const App = () => (
                 <Route path="/portfolio-forensic" element={<PortfolioForensic />} />
                 <Route path="/product-flywheel" element={<ProductFlywheel />} />
                 <Route path="/rdti-corpus" element={<RdtiCorpus />} />
-                <Route path="/report-factory" element={<ReportFactory />} />
+                <Route path="/report-factory" element={<InternalGate><ReportFactory /></InternalGate>} />
                 <Route path="/revenue" element={<Revenue />} />
                 <Route path="/rocket-control" element={<RocketControl />} />
                 <Route path="/scout" element={<Scout />} />
