@@ -2,7 +2,7 @@ export const config = { runtime: 'edge' };
 
 const SUPABASE_URL = 'https://lzfgigiyqpuuxslsygjt.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDQxNzQ2OSwiZXhwIjoyMDU5OTkzNDY5fQ.B6SMaQNb8tER_vqrqkmjNW2BFjcoIowulQOREtRcD8Q';
-const INT_TOKEN = process.env.INTERNAL_API_TOKEN || 'rpt-int-t4h-2026';
+const INT_TOKEN = process.env.INTERNAL_API_TOKEN || '';
 const BUCKET = 'reports';
 const CORS = {
   'Access-Control-Allow-Origin': '*',
