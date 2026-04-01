@@ -125,8 +125,11 @@ export default async function handler(req: Request) {
     await uploadToStorage(manifestPath, JSON.stringify(manifest, null, 2), 'application/json');
     const manifestUrl = await getSignedUrl(manifestPath);
 
-    // 4. Log to rpt_run
+    // 4. Log to rpt_run + persist snapshot
     const now = new Date().toISOString();
+    const totalRows = files.reduce((s: number, f: any) => s + f.rows, 0);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
     await fetch(`${SUPABASE_URL}/rest/v1/rpt_run`, {
       method: 'POST',
       headers: {
@@ -135,9 +138,37 @@ export default async function handler(req: Request) {
       },
       body: JSON.stringify({
         report_slug: packSlug, run_type: 'export', status: 'success',
-        row_count: files.reduce((s, f) => s + f.rows, 0),
-        error_summary: null, requested_by: 'troy', requested_via: 'export_api',
+        row_count: totalRows, error_summary: null,
+        requested_by: 'troy', requested_via: 'export_api',
         started_at: now, finished_at: now
+      })
+    });
+
+    // Persist snapshot for history — every export is immutable record
+    await fetch(`${SUPABASE_URL}/rest/v1/rpt_factory_snapshot`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json', Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        pack_slug: packSlug,
+        pack_name: pack.pack_name,
+        period,
+        export_dir: exportDir,
+        manifest_path: manifestPath,
+        manifest_url: manifestUrl,
+        manifest_url_expires_at: expiresAt,
+        file_count: files.length,
+        total_rows: totalRows,
+        rag: pack.rag,
+        readiness_pct: pack.readiness_pct,
+        files,
+        generated_by: 'troy',
+        slug: exportDir,
+        snapshot_kind: 'pack',
+        storage_bucket: BUCKET,
+        storage_path: manifestPath
       })
     });
 
