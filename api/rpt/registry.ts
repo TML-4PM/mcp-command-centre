@@ -3,10 +3,25 @@ export const config = { runtime: 'edge' };
 const SUPABASE_URL = 'https://lzfgigiyqpuuxslsygjt.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDQxNzQ2OSwiZXhwIjoyMDU5OTkzNDY5fQ.B6SMaQNb8tER_vqrqkmjNW2BFjcoIowulQOREtRcD8Q';
 
-const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, x-internal-token',
+  'Content-Type': 'application/json'
+};
 
 export default async function handler(req: Request) {
-  if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: { ...CORS, 'Access-Control-Allow-Methods': 'GET, OPTIONS' } });
+  if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: CORS });
+
+  // Internal-only: requires x-internal-token header
+  const _tok = req.headers.get('x-internal-token');
+  const _exp = process.env.INTERNAL_API_TOKEN || 'rpt-int-t4h-2026';
+  if (!_tok || _tok !== _exp) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', message: 'Internal access only — not for external parties' }), {
+      status: 401,
+      headers: { ...CORS, 'WWW-Authenticate': 'Bearer realm="T4H-Internal"' }
+    });
+  }
 
   const url = new URL(req.url);
   const domain = url.searchParams.get('domain');
@@ -16,7 +31,6 @@ export default async function handler(req: Request) {
   const H = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
 
   try {
-    // Build report filter
     let reportPath = 'rpt_registry?select=report_slug,report_name,domain,frequency,tier,status,rag_status,source_ref,notes&order=tier.asc,domain.asc,report_slug.asc&limit=200';
     if (domain) reportPath += `&domain=eq.${domain}`;
     if (tier !== null && tier !== '') reportPath += `&tier=eq.${tier}`;
@@ -36,7 +50,6 @@ export default async function handler(req: Request) {
       if (statuses[st] !== undefined) statuses[st]++;
     }
 
-    // Normalise field names for frontend
     const normReports = (reports || []).map((r: any) => ({
       slug: r.report_slug, name: r.report_name, domain: r.domain,
       frequency: r.frequency, tier: r.tier, status: r.status,
