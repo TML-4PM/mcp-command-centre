@@ -233,7 +233,7 @@ export default function ReportFactory() {
       if (tierFilter !== "all") params.push(`tier=${tierFilter}`);
       if (statusFilter !== "all") params.push(`status=${statusFilter}`);
       if (params.length) url += "?" + params.join("&");
-      const r = await fetch(url);
+      const r = await fetch(url, { headers: { 'x-internal-token': INT_TOKEN } });
       const d = await r.json();
       setReports(d.reports || []);
       setPacks(d.packs || []);
