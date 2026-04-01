@@ -210,6 +210,55 @@ function PackModal({ result, onClose }: { result: PackResult; onClose: () => voi
   );
 }
 
+
+function ExportModal({ result, onClose }: { result: any; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-gray-900 border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div>
+            <h3 className="font-semibold text-white">{result.pack_name || result.pack_slug}</h3>
+            <p className="text-xs text-gray-400 mt-0.5">{result.period} · {result.file_count} files · {result.total_rows?.toLocaleString()} rows</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-lg">✕</button>
+        </div>
+        <div className="p-4 space-y-3">
+          {result.error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-300 text-sm">{result.error}</div>
+          )}
+          {result.manifest_url && (
+            <a href={result.manifest_url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 rounded-lg px-4 py-3 text-blue-300 hover:bg-blue-600/30 transition-colors text-sm font-medium">
+              📋 Manifest JSON (index of all files)
+            </a>
+          )}
+          {(result.files || []).map((f: any, i: number) => (
+            <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg px-4 py-3">
+              <div>
+                <p className="text-sm text-gray-200">{f.name}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{f.rows?.toLocaleString()} rows · CSV</p>
+              </div>
+              {f.signed_url ? (
+                <a href={f.signed_url} download className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors">
+                  ↓ Download
+                </a>
+              ) : (
+                <span className="text-xs text-gray-500">No data</span>
+              )}
+            </div>
+          ))}
+          {result.generated_at && (
+            <p className="text-xs text-gray-600 pt-2">
+              Generated: {new Date(result.generated_at).toLocaleString("en-AU")} · 
+              Links valid 7 days
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ReportFactory() {
   const [reports, setReports] = useState<Report[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
@@ -260,6 +309,28 @@ export default function ReportFactory() {
     }
   };
 
+
+  const [exportingSlug, setExportingSlug] = useState<string | null>(null);
+  const [exportResult, setExportResult] = useState<any | null>(null);
+
+  const exportPack = async (slug: string) => {
+    setExportingSlug(slug);
+    try {
+      const period = new Date().toISOString().slice(0, 7);
+      const r = await fetch(`${BASE}/api/rpt/export`, {
+        method: 'POST',
+        headers: { 'x-internal-token': INT_TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, period })
+      });
+      const d = await r.json();
+      setExportResult(d);
+    } catch (e: any) {
+      setExportResult({ error: e.message, pack_slug: slug });
+    } finally {
+      setExportingSlug(null);
+    }
+  };
+
   const runPack = async (slug: string) => {
     setRunningSlug(slug);
     try {
@@ -283,6 +354,7 @@ export default function ReportFactory() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6">
       {runResult && <RunModal result={runResult} onClose={() => setRunResult(null)} />}
+      {exportResult && <ExportModal result={exportResult} onClose={() => setExportResult(null)} />}
       {packResult && <PackModal result={packResult} onClose={() => setPackResult(null)} />}
 
       {/* Header */}
@@ -367,6 +439,13 @@ export default function ReportFactory() {
                 className="mt-auto flex items-center justify-center gap-2 w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors"
               >
                 {runningSlug === pack.slug ? <><Spinner /> Generating…</> : "▶ Generate Pack"}
+              </button>
+              <button
+                onClick={() => exportPack(pack.slug)}
+                disabled={exportingSlug === pack.slug}
+                className="flex items-center justify-center gap-2 w-full py-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors"
+              >
+                {exportingSlug === pack.slug ? <><Spinner /> Exporting…</> : "↓ Export Pack (CSV)"}
               </button>
             </div>
           ))}
