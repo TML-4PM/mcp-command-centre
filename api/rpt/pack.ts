@@ -74,7 +74,7 @@ export default async function handler(req: Request) {
     let failCount = 0;
 
     for (const item of items) {
-      const r = await fetch(`${baseUrl}/api/rpt/report?slug=${encodeURIComponent(item.report_slug)}`);
+      const r = await fetch(`${baseUrl}/api/rpt/report?slug=${encodeURIComponent(item.report_slug)}`, { headers: { 'x-internal-token': _exp } });
       const rpt = await r.json();
       const rag: string = rpt.rag || (rpt.status === 'draft' || rpt.message ? 'amber' : 'red');
       results.push({
