@@ -49,6 +49,16 @@ async function logRun(slug: string, status: string, rowCount: number, summary: s
 export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: CORS });
 
+  // Internal-only: requires x-internal-token header
+  const _tok = req.headers.get('x-internal-token');
+  const _exp = process.env.INTERNAL_API_TOKEN || 'rpt-int-t4h-2026';
+  if (!_tok || _tok !== _exp) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', message: 'Internal access only — not for external parties' }), {
+      status: 401,
+      headers: { ...CORS, 'WWW-Authenticate': 'Bearer realm="T4H-Internal"' }
+    });
+  }
+
   const url = new URL(req.url);
   const slug = url.searchParams.get('slug');
   if (!slug) return new Response(JSON.stringify({ error: 'slug required' }), { status: 400, headers: CORS });
