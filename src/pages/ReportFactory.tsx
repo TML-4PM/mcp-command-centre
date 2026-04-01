@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 const BASE = "";
+const INT_TOKEN = import.meta.env.VITE_INTERNAL_API_TOKEN || 'rpt-int-t4h-2026';
 
 type Rag = "green" | "amber" | "red";
 type ReportStatus = "live" | "draft" | "broken" | "legacy" | "retired";
@@ -249,7 +250,7 @@ export default function ReportFactory() {
   const runReport = async (slug: string) => {
     setRunningSlug(slug);
     try {
-      const r = await fetch(`${BASE}/api/rpt/report?slug=${encodeURIComponent(slug)}`);
+      const r = await fetch(`${BASE}/api/rpt/report?slug=${encodeURIComponent(slug)}`, { headers: { 'x-internal-token': INT_TOKEN } });
       const d = await r.json();
       setRunResult(d);
     } catch (e: any) {
@@ -262,7 +263,7 @@ export default function ReportFactory() {
   const runPack = async (slug: string) => {
     setRunningSlug(slug);
     try {
-      const r = await fetch(`${BASE}/api/rpt/pack?slug=${encodeURIComponent(slug)}`);
+      const r = await fetch(`${BASE}/api/rpt/pack?slug=${encodeURIComponent(slug)}`, { headers: { 'x-internal-token': INT_TOKEN } });
       const d = await r.json();
       setPackResult(d);
     } catch (e: any) {
