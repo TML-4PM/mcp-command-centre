@@ -51,7 +51,7 @@ export default async function handler(req: Request) {
 
   // Internal-only: requires x-internal-token header
   const _tok = req.headers.get('x-internal-token');
-  const _exp = process.env.INTERNAL_API_TOKEN || 'rpt-int-t4h-2026';
+  const _exp = process.env.INTERNAL_API_TOKEN || '';
   if (!_tok || _tok !== _exp) {
     return new Response(JSON.stringify({ error: 'Unauthorized', message: 'Internal access only — not for external parties' }), {
       status: 401,
