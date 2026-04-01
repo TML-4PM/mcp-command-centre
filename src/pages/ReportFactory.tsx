@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 const BASE = "";
-const INT_TOKEN = import.meta.env.VITE_INTERNAL_API_TOKEN || 'rpt-int-t4h-2026';
+const INT_TOKEN = import.meta.env.VITE_INTERNAL_API_TOKEN || '';
 
 type Rag = "green" | "amber" | "red";
 type ReportStatus = "live" | "draft" | "broken" | "legacy" | "retired";
