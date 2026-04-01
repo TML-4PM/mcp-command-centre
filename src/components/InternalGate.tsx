@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const GATE_KEY = "rf_internal_authed";
+const GATE_KEY = "rf_internal_authed_v2";
 const CORRECT_PASSWORD = import.meta.env.VITE_INTERNAL_PASSWORD || "t4h-internal";
 
 interface InternalGateProps {
@@ -8,21 +8,15 @@ interface InternalGateProps {
 }
 
 export default function InternalGate({ children }: InternalGateProps) {
-  // Check for widget bypass (?widget=true skips the gate)
-  const params = new URLSearchParams(window.location.search);
-  const isWidget = params.get("widget") === "true";
-
   const [authed, setAuthed] = useState(() => {
-    return isWidget || sessionStorage.getItem(GATE_KEY) === "true";
+    // Session-only auth — clears on tab close
+    return sessionStorage.getItem(GATE_KEY) === "true";
   });
   const [pw, setPw] = useState("");
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
 
-  useEffect(() => {
-    if (isWidget) setAuthed(true);
-  }, [isWidget]);
-
+  // No widget bypass — internal only
   if (authed) return <>{children}</>;
 
   function handleSubmit(e: React.FormEvent) {
@@ -45,27 +39,31 @@ export default function InternalGate({ children }: InternalGateProps) {
       alignItems: "center",
       justifyContent: "center",
       minHeight: "100vh",
-      background: "#f8f9fa",
+      background: "#0f172a",
       fontFamily: "system-ui, sans-serif",
     }}>
       <form
         onSubmit={handleSubmit}
         style={{
-          background: "#fff",
-          border: "1px solid #e2e8f0",
+          background: "#1e293b",
+          border: "1px solid #334155",
           borderRadius: 12,
           padding: "40px 48px",
           width: 340,
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          boxShadow: "0 4px 40px rgba(0,0,0,0.4)",
           animation: shake ? "shake 0.4s ease" : "none",
         }}
       >
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, color: "#0f172a" }}>Report Factory</div>
-          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Internal access only</div>
+          <div style={{ fontWeight: 700, fontSize: 18, color: "#f1f5f9", letterSpacing: -0.5 }}>
+            T4H Internal
+          </div>
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
+            Restricted access
+          </div>
         </div>
         <input
           type="password"
@@ -76,27 +74,27 @@ export default function InternalGate({ children }: InternalGateProps) {
           style={{
             padding: "10px 14px",
             borderRadius: 8,
-            border: error ? "1.5px solid #ef4444" : "1.5px solid #e2e8f0",
+            border: error ? "1.5px solid #ef4444" : "1.5px solid #334155",
+            background: "#0f172a",
+            color: "#f1f5f9",
             fontSize: 15,
             outline: "none",
-            transition: "border-color 0.15s",
           }}
         />
         {error && (
-          <div style={{ fontSize: 13, color: "#ef4444", marginTop: -8 }}>Incorrect password</div>
+          <div style={{ fontSize: 13, color: "#ef4444", marginTop: -8 }}>Incorrect</div>
         )}
         <button
           type="submit"
           style={{
             padding: "10px",
             borderRadius: 8,
-            background: "#0f172a",
+            background: "#3b82f6",
             color: "#fff",
             border: "none",
             fontSize: 15,
             fontWeight: 600,
             cursor: "pointer",
-            marginTop: 4,
           }}
         >
           Enter
