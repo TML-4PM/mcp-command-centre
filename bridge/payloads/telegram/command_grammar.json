@@ -1,0 +1,90 @@
+{
+  "channel": "telegram",
+  "version": "1.0",
+  "description": "Canonical Telegram command grammar for BridgeRunner ingress routed through Command Centre.",
+  "commands": [
+    {
+      "command": "/start",
+      "type": "builtin",
+      "description": "Confirms the ingress is live and responsive.",
+      "handler": "builtin:start",
+      "autonomy_tier": "LOG-ONLY"
+    },
+    {
+      "command": "/help",
+      "type": "builtin",
+      "description": "Returns supported commands and usage guidance.",
+      "handler": "builtin:help",
+      "autonomy_tier": "LOG-ONLY"
+    },
+    {
+      "command": "/health",
+      "type": "builtin",
+      "description": "Checks webhook, Lambda, Supabase, and bridge path status.",
+      "handler": "builtin:health",
+      "autonomy_tier": "LOG-ONLY"
+    },
+    {
+      "command": "/status",
+      "type": "bridge",
+      "description": "Returns current control-plane status and active system health.",
+      "handler": "troy-telegram-dispatch",
+      "autonomy_tier": "GATED"
+    },
+    {
+      "command": "/audit",
+      "type": "bridge",
+      "description": "Returns recent actions, failures, and audit trail summaries.",
+      "handler": "troy-telegram-dispatch",
+      "autonomy_tier": "GATED"
+    },
+    {
+      "command": "/report",
+      "type": "bridge",
+      "description": "Generates a typed report or briefing from Command Centre sources.",
+      "handler": "troy-telegram-dispatch",
+      "autonomy_tier": "GATED",
+      "arguments": [
+        {
+          "name": "report_type",
+          "required": false,
+          "example": "/report daily"
+        }
+      ]
+    },
+    {
+      "command": "/run",
+      "type": "bridge",
+      "description": "Invokes a named agent or workflow via the bridge.",
+      "handler": "troy-telegram-dispatch",
+      "autonomy_tier": "GATED",
+      "arguments": [
+        {
+          "name": "agent_or_workflow",
+          "required": true,
+          "example": "/run vendor-contract-agent"
+        }
+      ]
+    },
+    {
+      "command": "/ingest",
+      "type": "bridge",
+      "description": "Captures arbitrary signal text and submits it to downstream processing.",
+      "handler": "troy-telegram-dispatch",
+      "autonomy_tier": "GATED",
+      "arguments": [
+        {
+          "name": "text",
+          "required": true,
+          "example": "/ingest customer asked for robotics pricing pack"
+        }
+      ]
+    }
+  ],
+  "fallback": {
+    "type": "bridge",
+    "handler": "troy-telegram-dispatch",
+    "description": "Any non-builtin Telegram text is routed to the bridge dispatcher.",
+    "autonomy_tier": "GATED"
+  }
+}
