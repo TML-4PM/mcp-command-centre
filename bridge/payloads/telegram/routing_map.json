@@ -1,0 +1,72 @@
+{
+  "version": "1.0",
+  "description": "Routing map for Telegram commands into MCP Bridge functions and downstream systems.",
+  "routes": {
+    "/start": {
+      "route_type": "local",
+      "target": "builtin:start"
+    },
+    "/help": {
+      "route_type": "local",
+      "target": "builtin:help"
+    },
+    "/health": {
+      "route_type": "local",
+      "target": "builtin:health"
+    },
+    "/status": {
+      "route_type": "bridge",
+      "function_name": "troy-telegram-dispatch",
+      "downstream": [
+        "command-centre",
+        "supabase",
+        "telemetry"
+      ]
+    },
+    "/audit": {
+      "route_type": "bridge",
+      "function_name": "troy-telegram-dispatch",
+      "downstream": [
+        "reality-ledger",
+        "audit-log",
+        "supabase"
+      ]
+    },
+    "/report": {
+      "route_type": "bridge",
+      "function_name": "troy-telegram-dispatch",
+      "downstream": [
+        "report-factory",
+        "ahc",
+        "command-centre"
+      ]
+    },
+    "/run": {
+      "route_type": "bridge",
+      "function_name": "troy-telegram-dispatch",
+      "downstream": [
+        "workfamilyai",
+        "holoorg",
+        "agent-mesh"
+      ]
+    },
+    "/ingest": {
+      "route_type": "bridge",
+      "function_name": "troy-telegram-dispatch",
+      "downstream": [
+        "synal-signals",
+        "supabase",
+        "pipeline-ingestion"
+      ]
+    }
+  },
+  "fallback": {
+    "route_type": "bridge",
+    "function_name": "troy-telegram-dispatch",
+    "downstream": [
+      "default-dispatch",
+      "nlp-routing",
+      "agent-mesh"
+    ]
+  }
+}
