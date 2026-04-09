@@ -1,0 +1,11 @@
+{
+  "slug": "intel-scoring",
+  "version": "1.0.0",
+  "title": "Top Targets",
+  "widget_type": "table",
+  "data_source": "intel_stack/exports/ranked_targets.csv",
+  "refresh_seconds": 300,
+  "metadata": {
+    "purpose": "show top scored outreach targets"
+  }
+}
