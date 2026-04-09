@@ -1,0 +1,11 @@
+{
+  "slug": "intel-status",
+  "version": "1.0.0",
+  "title": "Intel Run Status",
+  "widget_type": "json",
+  "data_source": "intel_stack/bridge/dropoff/scoring_status.json",
+  "refresh_seconds": 120,
+  "metadata": {
+    "purpose": "show last run status and system health"
+  }
+}
