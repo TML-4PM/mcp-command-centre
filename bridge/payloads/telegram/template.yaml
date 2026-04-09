@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  TelegramIngressFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Timeout: 10
+      MemorySize: 256
+      Environment:
+        Variables:
+          TELEGRAM_BOT_TOKEN: ""
+          TELEGRAM_WEBHOOK_SECRET: ""
+          TELEGRAM_ALLOWED_CHAT_IDS: ""
+          SUPABASE_URL: ""
+          SUPABASE_SERVICE_ROLE_KEY: ""
+          BRIDGE_ENDPOINT: ""
+          BRIDGE_API_KEY: ""
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /telegram
+            Method: post
