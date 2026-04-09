@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Intel Stack — Lambda Fleet
+  RDTI: is_rd=true, project_code=INTEL-01
+  Region: ap-southeast-2
+
+# ── PARAMETERS ────────────────────────────────────────────────────────────────
+Parameters:
+  Env:
+    Type: String
+    Default: prod
+    AllowedValues: [prod, staging]
+  SupabaseUrl:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /t4h/intel/supabase_url
+  SupabaseKey:
+    Type: AWS::SSM::Parameter::Value<SecureString>
+    Default: /t4h/intel/supabase_key
+  SsmPrefix:
+    Type: String
+    Default: /t4h/intel
+
+# ── GLOBALS ───────────────────────────────────────────────────────────────────
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [arm64]
+    Timeout: 300
+    MemorySize: 256
+    Environment:
+      Variables:
+        SUPABASE_URL: !Ref SupabaseUrl
+        SUPABASE_KEY: !Ref SupabaseKey
+        SSM_PREFIX: !Ref SsmPrefix
+        ENV: !Ref Env
+    Tags:
+      project: intel-stack
+      is_rd: "true"
+      project_code: INTEL-01
+      env: !Ref Env
+
+# ── RESOURCES ─────────────────────────────────────────────────────────────────
+Resources:
+
+  # ── IAM Role (shared) ───────────────────────────────────────────────────────
+  IntelLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub intel-lambda-role-${Env}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: lambda.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: IntelSSMRead
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                  - ssm:GetParametersByPath
+                Resource: !Sub arn:aws:ssm:ap-southeast-2:${AWS::AccountId}:parameter/t4h/intel/*
+        - PolicyName: IntelKMSDecrypt
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub ssm.ap-southeast-2.amazonaws.com
+
+  # ── intel-gmail-sync ────────────────────────────────────────────────────────
+  GmailSyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub intel-gmail-sync-${Env}
+      CodeUri: intel_gmail_sync/
+      Handler: handler.handler
+      Role: !GetAtt IntelLambdaRole.Arn
+      Description: "Delta-sync Gmail → intel.email_events. RDTI: INTEL-01"
+      Environment:
+        Variables:
+          GMAIL_USER: me
+          MAX_RESULTS: "50"
+      Events:
+        ScheduleEvery15Min:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub intel-gmail-sync-schedule-${Env}
+            Description: "Gmail delta sync every 15 minutes"
+            ScheduleExpression: "rate(15 minutes)"
+            ScheduleExpressionTimezone: "Australia/Sydney"
+            State: ENABLED
+            RetryPolicy:
+              MaximumRetryAttempts: 2
+              MaximumEventAgeInSeconds: 300
+            DeadLetterConfig:
+              Type: SQS
+              Destination: !GetAtt IntelDLQ.Arn
+
+  GmailSyncLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/intel-gmail-sync-${Env}
+      RetentionInDays: 30
+
+  # ── intel-challenge-engine ──────────────────────────────────────────────────
+  ChallengeEngineFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub intel-challenge-engine-${Env}
+      CodeUri: intel_challenge_engine/
+      Handler: handler.handler
+      Role: !GetAtt IntelLambdaRole.Arn
+      Description: "Daily challenge generation from intel.notes → intel.assumptions. RDTI: INTEL-01"
+      Events:
+        DailyChallenge:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub intel-challenge-daily-${Env}
+            Description: "Daily challenge at 06:00 AEST (20:00 UTC)"
+            ScheduleExpression: "cron(0 20 * * ? *)"
+            ScheduleExpressionTimezone: "Australia/Sydney"
+            State: ENABLED
+            RetryPolicy:
+              MaximumRetryAttempts: 2
+              MaximumEventAgeInSeconds: 600
+            DeadLetterConfig:
+              Type: SQS
+              Destination: !GetAtt IntelDLQ.Arn
+
+  ChallengeEngineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/intel-challenge-engine-${Env}
+      RetentionInDays: 30
+
+  # ── Dead Letter Queue ────────────────────────────────────────────────────────
+  IntelDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub intel-lambda-dlq-${Env}
+      MessageRetentionPeriod: 1209600  # 14 days
+      Tags:
+        - Key: project
+          Value: intel-stack
+        - Key: is_rd
+          Value: "true"
+
+# ── OUTPUTS ───────────────────────────────────────────────────────────────────
+Outputs:
+  GmailSyncArn:
+    Description: intel-gmail-sync Lambda ARN
+    Value: !GetAtt GmailSyncFunction.Arn
+    Export:
+      Name: !Sub intel-gmail-sync-arn-${Env}
+
+  ChallengeEngineArn:
+    Description: intel-challenge-engine Lambda ARN
+    Value: !GetAtt ChallengeEngineFunction.Arn
+    Export:
+      Name: !Sub intel-challenge-engine-arn-${Env}
+
+  DLQUrl:
+    Description: Dead Letter Queue URL
+    Value: !Ref IntelDLQ
