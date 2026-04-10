@@ -1,0 +1,10 @@
+{
+  "status": "FINAL",
+  "runtime": "index.canonical.js",
+  "envelope": "bridge_envelope_v2.json",
+  "commands": "command_grammar.json",
+  "routing": "routing_map.json",
+  "ddl": "ddl_telegram_events.sql",
+  "deployment": "template.yaml",
+  "notes": "Switch Lambda handler to index.canonical.handler to activate canonical runtime"
+}
