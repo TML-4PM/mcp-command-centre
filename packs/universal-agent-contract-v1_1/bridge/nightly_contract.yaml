@@ -1,0 +1,7 @@
+version: 1.0
+name: nightly_integrity_and_remediation
+sequence:
+  - run_integrity_check
+  - generate_remediation_jobs
+  - execute_safe_remediations
+  - hold_unsafe_remediations
