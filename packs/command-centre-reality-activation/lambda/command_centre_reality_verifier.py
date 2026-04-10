@@ -42,16 +42,13 @@ def handler(event, context):
 
     try:
         # ── Core verification queries ─────────────────────────────────────
-        registry_drift   = count("SELECT COUNT(*) as c FROM cc.v_registry_drift")
+        registry_drift   = count("SELECT COUNT(*) as c FROM cc.v_registry_drift WHERE drift_status != 'OK'")
         reality_board    = rows("SELECT * FROM cc.v_reality_status_board LIMIT 1")
         control_health   = rows("SELECT * FROM cc.v_control_plane_health LIMIT 1")
         partial_pretend  = rows("SELECT * FROM cc.v_partial_pretend_summary LIMIT 5")
 
         # Missing evidence — entities in registry with no execution proof
-        missing_evidence = count("""
-            SELECT COUNT(*) as c FROM cc.v_registry_drift
-            WHERE drift_type = 'NO_EXECUTION'
-        """)
+        missing_evidence = count("SELECT COUNT(*) as c FROM cc.v_registry_drift WHERE drift_status = 'MISSING_RUNTIME_ENDPOINT'")
 
         # Pending feedback actions
         pending_feedback = count("""
@@ -69,13 +66,14 @@ def handler(event, context):
             SELECT system, component, status, last_verified
             FROM public.reality_ledger
             ORDER BY last_verified DESC NULLS LAST
-            LIMIT 10
+            LIMIT 20
         """)
 
         # Overall status: REAL if registry_drift=0, PARTIAL if some drift, PRETEND if no execution
+        total_entities = count("SELECT COUNT(*) as c FROM core.registry_entities WHERE status='active'")
         if registry_drift == 0:
             overall = "REAL"
-        elif registry_drift < 20:
+        elif registry_drift < (total_entities * 0.1):
             overall = "PARTIAL"
         else:
             overall = "PRETEND"
