@@ -1,0 +1,26 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-telegram-dispatch",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "source": "telegram",
+    "channel": "telegram",
+    "chat_id": "123456789",
+    "user_id": "987654321",
+    "username": "tml4pm",
+    "command": "/health",
+    "raw_text": "/health",
+    "timestamp_utc": "2026-04-10T00:00:00Z",
+    "context": {
+      "message_type": "text"
+    }
+  },
+  "metadata": {
+    "request_id": "TEST-REQ-001",
+    "source": "telegram_lambda",
+    "timestamp_utc": "2026-04-10T00:00:00Z",
+    "auth_context": {
+      "channel": "telegram"
+    }
+  }
+}
