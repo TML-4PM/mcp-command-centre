@@ -1,0 +1,71 @@
+agent_pack: core5_continuous_loop
+mode: continuous
+loop:
+  type: graph
+  revisit_allowed: true
+  max_iterations: null
+  stop_conditions:
+    - custodian_complete
+    - stage_gate_required
+    - hard_blocker
+agents:
+  research_agent:
+    role: research
+    sources:
+      - gdrive
+      - supabase
+      - llm_context
+      - perplexity
+    outputs:
+      - sources
+      - notes
+      - questions
+  synthesis_agent:
+    role: synthesis
+    model_bias: claude
+    outputs:
+      - structured_document
+      - gaps
+  strategy_agent:
+    role: strategy
+    model_bias: gpt
+    outputs:
+      - recommendations
+      - options
+  validation_agent:
+    role: validation
+    model_bias: grok
+    outputs:
+      - contradictions
+      - challenges
+  digital_custodian:
+    role: control
+    authority: final
+    responsibilities:
+      - resolve_conflicts
+      - enforce_quality
+      - manage_truth
+      - trigger_stage_gates
+      - approve_completion
+stage_gates:
+  - G1_scope
+  - G2_evidence
+  - G3_direction
+  - G4_pre_final
+  - G5_publish
+persistence:
+  store: supabase
+  entities:
+    - tasks
+    - runs
+    - agent_visits
+    - outputs
+    - issues
+    - stage_gates
+    - final_artifacts
+site_requirements:
+  - intake
+  - status
+  - outputs
+  - logs
+  - readiness
