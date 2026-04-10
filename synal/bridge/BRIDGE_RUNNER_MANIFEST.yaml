@@ -1,0 +1,89 @@
+version: "2"
+project: synal
+repo: TML-4PM/ai-evolution-program
+pickup_root: synal/
+updated: "2026-04-10"
+
+supabase:
+  instance: S1
+  url_env: SUPABASE_URL
+  key_env: SUPABASE_SERVICE_KEY
+  migrations:
+    - synal/supabase/005_synal_unified_task_execution.sql
+    - synal/supabase/006a_synal_agent_chains.sql
+    - synal/supabase/006b_synal_proof.sql
+    - synal/supabase/006c_synal_chain_functions.sql
+    - synal/supabase/007_synal_telemetry_spine.sql
+
+lambdas:
+  - name: synal-task-intake
+    file: synal/lambda/synal_task_intake.py
+    handler: synal_task_intake.handler
+    runtime: python3.12
+    memory: 256
+    timeout: 30
+    env:
+      SUPABASE_URL: "{{SUPABASE_URL}}"
+      SUPABASE_SERVICE_KEY: "{{SUPABASE_SERVICE_KEY}}"
+    routes:
+      - POST /synal/task-intake
+      - POST /synal/task-run
+      - POST /synal/task-refresh
+      - GET  /synal/task-status
+    rdti:
+      is_rd: true
+      project_code: SYNAL
+
+  - name: synal-auto-execute
+    file: synal/lambda/synal_auto_execute.py
+    handler: synal_auto_execute.handler
+    runtime: python3.12
+    memory: 256
+    timeout: 60
+    env:
+      SUPABASE_URL: "{{SUPABASE_URL}}"
+      SUPABASE_SERVICE_KEY: "{{SUPABASE_SERVICE_KEY}}"
+    routes:
+      - POST /synal/auto-execute
+    schedule: "rate(30 minutes)"
+    rdti:
+      is_rd: true
+      project_code: SYNAL
+
+extension:
+  name: Synal Snaps
+  version: "1.0.0"
+  source: synal/extension/snaps/
+  files:
+    - manifest.json
+    - popup.html
+    - popup.js
+    - options.html
+    - options.js
+    - background.js
+    - icons/icon16.png
+    - icons/icon48.png
+    - icons/icon128.png
+
+validation:
+  golden_path:
+    - step: create_task
+      fn: synal_create_task
+      expect: task_id
+    - step: seed_chain
+      fn: synal_seed_chain_for_task
+      expect: ok
+    - step: write_proof
+      fn: synal_write_proof
+      expect: proof_id
+    - step: verify_status
+      table: synal_tasks
+      expect_status: completed
+  reality_ledger:
+    system: synal
+    components:
+      - database-schema
+      - github-repo
+      - bridge-routes
+      - telemetry-spine
+      - chrome-extension
