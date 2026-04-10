@@ -1,7 +1,7 @@
 'use strict';
 
 // Synal Snaps — background service worker
-// Handles: config change sync, keyboard shortcut, context menu
+// Handles: config change sync, keyboard shortcut, notifications
 
 let cfg = {};
 
@@ -12,7 +12,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
-// Keyboard shortcut (Alt+S) — quick snap active tab without popup
+// Quick snap via keyboard shortcut (Alt+S)
 chrome.commands?.onCommand.addListener(async cmd => {
   if (cmd !== 'quick-snap') return;
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -40,33 +40,49 @@ async function sendSnap(tab, selectionText, closeAfter) {
     page_url:    tab.url,
     domain,
     page_title:  tab.title,
-    context:     { tab_count: tabs.length, window_count: wins.length },
-    evidence:    { selection_chars: selectionText.length, source: 'background_worker' },
+    context:     {
+      tab_count:    tabs.length,
+      window_count: wins.length,
+      pinned_count: tabs.filter(t => t.pinned).length,
+    },
+    evidence: { selection_chars: selectionText.length, source: 'background_worker' },
   };
 
-  try {
-    const res = await fetch(`${cfg.apiBase}/synal/task-intake`, {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(cfg.apiKey ? { 'x-api-key': cfg.apiKey } : {}),
-      },
-      body: JSON.stringify(payload),
-    });
+  // Retry up to 2 times with 5s timeout
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const res = await fetch(`${cfg.apiBase}/synal/task-intake`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cfg.apiKey ? { 'x-api-key': cfg.apiKey } : {}),
+        },
+        body:   JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const ok = res.ok;
-    chrome.notifications.create({
-      type:    'basic',
-      iconUrl: 'icons/icon48.png',
-      title:   ok ? 'Snap saved' : 'Snap failed',
-      message: ok ? `"${tab.title?.slice(0,60)}"` : `Error ${res.status}`,
-    });
-
-    if (ok && closeAfter) chrome.tabs.remove(tab.id);
-  } catch (err) {
-    chrome.notifications.create({
-      type: 'basic', iconUrl: 'icons/icon48.png',
-      title: 'Snap failed', message: err.message,
-    });
+      chrome.notifications.create({
+        type: 'basic', iconUrl: 'icons/icon48.png',
+        title: 'Snap saved',
+        message: `"${(tab.title || '').slice(0, 60)}"`,
+      });
+      if (closeAfter) chrome.tabs.remove(tab.id);
+      return;
+    } catch (err) {
+      clearTimeout(timer);
+      lastErr = err;
+      if (attempt < 2) await new Promise(r => setTimeout(r, 800));
+    }
   }
+
+  chrome.notifications.create({
+    type: 'basic', iconUrl: 'icons/icon48.png',
+    title: 'Snap failed',
+    message: lastErr?.message || 'Unknown error',
+  });
 }
