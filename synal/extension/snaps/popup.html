@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synal Snaps</title>
+  <style>
+    :root {
+      --accent: #7c3aed;
+      --accent-hover: #6d28d9;
+      --accent-light: rgba(124,58,237,0.12);
+      --bg: #0f0f13;
+      --bg-card: #1a1a24;
+      --bg-input: #13131c;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0f5;
+      --text-muted: #7a7a8c;
+      --text-dim: #4a4a5c;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --radius: 8px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      width: 340px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff;
+    }
+    .brand-name { font-weight: 700; font-size: 14px; color: var(--text); }
+    .brand-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 0.04em; }
+    .header-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: none; border: 1px solid var(--border);
+      color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: all 0.15s;
+    }
+    .icon-btn:hover { background: var(--bg-card); color: var(--text); }
+
+    /* PAGE CONTEXT */
+    .page-context {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .page-context-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+    .page-title {
+      font-weight: 600; font-size: 13px; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .page-url { font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .scope-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-top: 8px; padding: 3px 8px;
+      background: var(--accent-light); border-radius: 100px;
+      font-size: 10px; color: var(--accent); font-weight: 600;
+    }
+
+    /* SELECTION */
+    .selection-area { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .section-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .selection-text {
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 8px 10px;
+      font-size: 12px; color: var(--text); min-height: 40px;
+      max-height: 72px; overflow-y: auto;
+    }
+    .selection-empty { color: var(--text-dim); font-style: italic; }
+
+    /* TAGS + INTENT */
+    .controls { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+    .control-row { display: flex; gap: 8px; }
+    .control-group { flex: 1; }
+    .control-group label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
+    select, input[type=text] {
+      width: 100%;
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 6px 10px;
+      font-size: 12px; color: var(--text); outline: none;
+      appearance: none; -webkit-appearance: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, input[type=text]:focus { border-color: var(--accent); }
+
+    /* WORKSPACE SUMMARY */
+    .workspace-row {
+      padding: 8px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+      font-size: 11px; color: var(--text-muted);
+    }
+    .ws-stat { display: flex; align-items: center; gap: 4px; }
+    .ws-stat strong { color: var(--text); font-weight: 600; }
+
+    /* ACTIONS */
+    .actions { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .btn-primary {
+      width: 100%; padding: 10px; border: none; border-radius: var(--radius);
+      background: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius);
+      background: none; color: var(--text-muted); font-size: 12px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-secondary:hover { background: var(--bg-card); color: var(--text); }
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: var(--text-muted);
+    }
+    .toggle {
+      position: relative; width: 32px; height: 18px;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: 100px; cursor: pointer;
+      transition: 0.2s;
+    }
+    .toggle-slider:before {
+      content: ''; position: absolute; width: 12px; height: 12px;
+      left: 2px; bottom: 2px; background: var(--text-muted);
+      border-radius: 50%; transition: 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(14px); background: #fff; }
+
+    /* STATUS */
+    .status-bar {
+      padding: 8px 16px;
+      font-size: 11px; text-align: center;
+      border-top: 1px solid var(--border);
+      min-height: 32px; display: flex; align-items: center; justify-content: center;
+      gap: 6px;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
+    .status-dot.success { background: var(--success); }
+    .status-dot.error { background: var(--error); }
+    .status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .status-text { color: var(--text-muted); }
+
+    /* FOOTER */
+    .footer {
+      padding: 8px 16px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-brand { font-size: 10px; color: var(--text-dim); }
+    .footer-brand span { color: var(--accent); }
+    .footer-links { display: flex; gap: 10px; }
+    .footer-link { font-size: 10px; color: var(--text-dim); cursor: pointer; background: none; border: none; }
+    .footer-link:hover { color: var(--text-muted); }
+
+    /* HIDDEN */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">S</div>
+      <div>
+        <div class="brand-name">Snaps</div>
+        <div class="brand-sub">by Synal</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="btnPanel" title="Open Command Centre">⊞</button>
+      <button class="icon-btn" id="btnSettings" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <!-- PAGE CONTEXT -->
+  <div class="page-context">
+    <div class="page-context-label">Current page</div>
+    <div class="page-title" id="pageTitle">Loading…</div>
+    <div class="page-url" id="pageUrl"></div>
+    <div class="scope-badge" id="scopeBadge">⊡ <span id="scopeText">—</span></div>
+  </div>
+
+  <!-- SELECTION -->
+  <div class="selection-area">
+    <div class="section-label">Captured content</div>
+    <div class="selection-text" id="selectionDisplay">
+      <span class="selection-empty">No text selected — will use page title</span>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="control-row">
+      <div class="control-group">
+        <label>Intent</label>
+        <select id="intentSelect">
+          <option value="">— Select —</option>
+          <option value="research">Research</option>
+          <option value="work">Work</option>
+          <option value="automation">Automation</option>
+          <option value="personal">Personal</option>
+          <option value="learning">Learning</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Value</label>
+        <select id="valueSelect">
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKSPACE SUMMARY -->
+  <div class="workspace-row">
+    <div class="ws-stat">📑 <strong id="tabCount">—</strong> tabs</div>
+    <div class="ws-stat">🪟 <strong id="winCount">—</strong> windows</div>
+    <div class="ws-stat">📌 <strong id="pinnedCount">—</strong> pinned</div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn-primary" id="btnSnap">Save Snap</button>
+    <div class="toggle-row">
+      <span>Auto-close tab after snap</span>
+      <label class="toggle">
+        <input type="checkbox" id="autoClose">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <button class="btn-secondary" id="btnSnapAll" title="Snap all open tabs as workspace snapshot">Snap Workspace (all tabs)</button>
+  </div>
+
+  <!-- STATUS -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span class="status-text" id="statusText">Ready</span>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-brand"><span>Synal</span> · WorkFamilyAI</span>
+    <div class="footer-links">
+      <button class="footer-link" id="btnSettings2">Settings</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
