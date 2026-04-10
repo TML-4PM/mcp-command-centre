@@ -1,0 +1,5 @@
+{
+  "Arn": "arn:aws:lambda:ap-southeast-2:140548542136:function:t4h-autofix-reality-recalc",
+  "RoleArn": "arn:aws:iam::140548542136:role/troy-lambda-deployer-role",
+  "Input": "{\"source\": \"scheduler\", \"schedule\": \"nightly\", \"mode\": \"full_sweep\"}"
+}
