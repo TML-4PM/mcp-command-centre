@@ -1,0 +1,24 @@
+<div id="synal-home">
+  <h2>Synal Home</h2>
+  <div id="synal-summary"></div>
+</div>
+
+<script>
+async function loadSynalHome(url, key) {
+  const res = await fetch(`${url}/rest/v1/synal.v_home_summary?select=*`, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`
+    }
+  });
+  const data = await res.json();
+
+  document.getElementById("synal-summary").innerHTML = data.map(row => `
+    <div>
+      <strong>${row.category}</strong>: ${row.total_assets} assets (REAL: ${row.real_assets})
+    </div>
+  `).join("");
+}
+
+window.loadSynalHome = loadSynalHome;
+</script>
