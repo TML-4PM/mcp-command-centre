@@ -1,0 +1,1 @@
+{"action":"invoke_function","function_name":"command_centre_reality_verifier","invocation_type":"RequestResponse","payload":{"mode":"verify_and_report"}}
