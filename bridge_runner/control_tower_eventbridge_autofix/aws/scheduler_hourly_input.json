@@ -1,0 +1,5 @@
+{
+  "Arn": "arn:aws:lambda:ap-southeast-2:140548542136:function:t4h-site-scan-launcher",
+  "RoleArn": "arn:aws:iam::140548542136:role/troy-lambda-deployer-role",
+  "Input": "{\"source\": \"scheduler\", \"schedule\": \"hourly\"}"
+}
