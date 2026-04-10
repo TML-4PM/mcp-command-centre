@@ -1,0 +1,36 @@
+{
+  "listener": "bridge_runner",
+  "mode": "github_poll_or_webhook",
+  "triggers": [
+    {
+      "type": "github_push",
+      "paths": [
+        "bridge/payloads/telegram/",
+        "bridge_runner_payload.json",
+        "telegram-final-pack.md"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "step": "pull_repo",
+      "description": "Clone or fetch latest main branch"
+    },
+    {
+      "step": "detect_payload",
+      "description": "Look for telegram payload artifacts"
+    },
+    {
+      "step": "deploy_lambda",
+      "description": "Use template.yaml and deploy.sh"
+    },
+    {
+      "step": "wire_webhook",
+      "description": "Run wire_webhook.sh"
+    },
+    {
+      "step": "verify",
+      "description": "Send test /health command"
+    }
+  ]
+}
