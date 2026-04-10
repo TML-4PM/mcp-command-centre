@@ -1,0 +1,15 @@
+{
+  "mailboxes_required": ["hello", "support", "sales", "noreply", "billing", "ops"],
+  "aliases": [
+    {"alias":"info", "routes_to":"hello"},
+    {"alias":"accounts", "routes_to":"billing"},
+    {"alias":"admin", "routes_to":"ops"},
+    {"alias":"bookings", "routes_to":"support"}
+  ],
+  "routing_defaults": [
+    {"condition":"invoice|bill|receipt|payment", "destination":"billing", "automation":"FACTORS_INGEST"},
+    {"condition":"book|booking|appointment|schedule", "destination":"support", "automation":"CALCOM_SYNC"},
+    {"condition":"contact|help|support|issue", "destination":"support", "automation":"CRM_CASE_CREATE"},
+    {"condition":"partnership|sales|quote|proposal", "destination":"sales", "automation":"CRM_LEAD_CREATE"}
+  ]
+}
