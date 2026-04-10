@@ -1,0 +1,96 @@
+{
+  "pack_name": "sql_control_plane",
+  "version": "v1",
+  "status": "ready_for_bridge_runner",
+  "objective": "Wire all SQL execution through guardrail, executor, audit, Command Centre, replay, fallback, and Reality Ledger",
+  "repo": "TML-4PM/mcp-command-centre",
+  "entrypoints": {
+    "guardrail_lambda": "lambda/troy_sql_guardrail.py",
+    "replay_lambda": "lambda/troy_sql_replay.py",
+    "fallback_router_lambda": "lambda/troy_sql_fallback_router.py",
+    "bridge_route_contract": "bridge/sql_execution_bridge_route.md",
+    "bridge_route_runtime": "bridge/bridge_runner_sql_route.json",
+    "sealed_policy": "bridge/sql_execution_sealed_policy.md",
+    "audit_view": "supabase/sql/v_sql_execution_activity.sql",
+    "reality_ledger_binding": "supabase/sql/reality_ledger_binding.sql",
+    "deploy_readme": "lambda/README_DEPLOY.md"
+  },
+  "execution_sequence": [
+    {
+      "step": 1,
+      "action": "apply_sql",
+      "targets": [
+        "supabase/sql/v_sql_execution_activity.sql",
+        "supabase/sql/reality_ledger_binding.sql"
+      ]
+    },
+    {
+      "step": 2,
+      "action": "deploy_lambda",
+      "function_name": "troy-sql-guardrail",
+      "source": "lambda/troy_sql_guardrail.py",
+      "handler": "troy_sql_guardrail.lambda_handler",
+      "runtime": "python3.11"
+    },
+    {
+      "step": 3,
+      "action": "deploy_lambda",
+      "function_name": "troy-sql-replay",
+      "source": "lambda/troy_sql_replay.py",
+      "handler": "troy_sql_replay.lambda_handler",
+      "runtime": "python3.11"
+    },
+    {
+      "step": 4,
+      "action": "deploy_lambda",
+      "function_name": "troy-sql-fallback-router",
+      "source": "lambda/troy_sql_fallback_router.py",
+      "handler": "troy_sql_fallback_router.lambda_handler",
+      "runtime": "python3.11"
+    },
+    {
+      "step": 5,
+      "action": "wire_bridge_route",
+      "source": "bridge/bridge_runner_sql_route.json"
+    },
+    {
+      "step": 6,
+      "action": "enforce_policy",
+      "source": "bridge/sql_execution_sealed_policy.md"
+    },
+    {
+      "step": 7,
+      "action": "smoke_test",
+      "request_id": "req_bridge_runner_smoke_001"
+    }
+  ],
+  "smoke_test": {
+    "action": "invoke_function",
+    "function_name": "troy-sql-executor-s2",
+    "invocation_type": "RequestResponse",
+    "payload": {
+      "sql": "select 1 as test",
+      "params": [],
+      "mode": "execute",
+      "request_id": "req_bridge_runner_smoke_001",
+      "source": "bridge_runner",
+      "timestamp_utc": "2026-04-10T00:00:00Z",
+      "dry_run": false,
+      "approval_required": false
+    },
+    "metadata": {
+      "request_id": "req_bridge_runner_smoke_001",
+      "source": "bridge_runner",
+      "timestamp_utc": "2026-04-10T00:00:00Z",
+      "auth_context": "internal"
+    }
+  },
+  "completion_gates": [
+    "no_sql_executor_direct_invocation",
+    "all_sql_hits_guardrail_first",
+    "audit_rows_created",
+    "command_centre_view_returns_rows",
+    "reality_ledger_rows_created",
+    "replay_accepts_request_id"
+  ]
+}
