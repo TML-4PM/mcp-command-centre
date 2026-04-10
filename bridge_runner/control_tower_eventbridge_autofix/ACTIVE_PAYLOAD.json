@@ -1,52 +1,22 @@
 {
   "action": "invoke_function",
-  "function_name": "troy-code-pusher",
+  "function_name": "t4h-site-scan-launcher",
   "invocation_type": "RequestResponse",
   "payload": {
-    "repository_full_name": "TML-4PM/mcp-command-centre",
-    "branch": "main",
-    "ref": "main",
-    "target_mode": "github_repo_only",
-    "project": "control-tower-eventbridge-autofix",
-    "mode": "create_or_update",
-    "base_path": ".",
-    "artifacts": [
-      "README.md",
-      "supabase/001_control_tower.sql",
-      "vercel/pages/api/sites.ts",
-      "vercel/pages/api/health.ts",
-      "frontend/control_tower_page.tsx",
-      "lambdas/shared_events.py",
-      "lambdas/t4h_site_scan_launcher.py",
-      "lambdas/t4h_autofix_router.py",
-      "lambdas/t4h_autofix_health_refresh.py",
-      "lambdas/t4h_autofix_reality_recalc.py",
-      "aws/aws_cli_bootstrap.sh",
-      "aws/scheduler_hourly_input.json",
-      "aws/scheduler_nightly_input.json",
-      "aws/event_patterns/site_violation_detected.json",
-      "aws/event_patterns/site_autofix_completed.json"
-    ],
-    "notes": [
-      "ACTIVE DEFAULT PAYLOAD",
-      "Repo pinned to TML-4PM/mcp-command-centre",
-      "Main branch only",
-      "Safe autofix only",
-      "EventBridge Scheduler plus bus plus SQS Pipes architecture",
-      "Supabase truth surface",
-      "Vercel share and control page"
-    ]
+    "source": "bridge_runner",
+    "mode": "full_scan",
+    "emit_violations": true
   },
   "metadata": {
-    "request_id": "bridge-runner-control-tower-pack-active-20260410",
+    "request_id": "bridge-runner-control-tower-live-20260410",
     "source": "chatgpt",
-    "timestamp_utc": "2026-04-10T01:50:00Z",
-    "auth_context": "user_initiated",
+    "timestamp_utc": "2026-04-10T02:30:00Z",
     "provenance": {
       "repo": "TML-4PM/mcp-command-centre",
       "branch": "main",
       "canonical_pack_path": "bridge_runner/control_tower_eventbridge_autofix/ACTIVE_PAYLOAD.json"
-    }
+    },
+    "note": "troy-code-pusher is a Lambda code deployer not a GH file pusher. Corrected 2026-04-10."
   },
   "control": {
     "dry_run": false,
