@@ -1,0 +1,13 @@
+domain,mail_provider_target,booking_provider_target,status,required_mailboxes,legacy_notes,exclude_from_automation,priority
+all-chemist.org,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+apexpredatorinsurance.com,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+augmentedhumanity.coach,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P1
+enteraustralia.tech,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P1
+far-cage.org,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+gcbat.org,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+globaltyres.org,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+holo-org.com,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P1
+innovateme.link,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+innovateme.systems,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+mcp-native.com,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P2
+workfamilyai.org,Migadu,Cal.com,PENDING_AUDIT,"support,sales,hello,noreply,billing,ops","Review existing aliases, forwarding, ownership, DNS, and mailbox content before cutover",false,P1
