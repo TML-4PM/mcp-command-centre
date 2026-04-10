@@ -1,0 +1,7 @@
+version: 1.0
+name: ci_gate
+checks:
+  - fn_ci_gate_agent_contract
+  - fn_ci_gate_remediation_backlog_block
+rules:
+  fail_on_error: true
