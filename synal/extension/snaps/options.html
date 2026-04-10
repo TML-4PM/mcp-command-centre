@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Synal Snaps — Settings</title>
+  <style>
+    :root {
+      --accent: #7c3aed;
+      --bg: #0f0f13;
+      --bg-card: #1a1a24;
+      --bg-input: #13131c;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0f5;
+      --text-muted: #7a7a8c;
+      --success: #10b981;
+      --error: #ef4444;
+      --radius: 8px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px; min-height: 100vh; padding: 32px 16px;
+    }
+    .container { max-width: 480px; margin: 0 auto; }
+
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .brand-icon {
+      width: 36px; height: 36px; background: var(--accent);
+      border-radius: 9px; display: flex; align-items: center;
+      justify-content: center; font-size: 18px; font-weight: 700; color: #fff;
+    }
+    .brand-name { font-weight: 700; font-size: 18px; }
+    .brand-sub { font-size: 12px; color: var(--text-muted); }
+
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px; margin-bottom: 16px;
+    }
+    .card-title { font-weight: 600; font-size: 13px; margin-bottom: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+    input {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 9px 12px;
+      font-size: 13px; color: var(--text); outline: none; transition: border-color 0.15s;
+    }
+    input:focus { border-color: var(--accent); }
+    .input-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .toggle-field { display: flex; align-items: center; justify-content: space-between; }
+    .toggle-field label { margin: 0; font-size: 13px; color: var(--text); }
+    .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width:0; height:0; }
+    .toggle-slider {
+      position: absolute; inset:0; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: 100px; cursor: pointer; transition: 0.2s;
+    }
+    .toggle-slider:before {
+      content:''; position:absolute; width:14px; height:14px;
+      left:2px; bottom:2px; background: var(--text-muted); border-radius:50%; transition:0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(16px); background:#fff; }
+
+    .actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-primary {
+      flex: 1; padding: 10px; background: var(--accent); color: #fff;
+      border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-test {
+      padding: 10px 16px; background: none; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      font-size: 13px; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-test:hover { background: var(--bg-card); color: var(--text); }
+
+    .status {
+      margin-top: 12px; padding: 10px 14px; border-radius: var(--radius);
+      font-size: 13px; display: none;
+    }
+    .status.success { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); display: block; }
+    .status.error   { background: rgba(239,68,68,0.1); color: var(--error); border: 1px solid rgba(239,68,68,0.2); display: block; }
+
+    .footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--text-muted); }
+    .footer span { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand-icon">S</div>
+      <div>
+        <div class="brand-name">Snaps Settings</div>
+        <div class="brand-sub">by Synal · WorkFamilyAI</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Connection</div>
+      <div class="field">
+        <label>Organisation ID</label>
+        <input id="orgId" type="text" placeholder="your-org-id">
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input id="apiKey" type="password" placeholder="bk_…">
+      </div>
+      <div class="field">
+        <label>API Base URL</label>
+        <input id="apiBase" type="text" placeholder="https://zdgnab3py0.execute-api.ap-southeast-2.amazonaws.com/prod">
+        <div class="input-note">Bridge endpoint — no trailing slash</div>
+      </div>
+      <div class="field">
+        <label>Command Centre URL (optional)</label>
+        <input id="commandCentreUrl" type="text" placeholder="https://workfamilyai.org/command-centre">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Behaviour</div>
+      <div class="field toggle-field">
+        <label>Auto-close tab after snap</label>
+        <label class="toggle">
+          <input type="checkbox" id="autoClose">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="btnSave">Save Settings</button>
+      <button class="btn-test" id="btnTest">Test connection</button>
+    </div>
+    <div class="status" id="status"></div>
+
+    <div class="footer"><span>Synal</span> · Tech 4 Humanity Pty Ltd · v1.0.0</div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
