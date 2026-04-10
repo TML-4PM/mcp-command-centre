@@ -1,0 +1,1 @@
+{"date":"2026-04-10","summary":{"real":7,"partial":1,"pretend":22},"systems":[{"name":"MAAT","state":"REAL"},{"name":"Control Plane","state":"REAL"},{"name":"ATLAS","state":"REAL"},{"name":"Command Centre","state":"REAL"},{"name":"Cross LLM","state":"REAL"},{"name":"GDrive Migration","state":"REAL"},{"name":"OutcomeReady","state":"REAL"},{"name":"ConsentX","state":"PARTIAL"}]}
