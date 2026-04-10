@@ -1,0 +1,45 @@
+name: bridge-runner-telegram
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'bridge/payloads/telegram/**'
+      - 'bridge_runner_payload.json'
+      - 'telegram-final-pack.md'
+  workflow_dispatch:
+
+jobs:
+  emit-telegram-payload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build payload event
+        run: |
+          mkdir -p .bridge_runner_out
+          cat > .bridge_runner_out/event.json <<'JSON'
+          {
+            "event_type": "bridge_runner.telegram.deploy",
+            "repo": "${{ github.repository }}",
+            "ref": "${{ github.ref }}",
+            "sha": "${{ github.sha }}",
+            "actor": "${{ github.actor }}",
+            "payload_path": "bridge/payloads/telegram/",
+            "runtime_file": "bridge/payloads/telegram/index.canonical.js",
+            "template_file": "bridge/payloads/telegram/template.yaml",
+            "deploy_script": "bridge/payloads/telegram/deploy.sh",
+            "webhook_script": "bridge/payloads/telegram/wire_webhook.sh",
+            "ddl_file": "bridge/payloads/telegram/ddl_telegram_events.sql",
+            "command_grammar": "bridge/payloads/telegram/command_grammar.json",
+            "routing_map": "bridge/payloads/telegram/routing_map.json",
+            "deployment_manifest": "bridge/payloads/telegram/deployment_manifest.json"
+          }
+          JSON
+
+      - name: Upload event artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridge-runner-telegram-event
+          path: .bridge_runner_out/event.json
