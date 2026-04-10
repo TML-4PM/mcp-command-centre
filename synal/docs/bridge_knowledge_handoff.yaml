@@ -1,0 +1,89 @@
+bridge_knowledge_handoff:
+  version: "2026-04-10"
+  source: "same-again-synal.pdf"
+  
+  synal_pipeline:
+    canonical_nouns: [Signals, Tasks, Flows, Actions, Proof, Command]
+    flow: "Event → Task → Flow (Bridge) → Actions → Proof → Command"
+  
+  bridge_runner:
+    role: "Execution/flow engine for campaigns and agent jobs"
+    status: REAL
+    mapping:
+      bridge_campaign_run: "Synal Flow (type: campaign.bridge)"
+      bridge_agent_job: "Synal Action attached to Task/Flow"
+      bridge_evidence: "Contributes to synal_proof + reality_ledger"
+      bridge_telemetry_log: "ai_events / telemetry spine"
+    live_components:
+      - enums, tables, indexes, RLS, service_role policies
+      - updated_at triggers, lifecycle enforcer
+      - fn_br_dispatch, fn_br_op_hash (dedup)
+      - troy-fire-orchestrator, troy-task-orchestrator
+      - pg_cron every 5 min
+      - kill_switch via cap_secrets/t4h-db-execute-enabled
+    execution_history: "Hundreds of campaigns REAL; multiple agent job types completed"
+
+  known_gaps:
+    lifecycle_closure:
+      problem: "Runs stuck in validating when effectively done"
+      fix: "Deterministic transitions: queued→running→validating→complete|failed|rolled_back + timeouts"
+    human_approval:
+      problem: "approval_queue exists but no HITL UI; effectively auto-approved"
+      fix: "Risk-tier routing, approve/reject/request-changes console, threshold auto-approve, audit trail"
+    metrics_evidence:
+      problem: "campaign_metrics seeded/partial; not wired to real signals"
+      wanted: [assets_generated, assets_published, approvals_count, errors_count, delivered, opened, clicked, converted, escalated, rolled_back, revenue_influenced]
+    operator_ux:
+      missing_dashboard: "Runs, blocked/hung states, approvals, retries, rollbacks, evidence, kill switch, lane health"
+      missing_actions: [start_run, resume_stuck, revalidate, force_close, retry_failed_lane, rollback, rebuild_assets, requeue_approvals, export_board_pack, pause_dispatches, toggle_kill_switch]
+    preflight:
+      problem: "No unified preflight gate before dispatch"
+      checks_needed: [schema, cron, lambdas, secrets, routes, publish_targets]
+    error_layer:
+      problem: "Errors too technical; operators must read raw logs"
+      fix: "Friendly error classification: what happened / what to do / safe to retry / rollback needed"
+    security:
+      problem: "troy-sql-executor uses IAM-user style; no least-privilege separation"
+      fix: "Migrate to execution role; separate deploy vs run permissions; break-glass path"
+    productisation:
+      problem: "Hand-assembled per campaign; no tenant model, templates, brand presets"
+      fix: "Tenant model, campaign templates, risk defaults, approval templates, brand/channel presets"
+
+  near_term_priorities:
+    - lifecycle_autoclose
+    - approval_console
+    - real_metrics_wiring
+    - operator_dashboard
+    - board_pack_automation
+    - preflight_and_secret_health
+    - recovery_actions
+    - friendly_error_layer
+    - iam_cleanup
+
+  medium_term:
+    - unified_task_schema_live (synal_tasks wired to Bridge)
+    - extension_to_task_contract (SynalEvent → task-intake)
+    - task_centric_command_centre
+    - proof_and_ledger_unification (Bridge evidence → synal_proof, reality_ledger)
+
+  longer_term:
+    - tenant model + brand config
+    - campaign templates
+    - browser companion family (shared shell + widget SDK)
+    - Stripe billing per tenant
+
+  guiding_principles:
+    - "Do not fork schemas; unify into Synal Events/Tasks/Actions/Proof"
+    - "Extensions capture + present; orchestration + proof stay in backend"
+    - "Every loop closes automatically with evidence — no manual done"
+    - "Prefer control-plane buttons over ad-hoc SQL/AWS tweaks"
+    - "Bridge campaign run = Synal Flow; bridge agent job = Synal Action"
+    - "New features must surface in Command Centre and Tasks"
+    - "Avoid bypassing task-intake/task-run — creates debt"
+
+  extension_contract:
+    allowed: [capture_context, send_SynalEvent, open_task, submit_decision, request_guidance]
+    forbidden: [orchestration, long_running_jobs, direct_proof_mutation, independent_task_logic]
+    payload_shape:
+      event_type: "snap.created | signal.detected | flow.requested"
+      source: "extension.snaps | extension.bar | system | agent"
