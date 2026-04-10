@@ -1,0 +1,4 @@
+Name,Category,Summary,Canonical Value,Lookup Key,Stage,Confidence,Automation Eligible
+Bridge Invoke Endpoint,Infra,Main invoke endpoint,https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke,bridge_invoke_endpoint,CRITICAL,High,Yes
+SQL Executor,Infra,Primary SQL execution lambda,troy-sql-executor,sql_execution_lambda,CRITICAL,High,Yes
+Supabase URL,Infra,Primary Supabase URL,https://lzfgigiyqpuuxslsygjt.supabase.co,supabase_url,CRITICAL,High,Yes
