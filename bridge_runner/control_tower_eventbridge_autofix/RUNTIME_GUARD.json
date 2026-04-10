@@ -1,0 +1,26 @@
+{
+  "policy_name": "repo_pin_enforcement",
+  "version": "2026-04-10",
+  "status": "active",
+  "required": {
+    "repository_full_name": "TML-4PM/mcp-command-centre",
+    "branch": "main",
+    "target_mode": "github_repo_only"
+  },
+  "reject_if_missing": [
+    "repository_full_name",
+    "branch",
+    "target_mode"
+  ],
+  "reject_if_not_equal": {
+    "repository_full_name": "TML-4PM/mcp-command-centre",
+    "branch": "main",
+    "target_mode": "github_repo_only"
+  },
+  "canonical_payload": "bridge_runner/control_tower_eventbridge_autofix/ACTIVE_PAYLOAD.json",
+  "notes": [
+    "Any payload that does not match the required repo pin must be treated as invalid.",
+    "Old payloads using github_or_bridge_runner are non-canonical.",
+    "This guard exists to prevent drift and cross-repo writes."
+  ]
+}
