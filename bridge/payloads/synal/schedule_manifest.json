@@ -1,0 +1,22 @@
+{
+  "schedules": [
+    {
+      "name": "synal-repair-worker-prod",
+      "schedule_expression": "rate(5 minutes)",
+      "target_function_name": "synal-repair-worker",
+      "payload": {"limit": 25, "tenant_key": "t4h", "environment": "prod"}
+    },
+    {
+      "name": "synal-command-worker-prod",
+      "schedule_expression": "rate(1 minute)",
+      "target_function_name": "synal-command-worker",
+      "payload": {"tenant_key": "t4h", "environment": "prod"}
+    },
+    {
+      "name": "synal-smoke-test-prod",
+      "schedule_expression": "rate(30 minutes)",
+      "target_function_name": "synal-smoke-test",
+      "payload": {"tenant_key": "t4h", "environment": "prod"}
+    }
+  ]
+}
