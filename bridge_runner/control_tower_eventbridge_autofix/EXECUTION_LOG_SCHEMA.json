@@ -1,0 +1,19 @@
+{
+  "table": "bridge_runner_execution_log",
+  "fields": [
+    {"name": "id", "type": "uuid"},
+    {"name": "timestamp_utc", "type": "timestamptz"},
+    {"name": "payload_path", "type": "text"},
+    {"name": "repository", "type": "text"},
+    {"name": "branch", "type": "text"},
+    {"name": "status", "type": "text"},
+    {"name": "files_touched", "type": "jsonb"},
+    {"name": "execution_hash", "type": "text"}
+  ],
+  "status_values": ["started","success","failed"],
+  "notes": [
+    "Bind this to Supabase or logging layer",
+    "Every bridge run must emit a record",
+    "Required for Reality Ledger classification"
+  ]
+}
