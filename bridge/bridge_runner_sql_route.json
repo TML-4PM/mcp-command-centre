@@ -1,0 +1,36 @@
+{
+  "route": "sql_execution",
+  "version": "v1",
+  "steps": [
+    {
+      "step": 1,
+      "name": "guardrail",
+      "action": "invoke_function",
+      "function_name": "troy-sql-guardrail",
+      "input": "original_event"
+    },
+    {
+      "step": 2,
+      "name": "decision",
+      "type": "branch",
+      "on": "status",
+      "cases": {
+        "approved": "execute",
+        "rejected": "stop"
+      }
+    },
+    {
+      "step": 3,
+      "name": "execute",
+      "action": "invoke_function",
+      "function_name": "troy-sql-executor-s2",
+      "input": "forwarded_event"
+    },
+    {
+      "step": 4,
+      "name": "audit",
+      "action": "log",
+      "target": "sql_execution_audit"
+    }
+  ]
+}
