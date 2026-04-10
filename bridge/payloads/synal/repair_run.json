@@ -1,0 +1,15 @@
+{
+  "action": "invoke_function",
+  "function_name": "synal-repair-worker",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "limit": 25,
+    "tenant_key": "t4h",
+    "environment": "prod"
+  },
+  "metadata": {
+    "request_id": "synal-repair-run-001",
+    "source": "bridge-runner",
+    "timestamp_utc": "2026-04-10T00:20:00Z"
+  }
+}
