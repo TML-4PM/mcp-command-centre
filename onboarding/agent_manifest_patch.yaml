@@ -1,0 +1,27 @@
+sql_execution_standard:
+  version: v1
+  status: mandatory
+  owner: universal-agent-contract
+
+  canonical_path:
+    invoke_via: mcp_bridge
+    action: invoke_function
+    function_name: troy-sql-executor-s2
+    invocation_type: RequestResponse
+
+  rules:
+    - no_direct_db_connections
+    - no_trailing_semicolons
+    - require_metadata
+    - require_request_id
+    - enforce_auditability
+
+  fallback_order:
+    - troy-sql-executor-s2
+    - troy-sql-runner
+    - troy-sql-executor-fix
+    - troy-sql-executor
+
+required_runtime_standards:
+  - universal_agent_contract_v1_1
+  - sql_execution_standard_v1
