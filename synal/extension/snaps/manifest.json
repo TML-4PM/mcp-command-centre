@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Synal Snaps",
+  "short_name": "Snaps",
+  "version": "1.0.0",
+  "description": "Capture browser signals. Close tabs without fear. Front door to your agents.",
+  "author": "Tech 4 Humanity Pty Ltd",
+  "homepage_url": "https://workfamilyai.org",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Synal Snaps"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "storage",
+    "tabs",
+    "windows",
+    "notifications",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://zdgnab3py0.execute-api.ap-southeast-2.amazonaws.com/*",
+    "https://*.supabase.co/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
