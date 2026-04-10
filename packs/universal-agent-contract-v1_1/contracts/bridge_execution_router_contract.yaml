@@ -1,0 +1,22 @@
+version: 1.0
+name: bridge_execution_router
+
+enforcement_sequence:
+  - resolve_agent
+  - resolve_tool
+  - check_permissions
+  - risk_gate
+  - execute
+  - log_execution
+  - verify
+  - classify_reality
+  - completion_gate
+
+rules:
+  block_pretend: true
+  require_logging: true
+  require_policy_for_high_risk: true
+
+notes:
+  - PRETEND must never complete
+  - all executions must be logged
