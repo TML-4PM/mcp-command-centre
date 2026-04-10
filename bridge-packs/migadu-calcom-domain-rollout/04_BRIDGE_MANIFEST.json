@@ -1,0 +1,16 @@
+{
+  "pack_name": "Migadu + Cal.com Domain Rollout",
+  "maturity": {"level": 35, "wave": 10},
+  "exclusions": ["techforhumanity.com.au", "techforhumanity.net"],
+  "sequence": [
+    "audit_current_dns_and_mail",
+    "create_or_update_migadu_domains",
+    "create_required_mailboxes_and_aliases",
+    "validate_spf_dkim_dmarc",
+    "configure_calcom_org_team_event_types",
+    "configure_calcom_webhooks",
+    "run_cutover_tests",
+    "write_evidence_to_supabase",
+    "emit_board_pack_and_support_pack"
+  ]
+}
