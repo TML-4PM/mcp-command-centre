@@ -1,0 +1,13 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-sql-executor",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "sql": "select * from synal.v_home_summary limit 10"
+  },
+  "metadata": {
+    "request_id": "synal-smoke-001",
+    "source": "synal",
+    "timestamp_utc": "2026-04-10T00:00:00Z"
+  }
+}
