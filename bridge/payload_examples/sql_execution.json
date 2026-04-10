@@ -1,0 +1,21 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-sql-executor-s2",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "sql": "select 1 as ping",
+    "params": [],
+    "mode": "execute",
+    "request_id": "req_example",
+    "source": "example",
+    "timestamp_utc": "2026-04-10T00:00:00Z",
+    "dry_run": false,
+    "approval_required": false
+  },
+  "metadata": {
+    "request_id": "req_example",
+    "source": "example",
+    "timestamp_utc": "2026-04-10T00:00:00Z",
+    "auth_context": "internal"
+  }
+}
