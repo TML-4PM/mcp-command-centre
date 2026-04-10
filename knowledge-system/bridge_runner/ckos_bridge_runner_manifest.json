@@ -1,0 +1,41 @@
+{
+  "pack_name": "ckos_system",
+  "version": "v1",
+  "status": "ready_for_bridge_runner",
+  "objective": "Deploy Canonical Knowledge Operating System tables and seed data",
+  "repo": "TML-4PM/mcp-command-centre",
+  "execution_sequence": [
+    {
+      "step": 1,
+      "action": "apply_sql",
+      "targets": [
+        "knowledge-system/supabase/sql/001_ckos_schema.sql"
+      ]
+    },
+    {
+      "step": 2,
+      "action": "smoke_test",
+      "request_id": "req_ckos_smoke_001"
+    }
+  ],
+  "smoke_test": {
+    "action": "invoke_function",
+    "function_name": "troy-sql-executor",
+    "invocation_type": "RequestResponse",
+    "payload": {
+      "sql": "select count(*) from ops.ckos_knowledge",
+      "mode": "execute",
+      "request_id": "req_ckos_smoke_001",
+      "source": "ckos_bridge_runner",
+      "timestamp_utc": "2026-04-10T00:00:00Z",
+      "dry_run": false,
+      "approval_required": false
+    },
+    "metadata": {
+      "request_id": "req_ckos_smoke_001",
+      "source": "ckos_bridge_runner",
+      "timestamp_utc": "2026-04-10T00:00:00Z",
+      "auth_context": "internal"
+    }
+  }
+}
