@@ -1,0 +1,19 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-sql-executor",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "sql_batch": [
+      "\n-- run foundation\n",
+      "\n-- run seed\n",
+      "\n-- run dependencies\n",
+      "\n-- run views\n"
+    ]
+  },
+  "metadata": {
+    "request_id": "t4h-task-system-completion-pack",
+    "source": "chatgpt",
+    "timestamp_utc": "2026-04-10T05:00:00Z",
+    "auth_context": "bridge_runner"
+  }
+}
