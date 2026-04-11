@@ -1,0 +1,38 @@
+{
+  "pack_name": "ckos_control_plane",
+  "version": "v1",
+  "status": "ready_for_bridge_runner",
+  "objective": "Deploy CKOS runtime and enforce guarded execution",
+  "execution_sequence": [
+    {
+      "step": 1,
+      "action": "apply_sql",
+      "targets": [
+        "knowledge-system/supabase/sql/001_ckos_schema.sql"
+      ]
+    },
+    {
+      "step": 2,
+      "action": "deploy_lambda",
+      "function_name": "troy-ckos-runtime",
+      "source": "knowledge-system/lambda/troy_ckos_runtime.py",
+      "runtime": "python3.11"
+    },
+    {
+      "step": 3,
+      "action": "smoke_test",
+      "request_id": "req_ckos_runtime_001"
+    }
+  ],
+  "smoke_test": {
+    "action": "invoke_function",
+    "function_name": "troy-ckos-runtime",
+    "payload": {
+      "action": "guard",
+      "required_keys": [
+        "sql_execution_lambda"
+      ],
+      "used_by": "bridge_runner_test"
+    }
+  }
+}
