@@ -1,0 +1,29 @@
+{
+  "request_type": "bridge_runner_execute",
+  "status": "ready",
+  "repo": "TML-4PM/mcp-command-centre",
+  "payload_root": "bridge/payloads/telegram/",
+  "runtime_entry": "bridge/payloads/telegram/index.mcp.js",
+  "manifest": "bridge/payloads/telegram/manifest.json",
+  "grammar": "bridge/payloads/telegram/command_grammar.json",
+  "routing": "bridge/payloads/telegram/routing_map.json",
+  "contract": "bridge/payloads/telegram/bridge_envelope_v2.json",
+  "infra_template": "bridge/payloads/telegram/template.yaml",
+  "webhook_script": "bridge/payloads/telegram/wire_webhook.sh",
+  "ddl": "bridge/payloads/telegram/ddl_telegram_events.sql",
+  "tests": [
+    "bridge/payloads/telegram/test_telegram_event.json",
+    "bridge/payloads/telegram/test_bridge_request.json"
+  ],
+  "objective": "Sweep, deploy, wire, and activate Telegram MCP-native ingress through Command Centre BridgeRunner.",
+  "expected_outcomes": [
+    "Lambda deployed from index.mcp.js",
+    "Telegram webhook wired",
+    "Canonical MCP envelope active",
+    "telegram_events table available",
+    "Commands routed via command_grammar.json and routing_map.json"
+  ],
+  "execution_mode": "autonomous",
+  "hitl_required": false,
+  "notes": "Prefer index.mcp.js over legacy index.js. Treat this folder as authoritative for Telegram BridgeRunner activation."
+}
