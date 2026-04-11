@@ -1,0 +1,51 @@
+{
+  "package_name": "control_tower_eventbridge_autofix_bridge_runner",
+  "version": "2026.04.10",
+  "status": "production_ready",
+  "entry_point": "bridge_runner/control_tower_eventbridge_autofix/ACTIVE_PAYLOAD.json",
+  "repository": {
+    "name": "TML-4PM/mcp-command-centre",
+    "branch": "main"
+  },
+  "components": {
+    "execution": "bridge_runner/control_tower_eventbridge_autofix/ACTIVE_PAYLOAD.json",
+    "enforcement": "bridge_runner/control_tower_eventbridge_autofix/RUNTIME_GUARD.json",
+    "telemetry": "bridge_runner/control_tower_eventbridge_autofix/EXECUTION_LOG_SCHEMA.json",
+    "resolver": "bridge_runner/control_tower_eventbridge_autofix/DEFAULT_PACK.md"
+  },
+  "artifacts": [
+    "README.md",
+    "supabase/001_control_tower.sql",
+    "vercel/pages/api/sites.ts",
+    "vercel/pages/api/health.ts",
+    "frontend/control_tower_page.tsx",
+    "lambdas/shared_events.py",
+    "lambdas/t4h_site_scan_launcher.py",
+    "lambdas/t4h_autofix_router.py",
+    "lambdas/t4h_autofix_health_refresh.py",
+    "lambdas/t4h_autofix_reality_recalc.py",
+    "aws/aws_cli_bootstrap.sh",
+    "aws/scheduler_hourly_input.json",
+    "aws/scheduler_nightly_input.json",
+    "aws/event_patterns/site_violation_detected.json",
+    "aws/event_patterns/site_autofix_completed.json"
+  ],
+  "execution_contract": {
+    "mode": "create_or_update",
+    "target": "github_repo_only",
+    "repo_pin": "TML-4PM/mcp-command-centre",
+    "auto_execute": true
+  },
+  "bridge_runner_instruction": {
+    "load": "entry_point",
+    "execute": true,
+    "log": true,
+    "enforce_guard": true
+  },
+  "notes": [
+    "This manifest represents a complete bridge-runner-ready package",
+    "Execution must always originate from ACTIVE_PAYLOAD.json",
+    "Guard enforcement is mandatory",
+    "Telemetry logging is required for Reality Ledger"
+  ]
+}
