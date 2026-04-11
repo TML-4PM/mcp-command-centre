@@ -1,0 +1,14 @@
+{
+  "action": "invoke_function",
+  "function_name": "core5Loop",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "task_key": "core5-initial-doc-completion"
+  },
+  "metadata": {
+    "request_id": "core5-continuous-loop-execution",
+    "source": "chatgpt",
+    "timestamp_utc": "2026-04-11T00:00:00Z",
+    "auth_context": "bridge_runner"
+  }
+}
