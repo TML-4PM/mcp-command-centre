@@ -1,0 +1,22 @@
+{
+  "pack_key": "core5_continuous_loop_pack",
+  "title": "Core 5 Continuous Multi-LLM Loop",
+  "status": "READY_FOR_BRIDGE",
+  "entrypoint": "bridge_runner/packs/core5_continuous_loop_pack/docs/bridge_runner_invoke_envelope.json",
+  "artifacts": [
+    "bridge_runner/packs/core5_continuous_loop_pack/docs/bridge_runner_invoke_envelope.json",
+    "bridge_runner/packs/core5_continuous_loop_pack/docs/OPERATIONS_RUNBOOK.md",
+    "bridge_runner/packs/core5_continuous_loop_pack/infra/serverless.yml",
+    "bridge_runner/packs/core5_continuous_loop_pack/lambda/core5_loop_handler.py",
+    "bridge_runner/packs/core5_continuous_loop_pack/lambda/requirements.txt",
+    "bridge_runner/packs/core5_continuous_loop_pack/supabase/001_core5_schema.sql",
+    "bridge_runner/packs/core5_continuous_loop_pack/supabase/002_seed.sql",
+    "bridge_runner/packs/core5_continuous_loop_pack/payloads/run_ndis_strategy.json",
+    "bridge_runner/packs/core5_continuous_loop_pack/payloads/run_site_readiness.json",
+    "bridge_runner/packs/core5_continuous_loop_pack/payloads/stage_gate_approval.json",
+    "bridge_runner/packs/core5_continuous_loop_pack/ui/intake_page.tsx",
+    "bridge_runner/packs/core5_continuous_loop_pack/ui/status_page.tsx",
+    "bridge_runner/packs/core5_continuous_loop_pack/ui/sql_widget_snippet.sql"
+  ],
+  "notes": "Send to bridge runner via GitHub. Continuous loop pack with Digital Custodian governance and Troy stage gates."
+}
