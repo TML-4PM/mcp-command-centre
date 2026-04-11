@@ -1,0 +1,123 @@
+name: Deploy Control Tower Lambdas
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run only'
+        required: false
+        default: 'false'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::140548542136:role/troy-lambda-deployer-role
+          aws-region: ap-southeast-2
+
+      - name: Package and deploy
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          SB_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          PACK="bridge_runner/control_tower_eventbridge_autofix/lambdas"
+          REGION="ap-southeast-2"
+          ACCOUNT="140548542136"
+          ROLE_ARN="arn:aws:iam::${ACCOUNT}:role/troy-lambda-deployer-role"
+          SB_URL="https://lzfgigiyqpuuxslsygjt.supabase.co"
+          EB="t4h-control-tower"
+
+          declare -A LAMBDAS
+          LAMBDAS["t4h-site-scan-launcher"]="t4h_site_scan_launcher"
+          LAMBDAS["t4h-autofix-router"]="t4h_autofix_router"
+          LAMBDAS["t4h-autofix-health-refresh"]="t4h_autofix_health_refresh"
+          LAMBDAS["t4h-autofix-reality-recalc"]="t4h_autofix_reality_recalc"
+
+          for FN_NAME in "${!LAMBDAS[@]}"; do
+            MODULE="${LAMBDAS[$FN_NAME]}"
+            echo "=== $FN_NAME ==="
+            mkdir -p /tmp/pkg
+            cp "${PACK}/${MODULE}.py" /tmp/pkg/lambda_function.py
+            cp "${PACK}/shared_events.py" /tmp/pkg/shared_events.py
+            cd /tmp/pkg && zip -q /tmp/${FN_NAME}.zip . && cd -
+
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "[DRY] skip deploy $FN_NAME"
+              rm -rf /tmp/pkg
+              continue
+            fi
+
+            EXISTS=$(aws lambda get-function --function-name "$FN_NAME" \
+              --region "$REGION" --query 'Configuration.FunctionName' \
+              --output text 2>/dev/null || echo "")
+
+            ENV_VARS="Variables={SUPABASE_URL=${SB_URL},SUPABASE_SERVICE_ROLE_KEY=${SB_KEY},EVENT_BUS_NAME=${EB}}"
+
+            if [ -z "$EXISTS" ]; then
+              aws lambda create-function \
+                --function-name "$FN_NAME" \
+                --runtime python3.11 \
+                --role "$ROLE_ARN" \
+                --handler lambda_function.lambda_handler \
+                --zip-file "fileb:///tmp/${FN_NAME}.zip" \
+                --timeout 60 \
+                --memory-size 256 \
+                --environment "$ENV_VARS" \
+                --tags "project=control-tower,is_rd=true,project_code=CONTROL_TOWER" \
+                --region "$REGION" \
+                --output json | jq '{FunctionName,State}'
+            else
+              aws lambda update-function-code \
+                --function-name "$FN_NAME" \
+                --zip-file "fileb:///tmp/${FN_NAME}.zip" \
+                --region "$REGION" --output json | jq '{FunctionName,CodeSize}'
+              sleep 5
+              aws lambda update-function-configuration \
+                --function-name "$FN_NAME" \
+                --handler lambda_function.lambda_handler \
+                --timeout 60 --memory-size 256 \
+                --environment "$ENV_VARS" \
+                --region "$REGION" --output json | jq '{FunctionName,State}'
+            fi
+            echo "DEPLOYED: $FN_NAME"
+            rm -rf /tmp/pkg
+            sleep 2
+          done
+
+      - name: Wire EventBridge permissions
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          REGION="ap-southeast-2"
+          ACCOUNT="140548542136"
+          TS=$(date +%s)
+          BUS_ARN="arn:aws:events:${REGION}:${ACCOUNT}:event-bus/t4h-control-tower"
+          SCHED_ARN="arn:aws:scheduler:${REGION}:${ACCOUNT}:schedule/default/t4h-site-scan-hourly"
+
+          for FN in t4h-autofix-router t4h-autofix-health-refresh t4h-autofix-reality-recalc; do
+            aws lambda add-permission \
+              --function-name "$FN" \
+              --statement-id "eb-${TS}" \
+              --action lambda:InvokeFunction \
+              --principal events.amazonaws.com \
+              --source-arn "$BUS_ARN" \
+              --region "$REGION" 2>/dev/null && echo "perm set: $FN" || echo "perm exists: $FN"
+          done
+
+          aws lambda add-permission \
+            --function-name t4h-site-scan-launcher \
+            --statement-id "sched-${TS}" \
+            --action lambda:InvokeFunction \
+            --principal scheduler.amazonaws.com \
+            --source-arn "$SCHED_ARN" \
+            --region "$REGION" 2>/dev/null && echo "scheduler perm set" || echo "scheduler perm exists"
+
+          echo "Permissions done"
