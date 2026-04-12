@@ -1,0 +1,65 @@
+name: Wave20 Enforcement Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Required Files
+        run: |
+          echo "Checking for required execution artifacts..."
+
+          REQUIRED=(
+            "bridge/envelope.json"
+            "config/system.json"
+            "telemetry/emit.js"
+            "recovery/recover.js"
+            "sql/reality_ledger.sql"
+          )
+
+          FAIL=0
+          for f in "${REQUIRED[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "❌ Missing: $f"
+              FAIL=1
+            else
+              echo "✅ Found: $f"
+            fi
+          done
+
+          if [ $FAIL -eq 1 ]; then
+            echo "🚫 Completion Gate FAILED"
+            exit 1
+          fi
+
+      - name: Validate Bridge Envelope
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path('bridge/envelope.json')
+          data = json.loads(p.read_text())
+          required = ['action', 'function_name', 'payload', 'metadata']
+          missing = [k for k in required if k not in data]
+          if missing:
+              raise SystemExit(f"Missing required envelope keys: {missing}")
+          if data.get('action') != 'invoke_function':
+              raise SystemExit('Envelope action must be invoke_function')
+          print('✅ Bridge envelope valid')
+          PY
+
+      - name: Validate Reality Ledger SQL
+        run: |
+          grep -q "create table if not exists reality_ledger" sql/reality_ledger.sql
+
+      - name: Mark Status
+        run: echo "SYSTEM_STATUS=REAL" >> $GITHUB_ENV
