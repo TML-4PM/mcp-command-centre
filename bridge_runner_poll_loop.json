@@ -1,0 +1,63 @@
+{
+  "name": "bridge_runner_poll_loop",
+  "version": "1.0",
+  "mode": "poll",
+  "source": {
+    "provider": "github",
+    "repository": "TML-4PM/mcp-command-centre",
+    "branch": "main"
+  },
+  "schedule": {
+    "type": "interval_seconds",
+    "value": 30
+  },
+  "watch": {
+    "paths": [
+      "bridge/payloads/telegram/",
+      "bridge_runner_payload.json",
+      "telegram-final-pack.md",
+      ".github/workflows/bridge-runner-telegram.yml"
+    ]
+  },
+  "dedupe": {
+    "strategy": "commit_sha",
+    "state_key": "bridge_runner:last_processed_sha:telegram"
+  },
+  "actions": [
+    {
+      "step": "fetch_latest_commit",
+      "required": true
+    },
+    {
+      "step": "compare_with_last_processed_sha",
+      "required": true
+    },
+    {
+      "step": "pull_repo_if_changed",
+      "required": true
+    },
+    {
+      "step": "detect_payload_ready",
+      "required": true,
+      "files": [
+        "bridge/payloads/telegram/deployment_manifest.json",
+        "bridge/payloads/telegram/index.canonical.js",
+        "bridge/payloads/telegram/template.yaml"
+      ]
+    },
+    {
+      "step": "deploy_lambda",
+      "required": true,
+      "script": "bridge/payloads/telegram/deploy.sh"
+    },
+    {
+      "step": "wire_webhook",
+      "required": true,
+      "script": "bridge/payloads/telegram/wire_webhook.sh"
+    },
+    {
+      "step": "mark_processed_sha",
+      "required": true
+    }
+  ]
+}
