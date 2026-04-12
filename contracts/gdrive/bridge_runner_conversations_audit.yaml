@@ -1,0 +1,80 @@
+---
+id: audit-conversations-bridge-runner
+version: 1.0
+description: |
+  Bridge contract to locate a large conversation export on Google Drive and
+  extract unfinished or open chat threads. This contract uses the
+  gdrive-crawler service account (already granted access to the shared drive)
+  to download the JSON export, split it into smaller JSONL files, load
+  unfinished threads into a table, and produce a CSV containing the first 500
+  open conversations for auditing purposes. It follows a two-phase
+  approach: first performing a dry run to confirm file access and metadata,
+  then executing the commit phase to process the file and deliver results.
+owners:
+  - bridge_runner_team
+  - data_infra_team
+phases:
+  - name: dry_run
+    description: |
+      Validate that the target conversation export exists in the shared
+      Google Drive and that the gdrive-crawler service account can access it.
+      Gather metadata such as file size and modified time to inform the
+      commit phase. This phase does not download any large data.
+    steps:
+      - name: get_file_metadata
+        action: gdrive.get_metadata
+        args:
+          file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+      - name: assert_valid_file
+        action: conditional.assert
+        args:
+          condition: "metadata.exists and metadata.size_bytes > 1000000"
+          on_failure: "abort"
+    gating_conditions:
+      - description: "Dry run completed successfully and file metadata is valid"
+        evaluation: success
+
+  - name: commit
+    description: |
+      Execute the data processing pipeline to download the conversation export,
+      split it into derived files, load unfinished threads into a table, and
+      produce an audit artefact listing the first 500 open or incomplete threads.
+    steps:
+      - name: download_export
+        action: gdrive.download
+        args:
+          file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+          destination: "/tmp/conversations.json"
+      - name: split_export
+        action: python.run
+        args:
+          script_path: "scripts/conversations_splitter.py"
+          input_path: "/tmp/conversations.json"
+          output_dir: "/tmp/conversations_split"
+      - name: load_unfinished_threads
+        action: supabase.load_jsonl
+        args:
+          table: "unfinished_threads"
+          file: "/tmp/conversations_split/unfinished_threads.jsonl"
+      - name: query_first_500
+        action: supabase.query
+        args:
+          sql: |
+            SELECT *
+            FROM unfinished_threads
+            ORDER BY created_time
+            LIMIT 500;
+      - name: export_results
+        action: supabase.export
+        args:
+          query_results: "query_first_500"
+          format: "csv"
+          destination: "/tmp/first_500_open_threads.csv"
+    evidence:
+      - file: "/tmp/first_500_open_threads.csv"
+
+gates:
+  - from: dry_run
+    to: commit
+    conditions:
+      - "dry_run.success"
