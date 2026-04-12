@@ -1,0 +1,95 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-lambda-manager",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "task": "control_plane_probe",
+    "description": "Discover active control planes, control towers, reporting systems, and execution gaps across AWS, Supabase, and GitHub so named systems can be verified against real runtime evidence.",
+    "targets": [
+      "aws_cloudwatch",
+      "aws_lambda",
+      "aws_eventbridge",
+      "supabase",
+      "github_actions"
+    ],
+    "checks": [
+      {
+        "name": "cloudwatch_log_groups",
+        "query": "list-log-groups"
+      },
+      {
+        "name": "lambda_functions",
+        "query": "list-functions"
+      },
+      {
+        "name": "eventbridge_rules",
+        "query": "list-rules"
+      },
+      {
+        "name": "recent_lambda_invocations",
+        "query": "last_24h_invocations"
+      },
+      {
+        "name": "recent_eventbridge_activity",
+        "query": "last_24h_rule_activity"
+      },
+      {
+        "name": "supabase_public_tables",
+        "query": "select table_schema, table_name from information_schema.tables where table_schema in ('public') order by table_schema, table_name"
+      },
+      {
+        "name": "supabase_recent_runtime_tables",
+        "query": "candidate runtime ledger tables and audit surfaces likely related to control plane, command centre, task queues, runs, telemetry, evidence, control, bridge, lambda, workflow, scheduler, status, and execution"
+      },
+      {
+        "name": "github_workflows",
+        "query": "list_recent_runs"
+      },
+      {
+        "name": "github_bridge_paths",
+        "query": "scan repository for bridge runner workflow paths, payload folders, dispatch triggers, and runner pickup conventions"
+      }
+    ],
+    "expected_outputs": [
+      "active_systems",
+      "inactive_expected_systems",
+      "missing_control_layers",
+      "orphaned_processes",
+      "execution_failures",
+      "no_log_entities",
+      "named_but_unproven_systems",
+      "candidate_control_plane_locations"
+    ],
+    "analysis": {
+      "detect": [
+        "systems that exist but have zero or near-zero runtime evidence",
+        "scheduled jobs defined but not firing",
+        "lambdas deployed but never invoked recently",
+        "github workflows present but inactive",
+        "supabase entities likely intended as control or reporting surfaces but not active",
+        "names that imply control plane, control tower, command centre, telemetry, scheduler, audit, probe, orchestration, or bridge but lack proof"
+      ],
+      "classify": [
+        "REAL",
+        "PARTIAL",
+        "PRETEND"
+      ],
+      "goal": "Identify where the real control plane is, what the command centre is only rendering, and which named systems should now be made actually operational because the bridge runner is working."
+    },
+    "output_mode": "full_audit_report",
+    "write_back": {
+      "supabase": true,
+      "table": "t4h_control_plane_audit",
+      "upsert_key": "request_id"
+    }
+  },
+  "metadata": {
+    "request_id": "control-plane-probe-20260412-001",
+    "source": "chatgpt-via-github",
+    "timestamp_utc": "AUTO"
+  },
+  "control": {
+    "dry_run": false,
+    "approval_required": false
+  }
+}
