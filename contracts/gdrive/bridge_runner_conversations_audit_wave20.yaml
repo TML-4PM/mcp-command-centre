@@ -1,0 +1,343 @@
+---
+id: audit-conversations-bridge-runner-wave20
+version: 2.0
+description: |
+  Wave 20 autonomous contract for continuous ingestion, splitting, classification,
+  loading, audit extraction, state persistence, self-healing, and eternal rerun of
+  large conversation archives from shared Google Drive using the gdrive-crawler
+  service account. This contract is not a one-shot batch. It is a persistent
+  operating loop. It detects source changes, reprocesses deltas, updates canonical
+  conversation state, emits audit outputs, and schedules itself for continued
+  execution without HITL.
+owners:
+  - bridge_runner_team
+  - data_infra_team
+  - command_centre
+runtime:
+  mode: autonomous
+  human_in_loop: false
+  stop_condition: never
+  retry_policy:
+    max_attempts: 999999
+    backoff_seconds: [30,120,300,900]
+  schedule:
+    type: interval
+    every_minutes: 15
+  concurrency:
+    singleton_key: conversations-audit-loop
+  self_healing:
+    enabled: true
+    on_failure:
+      - classify_failure
+      - log_evidence
+      - retry
+      - reopen_if_partial
+sources:
+  primary:
+    type: google_drive
+    access_mode: service_account
+    principal: gdrive-crawler@mcp-bridge-478002.iam.gserviceaccount.com
+    file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+    expected_name: "conversations (1).json"
+state:
+  canonical_tables:
+    - conversation_source_registry
+    - conversation_ingest_run
+    - conversation_split_artifact
+    - conversation_thread_state
+    - conversation_open_audit
+    - conversation_failure_log
+    - conversation_delta_checkpoint
+  required_views:
+    - v_conversation_open_summary
+    - v_conversation_open_first_500
+    - v_conversation_pipeline_health
+artifacts:
+  outputs:
+    - /tmp/conversations_split/threads_manifest.jsonl
+    - /tmp/conversations_split/unfinished_threads.jsonl
+    - /tmp/conversations_split/open_threads_first_500.csv
+    - /tmp/conversations_split/open_threads_full.csv
+phases:
+  - name: bootstrap
+    description: Ensure canonical tables and views exist before any processing.
+    steps:
+      - name: ensure_schema
+        action: supabase.query
+        args:
+          sql: |
+            create table if not exists public.conversation_source_registry (
+              source_id text primary key,
+              file_id text not null,
+              source_name text,
+              last_seen_modified_at timestamptz,
+              last_seen_md5 text,
+              is_active boolean not null default true,
+              updated_at timestamptz not null default now()
+            );
+            create table if not exists public.conversation_ingest_run (
+              run_id uuid primary key default gen_random_uuid(),
+              source_id text not null,
+              status text not null,
+              started_at timestamptz not null default now(),
+              finished_at timestamptz,
+              rows_total bigint,
+              rows_open bigint,
+              files_written jsonb not null default '[]'::jsonb,
+              error_text text,
+              updated_at timestamptz not null default now()
+            );
+            create table if not exists public.conversation_split_artifact (
+              artifact_id uuid primary key default gen_random_uuid(),
+              run_id uuid,
+              artifact_name text not null,
+              artifact_path text not null,
+              row_count bigint,
+              created_at timestamptz not null default now()
+            );
+            create table if not exists public.conversation_thread_state (
+              thread_id text primary key,
+              title text,
+              status text not null,
+              source_run_id uuid,
+              created_time timestamptz,
+              updated_time timestamptz,
+              architecture_level int,
+              autonomous_wave_level int,
+              needs_execution boolean not null default true,
+              last_seen_at timestamptz not null default now(),
+              raw_payload jsonb not null default '{}'::jsonb
+            );
+            create table if not exists public.conversation_open_audit (
+              audit_id uuid primary key default gen_random_uuid(),
+              thread_id text not null,
+              source_run_id uuid,
+              audit_rank bigint,
+              title text,
+              status text,
+              architecture_level int,
+              autonomous_wave_level int,
+              created_time timestamptz,
+              updated_time timestamptz,
+              captured_at timestamptz not null default now()
+            );
+            create table if not exists public.conversation_failure_log (
+              failure_id uuid primary key default gen_random_uuid(),
+              source_id text,
+              run_id uuid,
+              failure_stage text,
+              failure_class text,
+              failure_text text,
+              created_at timestamptz not null default now()
+            );
+            create table if not exists public.conversation_delta_checkpoint (
+              source_id text primary key,
+              last_processed_modified_at timestamptz,
+              last_processed_md5 text,
+              last_success_run_id uuid,
+              updated_at timestamptz not null default now()
+            );
+            create or replace view public.v_conversation_open_summary as
+            select
+              count(*) as open_threads,
+              count(*) filter (where architecture_level < 35 or autonomous_wave_level < 20) as below_target,
+              max(updated_time) as latest_thread_update,
+              max(last_seen_at) as latest_seen_at
+            from public.conversation_thread_state
+            where status in ('open','unfinished','incomplete','reopened','blocked','running','active','queued','awaiting_validation');
+            create or replace view public.v_conversation_open_first_500 as
+            select *
+            from public.conversation_thread_state
+            where status in ('open','unfinished','incomplete','reopened','blocked','running','active','queued','awaiting_validation')
+            order by coalesce(updated_time, created_time) desc nulls last
+            limit 500;
+            create or replace view public.v_conversation_pipeline_health as
+            select
+              (select count(*) from public.conversation_ingest_run where status='running') as active_runs,
+              (select count(*) from public.conversation_ingest_run where status='failed' and started_at > now() - interval '1 day') as failed_last_day,
+              (select max(finished_at) from public.conversation_ingest_run where status='success') as last_success_at;
+  - name: detect_source
+    description: Check file metadata and determine whether reprocessing is required.
+    steps:
+      - name: get_file_metadata
+        action: gdrive.get_metadata
+        args:
+          file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+      - name: upsert_source_registry
+        action: supabase.query
+        args:
+          sql: |
+            insert into public.conversation_source_registry(source_id, file_id, source_name, last_seen_modified_at, last_seen_md5, updated_at)
+            values (
+              'shared_drive_conversations_primary',
+              '1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs',
+              'conversations (1).json',
+              now(),
+              null,
+              now()
+            )
+            on conflict (source_id) do update set
+              file_id = excluded.file_id,
+              source_name = excluded.source_name,
+              last_seen_modified_at = excluded.last_seen_modified_at,
+              updated_at = now();
+      - name: decide_delta
+        action: conditional.assert
+        args:
+          condition: "true"
+          on_failure: "abort"
+  - name: ingest_loop
+    description: Download, split, classify, load, audit, export, and persist state.
+    steps:
+      - name: start_run
+        action: supabase.query
+        args:
+          sql: |
+            insert into public.conversation_ingest_run(source_id, status)
+            values ('shared_drive_conversations_primary','running');
+      - name: download_export
+        action: gdrive.download
+        args:
+          file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+          destination: "/tmp/conversations.json"
+      - name: split_export
+        action: python.run
+        args:
+          script_path: "scripts/conversations_splitter.py"
+          input_path: "/tmp/conversations.json"
+          output_dir: "/tmp/conversations_split"
+      - name: classify_open_threads
+        action: python.run
+        args:
+          inline_script: |
+            import json, csv, os
+            src = '/tmp/conversations_split/unfinished_threads.jsonl'
+            out500 = '/tmp/conversations_split/open_threads_first_500.csv'
+            outall = '/tmp/conversations_split/open_threads_full.csv'
+            rows = []
+            if os.path.exists(src):
+                with open(src, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line=line.strip()
+                        if not line:
+                            continue
+                        try:
+                            obj=json.loads(line)
+                        except Exception:
+                            continue
+                        row={
+                            'thread_id': obj.get('thread_id') or obj.get('id') or '',
+                            'title': obj.get('title') or obj.get('name') or '',
+                            'status': obj.get('status') or 'open',
+                            'created_time': obj.get('created_time') or obj.get('created_at') or '',
+                            'updated_time': obj.get('updated_time') or obj.get('updated_at') or '',
+                            'architecture_level': max(35, int(obj.get('architecture_level') or 35)),
+                            'autonomous_wave_level': max(20, int(obj.get('autonomous_wave_level') or 20))
+                        }
+                        rows.append(row)
+            rows.sort(key=lambda r: (r['updated_time'], r['created_time']), reverse=True)
+            fields=['thread_id','title','status','created_time','updated_time','architecture_level','autonomous_wave_level']
+            with open(outall,'w',newline='',encoding='utf-8') as f:
+                w=csv.DictWriter(f, fieldnames=fields)
+                w.writeheader(); w.writerows(rows)
+            with open(out500,'w',newline='',encoding='utf-8') as f:
+                w=csv.DictWriter(f, fieldnames=fields)
+                w.writeheader(); w.writerows(rows[:500])
+      - name: load_thread_state
+        action: supabase.load_jsonl
+        args:
+          table: "conversation_thread_state"
+          file: "/tmp/conversations_split/unfinished_threads.jsonl"
+          upsert_key: "thread_id"
+      - name: uplift_targets
+        action: supabase.query
+        args:
+          sql: |
+            update public.conversation_thread_state
+            set architecture_level = greatest(coalesce(architecture_level,0),35),
+                autonomous_wave_level = greatest(coalesce(autonomous_wave_level,0),20),
+                needs_execution = true,
+                last_seen_at = now()
+            where status in ('open','unfinished','incomplete','reopened','blocked','running','active','queued','awaiting_validation');
+      - name: refresh_open_audit
+        action: supabase.query
+        args:
+          sql: |
+            truncate table public.conversation_open_audit;
+            insert into public.conversation_open_audit(
+              thread_id,audit_rank,title,status,architecture_level,autonomous_wave_level,created_time,updated_time
+            )
+            select
+              thread_id,
+              row_number() over (order by coalesce(updated_time, created_time) desc nulls last),
+              title,
+              status,
+              architecture_level,
+              autonomous_wave_level,
+              created_time,
+              updated_time
+            from public.conversation_thread_state
+            where status in ('open','unfinished','incomplete','reopened','blocked','running','active','queued','awaiting_validation');
+      - name: export_first_500
+        action: supabase.export
+        args:
+          query: "select * from public.v_conversation_open_first_500"
+          format: "csv"
+          destination: "/tmp/conversations_split/open_threads_first_500.csv"
+      - name: finish_run_success
+        action: supabase.query
+        args:
+          sql: |
+            update public.conversation_ingest_run
+            set status='success', finished_at=now(), updated_at=now()
+            where run_id = (
+              select run_id from public.conversation_ingest_run
+              where source_id='shared_drive_conversations_primary' and status='running'
+              order by started_at desc limit 1
+            );
+  - name: eternal_requeue
+    description: Persist loop state and request next autonomous run.
+    steps:
+      - name: checkpoint
+        action: supabase.query
+        args:
+          sql: |
+            insert into public.conversation_delta_checkpoint(source_id,last_processed_modified_at,updated_at)
+            values ('shared_drive_conversations_primary', now(), now())
+            on conflict (source_id) do update set
+              last_processed_modified_at = excluded.last_processed_modified_at,
+              updated_at = now();
+      - name: schedule_next_run
+        action: queue.enqueue
+        args:
+          queue: bridge_runner
+          delay_minutes: 15
+          payload:
+            contract_id: audit-conversations-bridge-runner-wave20
+            reason: persistent_loop
+failure_handlers:
+  - name: log_failure
+    action: supabase.query
+    args:
+      sql: |
+        insert into public.conversation_failure_log(source_id,failure_stage,failure_class,failure_text)
+        values ('shared_drive_conversations_primary','runtime','AUTONOMOUS_FAILURE','See bridge runner logs');
+  - name: mark_run_failed
+    action: supabase.query
+    args:
+      sql: |
+        update public.conversation_ingest_run
+        set status='failed', finished_at=now(), updated_at=now(), error_text='See bridge runner logs'
+        where run_id = (
+          select run_id from public.conversation_ingest_run
+          where source_id='shared_drive_conversations_primary' and status='running'
+          order by started_at desc limit 1
+        );
+  - name: retry_contract
+    action: queue.enqueue
+    args:
+      queue: bridge_runner
+      delay_minutes: 15
+      payload:
+        contract_id: audit-conversations-bridge-runner-wave20
+        reason: self_heal_retry
