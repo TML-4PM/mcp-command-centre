@@ -1,0 +1,175 @@
+task_id: chat-archive-drive-to-s3-continuous-analysis
+version: "1.0"
+title: Drive JSON to S3 split + initial + continual analysis
+mode: autonomous
+priority: high
+owner: bridge-runner
+source_of_truth:
+  type: google_drive_file
+  file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+  file_name: "conversations (1).json"
+execution_contract:
+  mac_role: endpoint_only
+  runner_role: full_execution_plane
+  hitl_required: false
+  loop_forever: true
+  idempotent: true
+  non_destructive: true
+  stop_conditions:
+    - hard_auth_failure
+    - missing_s3_bucket
+    - missing_google_credentials
+    - corrupted_source_file
+runtime:
+  language: python3
+  entrypoint: bridge_runner/tasks/chat_archive_s3_analysis/chat_archive_pipeline.py
+  shell_entrypoint: bridge_runner/tasks/chat_archive_s3_analysis/run_chat_archive_pipeline.sh
+  working_dir: bridge_runner/tasks/chat_archive_s3_analysis
+env:
+  required:
+    - CHAT_ARCHIVE_S3_BUCKET
+    - GOOGLE_APPLICATION_CREDENTIALS
+  optional:
+    CHAT_ARCHIVE_S3_PREFIX: llm-chat-archives
+    CHAT_ARCHIVE_ANALYSIS_PREFIX: analysis
+    GOOGLE_DRIVE_FILE_ID: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+    AWS_REGION: ap-southeast-2
+    CHAT_ARCHIVE_INTERVAL_SECONDS: "1800"
+    CHAT_ARCHIVE_LOCAL_ROOT: /tmp/chat_archive_edge_unused
+inputs:
+  - name: google_drive_file_id
+    value: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+  - name: drive_link
+    value: "https://drive.google.com/file/d/1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs/view?usp=drive_link"
+outputs:
+  s3_layout:
+    - raw/
+    - split/
+    - analysis/
+  required_analysis_files:
+    - INITIAL_ANALYSIS.md
+    - conversation_summary.csv
+    - top_open_loops.json
+    - inventory.json
+    - top_keywords.json
+    - pipeline_state.json
+pipeline:
+  - step: fetch_drive_metadata
+    action: get_google_drive_metadata
+    params:
+      file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+  - step: stream_download
+    action: stream_download_google_drive_file
+    params:
+      file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+      target_path: workspace/raw/conversations__1__.json
+  - step: hash_source
+    action: sha256_file
+    params:
+      path: workspace/raw/conversations__1__.json
+  - step: upload_raw
+    action: upload_file_to_s3
+    params:
+      bucket_env: CHAT_ARCHIVE_S3_BUCKET
+      key: llm-chat-archives/raw/conversations__1__.json
+      metadata:
+        source: google_drive
+        drive_file_id: "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs"
+  - step: split_binary_safe
+    action: split_file_binary
+    params:
+      source_path: workspace/raw/conversations__1__.json
+      output_dir: workspace/split/conversations__1__
+      chunk_size_mb: 50
+  - step: upload_parts
+    action: upload_directory_to_s3
+    params:
+      local_dir: workspace/split/conversations__1__
+      bucket_env: CHAT_ARCHIVE_S3_BUCKET
+      key_prefix: llm-chat-archives/split/conversations__1__/
+  - step: initial_analysis
+    action: run_python_module
+    params:
+      module_or_script: bridge_runner/tasks/chat_archive_s3_analysis/chat_archive_pipeline.py
+      args:
+        - --bucket
+        - ${CHAT_ARCHIVE_S3_BUCKET}
+        - --prefix
+        - ${CHAT_ARCHIVE_S3_PREFIX:-llm-chat-archives}
+        - --analysis-prefix
+        - ${CHAT_ARCHIVE_ANALYSIS_PREFIX:-analysis}
+        - --state-dir
+        - bridge_runner/tasks/chat_archive_s3_analysis/state
+        - --drive-file-id
+        - ${GOOGLE_DRIVE_FILE_ID:-1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs}
+  - step: upload_analysis
+    action: upload_directory_to_s3
+    params:
+      local_dir: bridge_runner/tasks/chat_archive_s3_analysis/workspace/analysis
+      bucket_env: CHAT_ARCHIVE_S3_BUCKET
+      key_prefix: llm-chat-archives/analysis/
+  - step: persist_state
+    action: write_state
+    params:
+      path: bridge_runner/tasks/chat_archive_s3_analysis/state/pipeline_state.json
+  - step: continual_loop
+    action: repeat_forever
+    params:
+      every_seconds_env: CHAT_ARCHIVE_INTERVAL_SECONDS
+analysis_requirements:
+  initial:
+    - count conversations
+    - count extracted messages
+    - detect highest-volume threads
+    - detect open loops
+    - extract top keywords
+    - create csv summary
+  continual:
+    - detect file hash changes
+    - rerun analysis if changed
+    - refresh analysis outputs even if unchanged
+    - keep latest state and log per run
+open_loop_heuristics:
+  patterns:
+    - TODO
+    - to do
+    - follow up
+    - next step
+    - not finished
+    - incomplete
+    - continue
+    - fix this
+    - needs
+    - wire
+    - go
+    - push to github
+    - bridge runner
+observability:
+  log_json_per_run: true
+  state_file: bridge_runner/tasks/chat_archive_s3_analysis/state/pipeline_state.json
+  stdout_summary: true
+  evidence_targets:
+    - s3 raw object
+    - s3 split objects
+    - s3 analysis artifacts
+    - local state file
+recovery:
+  on_download_failure: retry_with_backoff
+  on_s3_upload_failure: retry_with_backoff
+  on_partial_analysis_failure: preserve_previous_outputs_and_write_error_log
+  on_json_parse_error: quarantine_source_and_write_failure_report
+security:
+  no_local_mac_execution_required: true
+  credentials_live_on_runner: true
+  no_human_confirmation_required: true
+success_criteria:
+  - raw file present in s3
+  - split parts present in s3
+  - initial analysis artifacts present in s3
+  - state file updated
+  - loop mode active
+handoff:
+  next_actions_after_success:
+    - map top_open_loops.json into canonical task queue
+    - bind outputs to command centre widget
+    - schedule integrity scan on latest archive
