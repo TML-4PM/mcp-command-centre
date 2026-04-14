@@ -1,0 +1,42 @@
+version: 1.0
+name: bridge_execution_router
+mode: fail_fast
+
+sequence:
+  - resolve_agent_identity
+  - resolve_tool_contract
+  - check_agent_tool_permission
+  - evaluate_risk
+  - invoke_policy_guard_if_high_risk
+  - execute_bridge_function
+  - log_bridge_enforcement
+  - log_execution
+  - verify_result
+  - classify_reality
+  - block_if_pretend
+
+fail_fast:
+  block_on:
+    - missing_agent
+    - missing_tool
+    - missing_permission
+    - unapproved_high_risk
+    - pretend_completion
+    - missing_execution_log
+
+runtime_rules:
+  require_execution_log: true
+  require_verification_status: true
+  require_reality_status: true
+  require_evidence_for_real: true
+  prohibit_pretend_completion: true
+  approval_required_for:
+    - high
+    - critical
+
+outcomes:
+  allow: execute and continue
+  deny: stop execution and log audit
+  escalate: stop and create remediation job
+  retry: retry only if safe and idempotent
+  fallback: use mapped fallback tool only if declared
