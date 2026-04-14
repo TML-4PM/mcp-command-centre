@@ -1,0 +1,33 @@
+id: tradies-ai-quote-book-v1
+object_type: product
+title: Tradies AI Quote & Booking
+
+intent: booking_conversion
+commercial_model: monthly_subscription
+process_pattern: quote_accept_activate
+
+deployment_shape: multi_site
+risk_tier: medium
+automation_level: mostly_automated
+
+agents:
+  primary:
+    - intake_agent
+    - quoting_agent
+    - scheduler_agent
+  support:
+    - comms_router_agent
+    - escalation_agent
+
+owners:
+  business_owner: troy
+  product_owner: tradies_ai_pm
+  tech_owner: integrations_owner
+
+required_outputs:
+  - contract_pack
+  - stripe_mapping
+  - inbox_routing
+  - calcom_routing_form
+  - runbook
+  - dashboard_widget
