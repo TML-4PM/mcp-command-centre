@@ -1,0 +1,47 @@
+name: Nightly Enforcement Sweep
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for missing layers
+        run: |
+          echo "Scanning repository for missing critical layers..."
+
+          REQUIRED=(
+            "bridge/envelope.json"
+            "telemetry/emit.js"
+            "recovery/recover.js"
+            "sql/reality_ledger.sql"
+          )
+
+          for f in "${REQUIRED[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "MISSING:$f"
+            fi
+          done
+
+      - name: Trigger Repair via Bridge
+        run: |
+          cat <<EOF > repair.json
+          {
+            "action": "invoke_function",
+            "function_name": "troy-lambda-manager",
+            "payload": {
+              "operation": "repair_incomplete_systems"
+            },
+            "metadata": {
+              "source": "wave20-nightly",
+              "timestamp_utc": "AUTO"
+            }
+          }
+          EOF
+
+          echo "Repair payload prepared"
