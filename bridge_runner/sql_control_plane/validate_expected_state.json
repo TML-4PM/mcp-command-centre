@@ -1,0 +1,157 @@
+{
+  "validation_pack": "sql_control_plane_expected_state",
+  "version": "v1",
+  "purpose": "Validate end-to-end governed SQL execution through bridge, guardrail, executor, audit, Command Centre, replay, fallback, and Reality Ledger",
+  "checks": [
+    {
+      "id": "check_01",
+      "name": "guardrail_lambda_exists",
+      "type": "lambda_exists",
+      "function_name": "troy-sql-guardrail",
+      "required": true
+    },
+    {
+      "id": "check_02",
+      "name": "executor_lambda_exists",
+      "type": "lambda_exists",
+      "function_name": "troy-sql-executor-s2",
+      "required": true
+    },
+    {
+      "id": "check_03",
+      "name": "replay_lambda_exists",
+      "type": "lambda_exists",
+      "function_name": "troy-sql-replay",
+      "required": true
+    },
+    {
+      "id": "check_04",
+      "name": "fallback_lambda_exists",
+      "type": "lambda_exists",
+      "function_name": "troy-sql-fallback-router",
+      "required": true
+    },
+    {
+      "id": "check_05",
+      "name": "audit_table_exists",
+      "type": "sql_assert",
+      "sql": "select to_regclass('public.sql_execution_audit') as relation_name",
+      "expect_non_null": true
+    },
+    {
+      "id": "check_06",
+      "name": "reality_table_exists",
+      "type": "sql_assert",
+      "sql": "select to_regclass('public.sql_reality_ledger') as relation_name",
+      "expect_non_null": true
+    },
+    {
+      "id": "check_07",
+      "name": "command_centre_view_exists",
+      "type": "sql_assert",
+      "sql": "select to_regclass('public.v_sql_execution_activity') as relation_name",
+      "expect_non_null": true
+    },
+    {
+      "id": "check_08",
+      "name": "smoke_test_valid_sql",
+      "type": "bridge_invoke",
+      "payload": {
+        "action": "invoke_function",
+        "function_name": "troy-sql-executor-s2",
+        "invocation_type": "RequestResponse",
+        "payload": {
+          "sql": "select 1 as test",
+          "params": [],
+          "mode": "execute",
+          "request_id": "req_validate_smoke_001",
+          "source": "bridge_runner_validation",
+          "timestamp_utc": "2026-04-14T04:00:00Z",
+          "dry_run": false,
+          "approval_required": false
+        },
+        "metadata": {
+          "request_id": "req_validate_smoke_001",
+          "source": "bridge_runner_validation",
+          "timestamp_utc": "2026-04-14T04:00:00Z",
+          "auth_context": "internal"
+        }
+      },
+      "expect": {
+        "guardrail_status": "approved",
+        "executor_status": "success"
+      }
+    },
+    {
+      "id": "check_09",
+      "name": "smoke_test_rejection",
+      "type": "bridge_invoke",
+      "payload": {
+        "action": "invoke_function",
+        "function_name": "troy-sql-executor-s2",
+        "invocation_type": "RequestResponse",
+        "payload": {
+          "sql": "drop table users",
+          "params": [],
+          "mode": "execute",
+          "request_id": "req_validate_reject_001",
+          "source": "bridge_runner_validation",
+          "timestamp_utc": "2026-04-14T04:01:00Z",
+          "dry_run": false,
+          "approval_required": false
+        },
+        "metadata": {
+          "request_id": "req_validate_reject_001",
+          "source": "bridge_runner_validation",
+          "timestamp_utc": "2026-04-14T04:01:00Z",
+          "auth_context": "internal"
+        }
+      },
+      "expect": {
+        "guardrail_status": "rejected",
+        "executor_called": false,
+        "reality_classification": "PRETEND"
+      }
+    },
+    {
+      "id": "check_10",
+      "name": "audit_row_created",
+      "type": "sql_assert",
+      "sql": "select count(*) as row_count from public.sql_execution_audit where request_id in ('req_validate_smoke_001','req_validate_reject_001')",
+      "expect_gte": 2
+    },
+    {
+      "id": "check_11",
+      "name": "command_centre_view_returns_rows",
+      "type": "sql_assert",
+      "sql": "select count(*) as row_count from public.v_sql_execution_activity where request_id in ('req_validate_smoke_001','req_validate_reject_001')",
+      "expect_gte": 2
+    },
+    {
+      "id": "check_12",
+      "name": "reality_ledger_rows_created",
+      "type": "sql_assert",
+      "sql": "select count(*) as row_count from public.sql_reality_ledger where request_id in ('req_validate_smoke_001','req_validate_reject_001')",
+      "expect_gte": 2
+    },
+    {
+      "id": "check_13",
+      "name": "replay_accepts_request_id",
+      "type": "lambda_invoke",
+      "function_name": "troy-sql-replay",
+      "payload": {
+        "request_id": "req_validate_smoke_001",
+        "mode": "replay"
+      },
+      "expect": {
+        "status": "ok"
+      }
+    }
+  ],
+  "completion_rule": "all_required_checks_pass",
+  "classification_rule": {
+    "all_pass": "REAL",
+    "some_pass_some_fail": "PARTIAL",
+    "critical_failures": "PRETEND"
+  }
+}
