@@ -1,0 +1,12 @@
+{
+  "request_id": "t4h-style-enforcement-001",
+  "operation": "style_filter",
+  "identity_key": "troy-default",
+  "dry_run": false,
+  "payload": {
+    "text": "Sample text for validation"
+  },
+  "expected": {
+    "min_score": 70
+  }
+}
