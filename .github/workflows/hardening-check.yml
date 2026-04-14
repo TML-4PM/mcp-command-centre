@@ -1,0 +1,51 @@
+name: Command Centre Hardening Checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  security-and-contract-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fail on hardcoded bridge key fallback
+        run: |
+          if grep -R "BRIDGE_API_KEY ||" -n .; then
+            echo "❌ Hardcoded fallback for BRIDGE_API_KEY detected"
+            exit 1
+          fi
+
+      - name: Fail on obvious hardcoded keys
+        run: |
+          if grep -R "bk_" -n .; then
+            echo "❌ Potential hardcoded API key detected"
+            exit 1
+          fi
+
+      - name: Ensure bridge helper exists
+        run: |
+          if [ ! -f src/lib/bridge.ts ]; then
+            echo "❌ bridge.ts missing"
+            exit 1
+          fi
+
+      - name: Ensure proxy exists
+        run: |
+          if [ ! -f api/bridge.ts ]; then
+            echo "❌ api/bridge.ts missing"
+            exit 1
+          fi
+
+      - name: Basic contract sanity check
+        run: |
+          if ! grep -R "troy-sql-executor" -n src/lib/bridge.ts; then
+            echo "❌ SQL executor contract missing"
+            exit 1
+          fi
+
+      - name: Pass
+        run: echo "✅ Hardening checks passed"
