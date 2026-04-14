@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: T4H Control Tower Enforcement Loop - Step Function Orchestrator
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+  AccountId:
+    Type: String
+    Default: "140548542136"
+  Region:
+    Type: String
+    Default: ap-southeast-2
+
+Resources:
+
+  CTELOrchestratorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: t4h-ctel-orchestrator-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeLambdas
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource:
+                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-*"
+
+  CTELOrchestrator:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: T4H-ControlTower-Orchestrator
+      RoleArn: !GetAtt CTELOrchestratorRole.Arn
+      Definition:
+        StartAt: Rehydrate
+        States:
+
+          Rehydrate:
+            Type: Task
+            Resource: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-rehydrate"
+            ResultPath: "$.rehydrate_result"
+            Retry:
+              - ErrorEquals: [States.TaskFailed]
+                IntervalSeconds: 5
+                MaxAttempts: 2
+            Next: Sweep
+
+          Sweep:
+            Type: Task
+            Resource: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-sweep"
+            ResultPath: "$.sweep_result"
+            Retry:
+              - ErrorEquals: [States.TaskFailed]
+                IntervalSeconds: 5
+                MaxAttempts: 2
+            Next: Recover
+
+          Recover:
+            Type: Task
+            Resource: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-recover"
+            ResultPath: "$.recover_result"
+            Retry:
+              - ErrorEquals: [States.TaskFailed]
+                IntervalSeconds: 5
+                MaxAttempts: 2
+            Next: Prove
+
+          Prove:
+            Type: Task
+            Resource: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-prove"
+            ResultPath: "$.prove_result"
+            Retry:
+              - ErrorEquals: [States.TaskFailed]
+                IntervalSeconds: 10
+                MaxAttempts: 2
+            Next: Monitor
+
+          Monitor:
+            Type: Task
+            Resource: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-monitor"
+            ResultPath: "$.monitor_result"
+            End: true
