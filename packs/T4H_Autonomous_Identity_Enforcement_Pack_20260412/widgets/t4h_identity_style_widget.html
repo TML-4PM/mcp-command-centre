@@ -1,0 +1,17 @@
+<div class="t4h-widget">
+  <h2>Identity + Style Enforcement</h2>
+  <div id="identity"></div>
+  <div id="score"></div>
+</div>
+
+<script>
+async function loadData() {
+  const res = await fetch('/api/style-latest');
+  const data = await res.json();
+
+  document.getElementById('identity').innerText = data.identity_key;
+  document.getElementById('score').innerText = "Score: " + data.style_score;
+}
+
+loadData();
+</script>
