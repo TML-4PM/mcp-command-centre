@@ -16,11 +16,13 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          RESPONSE=$(curl -sf \
+          RESPONSE=$(curl -s \
             -X POST "${SUPABASE_URL}/rest/v1/rpc/fn_ci_gate_agent_contract" \
             -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Content-Type: application/json" \
+            -H "Content-Profile: ops" \
+            -H "Accept-Profile: ops" \
             -d '{"p_contract_id": null}')
 
           echo "Response: $RESPONSE"
@@ -30,6 +32,6 @@ jobs:
           if [ "$CI_STATUS" = "PASS" ]; then
             echo "✅ Agent Contract CI: PASS"
           else
-            echo "❌ Agent Contract CI: FAIL — $RESPONSE"
+            echo "❌ Agent Contract CI: FAIL — $CI_STATUS — $RESPONSE"
             exit 1
           fi
