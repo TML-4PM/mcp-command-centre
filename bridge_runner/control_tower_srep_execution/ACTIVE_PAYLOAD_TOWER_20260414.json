@@ -1,0 +1,25 @@
+{
+  "action": "control_tower_srep_execution",
+  "commands": [
+    "/rehydrate",
+    "/sweep",
+    "/prove"
+  ],
+  "payload": {
+    "scope": "full_system",
+    "include": "all_assets",
+    "mode": "execution",
+    "no_hitl": true
+  },
+  "metadata": {
+    "request_id": "tower-srep-20260414",
+    "source": "chatgpt",
+    "timestamp_utc": "2026-04-14T00:00:00Z",
+    "note": "Execute control tower rehydration and enforcement loop using existing control plane"
+  },
+  "control": {
+    "dry_run": false,
+    "execute": true,
+    "approval_required": false
+  }
+}
