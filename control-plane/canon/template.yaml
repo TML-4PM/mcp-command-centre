@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  T4H Control Plane Canon Injector Lambda fleet.
+  Region: ap-southeast-2. Account: 140548542136.
+  RDTI: is_rd=true, project_code=CP-CANON-001.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+  SupabaseUrl:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /t4h/supabase/s1/url
+  SupabaseServiceKey:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /t4h/supabase/s1/service_key
+  KillSwitchEnabled:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /t4h/canon/kill-switch-enabled
+
+Globals:
+  Function:
+    Runtime: python3.12
+    MemorySize: 512
+    Timeout: 30
+    Architectures: [arm64]
+    Environment:
+      Variables:
+        SUPABASE_URL: !Ref SupabaseUrl
+        SUPABASE_SERVICE_ROLE: !Ref SupabaseServiceKey
+        KILL_SWITCH_ENABLED: !Ref KillSwitchEnabled
+        IS_RD: "true"
+        PROJECT_CODE: CP-CANON-001
+        ENVIRONMENT: !Ref Environment
+    Tags:
+      project_code: CP-CANON-001
+      is_rd: "true"
+      owner: t4h
+      environment: !Ref Environment
+
+Resources:
+
+  CanonInjectorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: t4h-canon-injector-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: canon-ssm
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/t4h/supabase/*
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/t4h/canon/*
+
+  # ─── CANON CHECK / INJECT / REBIND / QUARANTINE / NIGHTLY ───
+  CanonInjectorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: t4h-canon-injector
+      Description: Canon drift detection + injection for all LLM sessions
+      Handler: bridge_canon_router.lambda_handler
+      CodeUri: control-plane/canon/lambda/
+      Role: !GetAtt CanonInjectorRole.Arn
+      ReservedConcurrentExecutions: 10
+      Events:
+        NightlyAudit:
+          Type: Schedule
+          Properties:
+            Name: t4h-canon-nightly-audit
+            Schedule: cron(0 16 * * ? *)
+            Description: Nightly at 02:00 AEST (16:00 UTC)
+            Enabled: true
+            Input: '{"action":"control_plane.canon.nightly_audit","source":"eventbridge"}'
+
+  CanonInjectorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/t4h-canon-injector
+      RetentionInDays: 30
+
+  CanonInjectorErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: t4h-canon-injector-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: t4h-canon-injector
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  KillSwitchParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /t4h/canon/kill-switch-enabled
+      Type: String
+      Value: "false"
+      Description: Set true to disable canon injector processing
+
+Outputs:
+  CanonInjectorArn:
+    Value: !GetAtt CanonInjectorFunction.Arn
+    Export:
+      Name: t4h-canon-injector-arn
+  CanonInjectorRoleArn:
+    Value: !GetAtt CanonInjectorRole.Arn
+    Export:
+      Name: t4h-canon-injector-role-arn
