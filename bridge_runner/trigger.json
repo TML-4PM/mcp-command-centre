@@ -1,1 +1,1 @@
-{"kicked_at":"2026-04-14T23:52:21Z","kicked_by":"claude-validate","reason":"doc1_doc2_doc3_completion","packs":["2026-04-14-kesha-censorship-neuro-signal","llm-json-ingest-open-thread-closure","control-plane-canon"]}
+{"status": "READY_FOR_PICKUP", "kicked_at": "2026-04-14T23:53:40Z", "kicked_by": "claude-validate", "reason": "doc1_doc2_doc3_completion", "packs": ["2026-04-14-kesha-censorship-neuro-signal", "llm-json-ingest-open-thread-closure", "control-plane-canon"]}
