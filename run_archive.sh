@@ -33,7 +33,9 @@ fi
 # ── 4. Run ──────────────────────────────────────────────────────────────────
 if [[ "${1:-}" == "--loop" ]]; then
   echo "[runner] Loop mode — interval ${CHAT_ARCHIVE_INTERVAL_SECONDS}s"
+chmod +x "$TASK_DIR/run_chat_archive_pipeline.sh"
   exec "$TASK_DIR/run_chat_archive_pipeline.sh" --loop
 else
+chmod +x "$TASK_DIR/run_chat_archive_pipeline.sh"
   exec "$TASK_DIR/run_chat_archive_pipeline.sh"
 fi
