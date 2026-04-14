@@ -1,0 +1,70 @@
+{
+  "pack_id": "T4H_CT_SEAL_TO_REAL_V1",
+  "version": "1.0.0",
+  "created_at": "2026-04-14T00:00:00Z",
+  "intent": "convert_control_tower_and_ou_loop_to_real_runtime",
+  "execution_mode": "autonomous",
+  "wave_target": 20,
+  "architecture_level": 35,
+  "no_hitl": true,
+  "is_rd": true,
+  "project_code": "T4H-CTEL",
+  "rdti_tag": "control_tower_enforcement_loop",
+  "phases": [
+    "deploy_schema",
+    "deploy_lambdas",
+    "wire_triggers",
+    "rehydrate_inventory",
+    "sweep_enforcement",
+    "prove_runtime",
+    "schedule_loops",
+    "activate_monitoring",
+    "generate_board_pack"
+  ],
+  "lambda_set": {
+    "t4h-ou-forge": "create OU record + gate row + initial event",
+    "t4h-ou-sweep": "inspect OU and mark missing gates",
+    "t4h-ou-prove": "run dry/live proof and write proof rows",
+    "t4h-ou-recover": "attempt repair of degraded or partial units",
+    "t4h-ou-rehydrate": "inventory legacy assets and map to OU rows",
+    "t4h-ou-monitor": "compute dashboard views and summary states"
+  },
+  "success_criteria": {
+    "unswept_inventory": 0,
+    "all_ou_have_registry": true,
+    "all_ou_have_triggers": true,
+    "all_ou_proved": true,
+    "control_tower_live": true,
+    "proof_success_rate_min": 0.95
+  },
+  "completion_gate": {
+    "registry_bound": true,
+    "bridge_invokable": true,
+    "trigger_defined": true,
+    "telemetry_visible": true,
+    "command_centre_visible": true,
+    "dry_run_passed": true,
+    "live_run_passed": true,
+    "proof_captured": true,
+    "recovery_verified": true,
+    "schedule_active": true,
+    "truth_state": "REAL"
+  },
+  "command_meanings": {
+    "finish_it": ["forge","register","bind","sweep","prove","schedule","monitor","recover","verify_complete"],
+    "complete_it": ["forge","register","bind","sweep","prove","schedule","monitor","recover","verify_complete","lock"],
+    "go": ["execute_full_default_path"],
+    "test_it": ["validate","dry_run","telemetry_check","recovery_check","proof_capture"],
+    "run_everything": ["rehydrate","sweep","prove","execute_eligible_real_and_partial"],
+    "close_loops": ["ensure_trigger","ensure_telemetry","ensure_proof","ensure_recovery","ensure_visibility"]
+  },
+  "bridge": {
+    "endpoint": "https://zdgnab3py0.execute-api.ap-southeast-2.amazonaws.com/prod/lambda/invoke",
+    "region": "ap-southeast-2",
+    "account": "140548542136"
+  },
+  "supabase": {
+    "project": "lzfgigiyqpuuxslsygjt",
+    "schema": "control_tower"
+  }
+}
