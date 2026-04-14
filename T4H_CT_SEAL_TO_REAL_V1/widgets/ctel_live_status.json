@@ -1,0 +1,110 @@
+{
+  "slug": "ctel_live_status",
+  "title": "Control Tower Enforcement Loop",
+  "type": "dashboard",
+  "source_view": "control_tower.v_ctel_summary",
+  "secondary_view": "control_tower.v_legacy_inventory_summary",
+  "refresh_interval": "30s",
+  "panels": [
+    {
+      "key": "total_ou",
+      "label": "Total OUs",
+      "type": "metric",
+      "color": "neutral"
+    },
+    {
+      "key": "real_count",
+      "label": "REAL",
+      "type": "metric",
+      "color": "green"
+    },
+    {
+      "key": "partial_count",
+      "label": "PARTIAL",
+      "type": "metric",
+      "color": "amber"
+    },
+    {
+      "key": "pretend_count",
+      "label": "PRETEND",
+      "type": "metric",
+      "color": "red"
+    },
+    {
+      "key": "complete_count",
+      "label": "Complete",
+      "type": "metric",
+      "color": "blue"
+    },
+    {
+      "key": "degraded_count",
+      "label": "Degraded",
+      "type": "alert_metric",
+      "color": "orange",
+      "alert_threshold": 1
+    }
+  ],
+  "secondary_panels": [
+    {
+      "key": "total_assets",
+      "label": "Legacy Assets",
+      "type": "metric",
+      "color": "neutral"
+    },
+    {
+      "key": "real_assets",
+      "label": "Real Assets",
+      "type": "metric",
+      "color": "green"
+    },
+    {
+      "key": "partial_assets",
+      "label": "Partial Assets",
+      "type": "metric",
+      "color": "amber"
+    },
+    {
+      "key": "pretend_assets",
+      "label": "Pretend Assets",
+      "type": "metric",
+      "color": "red"
+    }
+  ],
+  "actions": [
+    {
+      "label": "/rehydrate",
+      "fn": "t4h-ou-rehydrate",
+      "mode": "execute",
+      "confirm": false
+    },
+    {
+      "label": "/sweep",
+      "fn": "t4h-ou-sweep",
+      "mode": "execute",
+      "confirm": false
+    },
+    {
+      "label": "/prove",
+      "fn": "t4h-ou-prove",
+      "mode": "dry_run",
+      "confirm": true
+    },
+    {
+      "label": "/recover",
+      "fn": "t4h-ou-recover",
+      "mode": "execute",
+      "confirm": false
+    }
+  ],
+  "gate_table": {
+    "source": "control_tower.v_ou_status",
+    "columns": [
+      "ou_key","title","truth_state","current_status",
+      "registry_bound","bridge_invokable","trigger_defined",
+      "telemetry_visible","command_centre_visible",
+      "dry_run_passed","live_run_passed","proof_captured",
+      "recovery_verified","schedule_active"
+    ],
+    "filter_degraded": true
+  }
+}
