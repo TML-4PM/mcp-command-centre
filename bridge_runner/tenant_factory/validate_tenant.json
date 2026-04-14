@@ -1,0 +1,17 @@
+{
+  "pack": "tenant_validation",
+  "tenant_id": "client_001",
+  "checks": [
+    "lambdas_exist",
+    "guardrail_enforced",
+    "audit_table_populated",
+    "command_centre_view_returns_data",
+    "reality_ledger_populated",
+    "replay_works"
+  ],
+  "classification": {
+    "all_pass": "REAL",
+    "partial": "PARTIAL",
+    "fail": "PRETEND"
+  }
+}
