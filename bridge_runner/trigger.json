@@ -1,5 +1,5 @@
 {
-  "status": "BLOCKED",
+  "status": "READY_FOR_PICKUP",
   "executor": "troy-sql-executor",
   "execution_file": "docs/bridge_runner_execute.sql",
   "repo": "TML-4PM/mcp-command-centre",
@@ -12,6 +12,5 @@
     "view_exists": "v_t4h_tasks_open",
     "function_exists": "fn_t4h_task_dequeue"
   },
-  "on_failure": "log to fire_recurring_error, do not retry automatically",
-  "blocked_reason": "test: verifying BLOCKED path"
+  "on_failure": "log to fire_recurring_error, do not retry automatically"
 }
