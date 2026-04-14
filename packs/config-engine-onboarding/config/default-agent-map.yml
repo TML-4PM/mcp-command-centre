@@ -1,0 +1,12 @@
+default_agent_map:
+  inbox_triage: comms_router_agent
+  booking_routing: scheduler_agent
+  intake_qualification: intake_agent
+  quoting: quoting_agent
+  billing: finance_agent
+  contract_packaging: contract_agent
+  migration_audit: audit_agent
+  integration_setup: integration_agent
+  escalation: escalation_agent
+  evidence_capture: evidence_agent
+  dashboard_update: ops_agent
