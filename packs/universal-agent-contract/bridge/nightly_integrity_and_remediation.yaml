@@ -1,0 +1,34 @@
+version: 1.0
+name: nightly_integrity_and_remediation
+schedule:
+  timezone: Australia/Sydney
+  runs:
+    - cron: "10 2 * * *"
+      action: integrity_check
+    - cron: "20 2 * * *"
+      action: remediation_run
+
+integrity_check:
+  queries:
+    - missing_execution_logs
+    - pretend_without_resolution
+    - high_risk_without_approval
+    - agents_without_tools
+    - jobs_without_completion
+
+remediation_run:
+  actions:
+    - auto_requeue_failed_jobs
+    - auto_attach_missing_logs
+    - downgrade_invalid_real_to_partial
+    - escalate_unfixable_to_queue
+
+rules:
+  max_retry: 3
+  require_idempotency: true
+  log_all_actions: true
+
+outputs:
+  write_to: ops.agent_integrity_run
+  emit_alerts: true
+  create_followup_jobs: true
