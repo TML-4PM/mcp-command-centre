@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: T4H CTEL - EventBridge Autonomous Loop Rules
+
+Parameters:
+  AccountId:
+    Type: String
+    Default: "140548542136"
+  Region:
+    Type: String
+    Default: ap-southeast-2
+
+Resources:
+
+  CTELEventBridgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: t4h-ctel-eventbridge-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeLambdas
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource:
+                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-*"
+
+  # 5-minute monitor loop
+  CTELMonitorRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: CTEL-Monitor-5min
+      Description: "CTEL: Control Tower sync every 5 minutes"
+      ScheduleExpression: rate(5 minutes)
+      State: ENABLED
+      Targets:
+        - Id: t4h-ou-monitor
+          Arn: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-monitor"
+
+  # 30-minute recovery loop
+  CTELRecoveryRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: CTEL-Recovery-30min
+      Description: "CTEL: Auto-recover degraded OUs every 30 minutes"
+      ScheduleExpression: rate(30 minutes)
+      State: ENABLED
+      Targets:
+        - Id: t4h-ou-recover
+          Arn: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-recover"
+
+  # Hourly sweep
+  CTELSweepRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: CTEL-Sweep-Hourly
+      Description: "CTEL: Full sweep enforcement every hour"
+      ScheduleExpression: rate(1 hour)
+      State: ENABLED
+      Targets:
+        - Id: t4h-ou-sweep
+          Arn: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-sweep"
+
+  # Daily prove run at 2am AEST (16:00 UTC)
+  CTELProveRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: CTEL-Prove-Daily
+      Description: "CTEL: Prove all OUs daily at 02:00 AEST"
+      ScheduleExpression: "cron(0 16 * * ? *)"
+      State: ENABLED
+      Targets:
+        - Id: t4h-ou-prove
+          Arn: !Sub "arn:aws:lambda:${Region}:${AccountId}:function:t4h-ou-prove"
+
+  # Lambda permissions for EventBridge to invoke
+  MonitorPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: t4h-ou-monitor
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CTELMonitorRule.Arn
+
+  RecoveryPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: t4h-ou-recover
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CTELRecoveryRule.Arn
+
+  SweepPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: t4h-ou-sweep
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CTELSweepRule.Arn
+
+  ProvePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: t4h-ou-prove
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CTELProveRule.Arn
