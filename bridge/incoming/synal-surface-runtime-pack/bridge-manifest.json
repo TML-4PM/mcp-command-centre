@@ -1,0 +1,11 @@
+{
+  "request_id": "synal_surface_runtime_pack",
+  "mode": "execute",
+  "objective": "Deploy Synal runtime",
+  "tasks": [
+    "scan_repo",
+    "build_runtime",
+    "bind_surfaces",
+    "emit_outputs"
+  ]
+}
