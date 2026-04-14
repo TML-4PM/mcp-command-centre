@@ -1,0 +1,1 @@
+insert into core5_tasks (title, status) values ('Initial Core5 Task','PENDING');
