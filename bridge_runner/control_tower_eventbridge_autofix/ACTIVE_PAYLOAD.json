@@ -8,15 +8,15 @@
     "emit_violations": true
   },
   "metadata": {
-    "request_id": "bridge-runner-control-tower-live-20260410",
-    "source": "chatgpt",
-    "timestamp_utc": "2026-04-10T02:30:00Z",
+    "request_id": "bridge-runner-control-tower-live-20260414",
+    "source": "bridge_runner",
+    "timestamp_utc": "2026-04-14T05:30:00Z",
     "provenance": {
       "repo": "TML-4PM/mcp-command-centre",
       "branch": "main",
       "canonical_pack_path": "bridge_runner/control_tower_eventbridge_autofix/ACTIVE_PAYLOAD.json"
     },
-    "note": "troy-code-pusher is a Lambda code deployer not a GH file pusher. Corrected 2026-04-10."
+    "fix_log": "2026-04-14: corrected source chatgpt->bridge_runner"
   },
   "control": {
     "dry_run": false,
