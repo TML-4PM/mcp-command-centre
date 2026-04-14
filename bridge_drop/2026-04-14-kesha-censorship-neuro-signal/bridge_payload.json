@@ -1,0 +1,37 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-bridge-runner",
+  "invocation_type": "async",
+  "payload": {
+    "job_type": "cultural_signal_analysis",
+    "theme": "censorship_to_signal_control",
+    "objective": "convert narrative into deployable architecture + board pack + enforcement",
+    "components": [
+      "board_paper",
+      "architecture",
+      "signal_detection_model",
+      "consent_layer",
+      "neuro_feedback_loop",
+      "commercial_models",
+      "governance_framework"
+    ],
+    "expected_outputs": [
+      "deployment_status",
+      "execution_log",
+      "evidence_links",
+      "board_pack",
+      "closure_record"
+    ],
+    "autonomy": "AUTONOMOUS",
+    "classification_required": true
+  },
+  "metadata": {
+    "request_id": "kesha-signal-20260414",
+    "source": "chatgpt",
+    "timestamp_utc": "2026-04-14T01:00:00Z"
+  },
+  "control": {
+    "dry_run": false,
+    "approval_required": false
+  }
+}
