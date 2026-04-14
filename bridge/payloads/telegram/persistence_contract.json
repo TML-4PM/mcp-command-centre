@@ -1,0 +1,37 @@
+{
+  "service_key": "telegram_bridge_runner",
+  "service_name": "Telegram Bridge Runner",
+  "persistence_mode": "continuous_enforcement",
+  "desired_state": "active",
+  "hitl_required": false,
+  "reconcile_interval_seconds": 120,
+  "watch_targets": {
+    "runtime_entry": "bridge/payloads/telegram/index.mcp.js",
+    "manifest": "bridge/payloads/telegram/manifest.json",
+    "execution_request": "bridge/payloads/telegram/execute_request.json",
+    "infra_template": "bridge/payloads/telegram/template.yaml",
+    "webhook_script": "bridge/payloads/telegram/wire_webhook.sh",
+    "ddl": "bridge/payloads/telegram/ddl_telegram_events.sql"
+  },
+  "health_expectations": {
+    "lambda_deployed": true,
+    "webhook_wired": true,
+    "bridge_envelope_mode": "canonical_v2",
+    "table_present": "public.telegram_events",
+    "command_surface_active": true
+  },
+  "recovery_actions": [
+    "redeploy_lambda_if_missing",
+    "rewire_webhook_if_unset",
+    "reapply_ddl_if_table_missing",
+    "reassert_runtime_entry_if_legacy_detected",
+    "reissue_execute_request_if_state_not_active"
+  ],
+  "evidence_requirements": {
+    "write_status_back": true,
+    "log_last_reconcile": true,
+    "log_last_success": true,
+    "log_last_error": true
+  },
+  "notes": "Treat Telegram ingress as a persistent control-plane service. Do not consider complete after first deploy. Continuously reconcile to desired state."
+}
