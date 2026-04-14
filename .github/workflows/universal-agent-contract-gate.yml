@@ -1,0 +1,32 @@
+name: Universal Agent Contract Gate
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  enforce-contract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Validate SQL and Contracts Exist
+        run: |
+          test -f packs/universal-agent-contract/001_schema_core.sql
+          test -f packs/universal-agent-contract/002_seed_and_runtime.sql
+          test -f packs/universal-agent-contract/003_standard_knowledge_and_enforcement.sql
+          test -f packs/universal-agent-contract/004_command_centre_and_integrity.sql
+          test -f packs/universal-agent-contract/005_ci_and_remediation.sql
+
+      - name: Enforce No Empty Contracts
+        run: |
+          if [ ! -s packs/universal-agent-contract/bridge/bridge_execution_router_contract.yaml ]; then
+            echo "Bridge contract missing" && exit 1
+          fi
+
+      - name: Pass Gate
+        run: echo "Universal Agent Contract Gate PASSED"
