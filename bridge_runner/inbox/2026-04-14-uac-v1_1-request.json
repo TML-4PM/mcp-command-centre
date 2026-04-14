@@ -1,0 +1,33 @@
+{
+  "request_id": "uac-v1_1-2026-04-14-001",
+  "request_type": "bridge_runner_handoff",
+  "title": "Universal Agent Contract v1.1 pack handoff",
+  "priority": "high",
+  "source": "chatgpt",
+  "created_at": "2026-04-14T01:45:00Z",
+  "repo": "TML-4PM/mcp-command-centre",
+  "objective": "Pick up the Universal Agent Contract v1.1 pack from this repo, execute the pack workflow, and return status with evidence.",
+  "inputs": {
+    "pack_root": "packs/universal-agent-contract-v1_1",
+    "apply_order_file": "packs/universal-agent-contract-v1_1/APPLY_ORDER.md",
+    "bridge_router_contract": "packs/universal-agent-contract-v1_1/contracts/bridge_execution_router_contract.yaml",
+    "nightly_contract": "packs/universal-agent-contract-v1_1/bridge/nightly_contract.yaml",
+    "ci_gate_contract": "packs/universal-agent-contract-v1_1/bridge/ci_gate_contract.yaml",
+    "sql_bundle": "packs/universal-agent-contract-v1_1/sql/001_bundle.sql"
+  },
+  "required_actions": [
+    "inspect pack",
+    "execute apply order",
+    "run smoke tests",
+    "check runtime status",
+    "write closure record"
+  ],
+  "expected_return": {
+    "required": true,
+    "fields": ["status", "rating", "runtime_state", "closure_record", "blockers", "evidence"]
+  },
+  "success_criteria": [
+    "pack executed or precise blocker stated",
+    "status returned with evidence"
+  ]
+}
