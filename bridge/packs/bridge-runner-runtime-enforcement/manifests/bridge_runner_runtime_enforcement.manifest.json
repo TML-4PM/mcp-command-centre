@@ -1,0 +1,12 @@
+{
+  "pack":"bridge-runner-runtime-enforcement",
+  "version":"1.0",
+  "components":[
+    "sql",
+    "validator",
+    "integrity_sweep",
+    "widget"
+  ],
+  "execution":"bridge_runner",
+  "requires_evidence":true
+}
