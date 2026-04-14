@@ -1,0 +1,53 @@
+job: llm_json_ingest_and_open_thread_closure
+priority: critical
+source:
+  type: google_drive_file
+  file_id: 1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs
+  title: claude conversations all.json
+storage_target:
+  type: s3
+  bucket_purpose: llm-json-canonical-store
+  paths:
+    raw: llm-json/raw/claude/claude_conversations_all_20260412.json
+    shards: llm-json/shards/claude/
+    derived:
+      open_threads: llm-json/derived/open-thread-register/
+      evidence: llm-json/derived/evidence/
+      summaries: llm-json/derived/summaries/
+processing:
+  mode: stream_parse
+  never_full_load: true
+  outputs:
+    - per_conversation_jsonl
+    - thread_register_parquet
+    - open_threads_csv
+    - closure_candidates_csv
+    - blocker_register_csv
+    - evidence_manifest_json
+    - daily_summary_md
+classification:
+  truth_states: [REAL, PARTIAL, PRETEND]
+  closure_states: [OPEN, IN_PROGRESS, BLOCKED, CLOSED]
+detection_rules:
+  open_if:
+    - no_evidence_of_end_state
+    - promised_action_without_execution
+    - execution_claim_without_proof
+    - next_step_never_completed
+    - deploy_intended_not_run
+    - trigger_required_but_absent
+    - ambiguous_status
+    - interrupted_before_closure
+loop:
+  nested:
+    - dependency_resolution
+    - failed_retry
+    - evidence_completion
+    - reopened_detection
+  stop_condition:
+    - zero_open_non_blocked_threads
+reporting:
+  publish_to:
+    - command_centre
+    - closure_register
+    - truth_state_ledger
