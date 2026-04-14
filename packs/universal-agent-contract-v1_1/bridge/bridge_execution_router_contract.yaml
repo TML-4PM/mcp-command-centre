@@ -1,0 +1,23 @@
+version: 1.0
+name: bridge_execution_router
+
+sequence:
+  - resolve_agent_identity
+  - resolve_tool_contract
+  - check_agent_tool_permission
+  - evaluate_risk
+  - invoke_policy_guard_if_high_risk
+  - execute_bridge_function
+  - log_bridge_enforcement
+  - log_execution
+  - verify_result
+  - classify_reality
+  - block_if_pretend
+
+fail_fast:
+  block_on:
+    - missing_agent
+    - missing_tool
+    - missing_permission
+    - unapproved_high_risk
+    - pretend_completion
