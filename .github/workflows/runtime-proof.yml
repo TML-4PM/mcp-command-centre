@@ -1,0 +1,35 @@
+name: Runtime Proof
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  bridge-runtime-proof:
+    runs-on: ubuntu-latest
+    env:
+      BRIDGE_API_KEY: ${{ secrets.BRIDGE_API_KEY }}
+      BRIDGE_URL: ${{ secrets.BRIDGE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure runtime secrets exist
+        run: |
+          if [ -z "$BRIDGE_API_KEY" ]; then
+            echo "❌ Missing BRIDGE_API_KEY repository secret"
+            exit 1
+          fi
+          if [ -z "$BRIDGE_URL" ]; then
+            echo "❌ Missing BRIDGE_URL repository secret"
+            exit 1
+          fi
+
+      - name: Make runtime validation executable
+        run: chmod +x scripts/runtime-validation.sh
+
+      - name: Run runtime validation
+        run: ./scripts/runtime-validation.sh
