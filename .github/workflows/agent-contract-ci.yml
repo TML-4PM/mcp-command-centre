@@ -21,8 +21,6 @@ jobs:
             -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Content-Type: application/json" \
-            -H "Content-Profile: ops" \
-            -H "Accept-Profile: ops" \
             -d '{"p_contract_id": null}')
 
           echo "Response: $RESPONSE"
