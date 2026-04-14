@@ -1,0 +1,19 @@
+job: cultural_signal_analysis_kesha
+pack_name: "2026-04-14-kesha-censorship-neuro-signal"
+source_path: "bridge_drop/2026-04-14-kesha-censorship-neuro-signal"
+priority: high
+autonomy: AUTONOMOUS
+rdti:
+  is_rd: true
+  project_code: SIGNAL-GOV-001
+expected_outputs:
+  - deployment_status
+  - execution_log
+  - evidence_links
+  - board_pack
+  - closure_record
+classification_required: true
+request_id: kesha-signal-20260414
+wave: 20
+level: 35
+no_hitl: true
