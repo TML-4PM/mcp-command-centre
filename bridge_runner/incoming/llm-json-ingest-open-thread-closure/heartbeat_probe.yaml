@@ -1,0 +1,34 @@
+job: bridge_runner_heartbeat_probe
+priority: critical
+probe:
+  type: heartbeat
+  requested_at: 2026-04-14
+  target_path: bridge_runner/incoming/llm-json-ingest-open-thread-closure/
+  expected_actions:
+    - detect_probe
+    - write_status_response
+    - echo_runtime_identity
+    - report_last_seen
+    - report_current_state
+truth_rule:
+  require_evidence: true
+  classify_as:
+    success: REAL
+    no_response: PARTIAL
+    false_claim: PRETEND
+response_contract:
+  required_fields:
+    - probe_detected
+    - runner_name
+    - runner_version
+    - pickup_timestamp
+    - current_lifecycle_state
+    - last_completed_job
+    - blocker
+    - evidence_paths
+    - next_action
+  write_back_preference:
+    - bridge_runner/outgoing/llm-json-ingest-open-thread-closure/heartbeat_response.md
+    - bridge_runner/outgoing/llm-json-ingest-open-thread-closure/heartbeat_response.json
+stop_condition:
+  - response_written
