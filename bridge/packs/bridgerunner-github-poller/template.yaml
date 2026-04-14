@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  troy-bridgerunner-github-poller
+  Polls TML-4PM/mcp-command-centre for new bridge pack commits.
+  Triggers bridge dispatch on changes to bridge/payloads/.
+  Kill switch: set DRY_RUN=true in env or disable EventBridge rule.
+
+Parameters:
+  GitHubToken:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /t4h/github/token
+    Description: GitHub PAT with repo read access
+  BridgeEndpoint:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /t4h/bridge/endpoint
+  BridgeApiKey:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /t4h/bridge/api_key
+  DryRun:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 30
+    MemorySize: 256
+    Tags:
+      project: bridgerunner
+      is_rd: 'false'
+      owner: t4h.bridge.orchestrator
+
+Resources:
+  BridgeRunnerGithubPollerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: troy-bridgerunner-github-poller
+      Handler: index.handler
+      Description: Polls GitHub for bridge pack commits, triggers bridge dispatch
+      Environment:
+        Variables:
+          GITHUB_TOKEN: !Ref GitHubToken
+          GITHUB_REPO: TML-4PM/mcp-command-centre
+          WATCH_PATHS: bridge/payloads/,bridge_runner_payload.json
+          BRIDGE_ENDPOINT: !Ref BridgeEndpoint
+          BRIDGE_API_KEY: !Ref BridgeApiKey
+          LAST_SHA_PARAM: /bridgerunner/github/last_sha
+          DRY_RUN: !Ref DryRun
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: bridgerunner/github/last_sha
+        - Statement:
+            - Effect: Allow
+              Action: ssm:PutParameter
+              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/bridgerunner/github/last_sha
+      Events:
+        PollSchedule:
+          Type: Schedule
+          Properties:
+            Name: troy-bridgerunner-github-poll-30s
+            Description: Poll GitHub every 30 seconds via EventBridge
+            Schedule: rate(1 minute)
+            Enabled: true
+
+  LastShaParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /bridgerunner/github/last_sha
+      Type: String
+      Value: init
+      Description: Last processed GitHub commit SHA for bridgerunner poller
+
+Outputs:
+  FunctionArn:
+    Value: !GetAtt BridgeRunnerGithubPollerFunction.Arn
+  KillSwitch:
+    Description: To disable polling without delete — set DRY_RUN=true or disable EventBridge rule
+    Value: !Sub >-
+      aws events disable-rule --name troy-bridgerunner-github-poll-30s --region ${AWS::Region}
