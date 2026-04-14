@@ -1,0 +1,15 @@
+{
+  "probe_detected": true,
+  "runner_name": "bridge-runner",
+  "runner_version": "<version>",
+  "pickup_timestamp": "<ISO8601>",
+  "current_lifecycle_state": "<OPEN|IN_PROGRESS|BLOCKED|CLOSED>",
+  "last_completed_job": "<job_name>",
+  "blocker": null,
+  "evidence_paths": [
+    "s3://...",
+    "repo://...",
+    "command_centre://..."
+  ],
+  "next_action": "<string>"
+}
