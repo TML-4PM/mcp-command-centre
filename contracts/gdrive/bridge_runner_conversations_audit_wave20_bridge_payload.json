@@ -1,0 +1,59 @@
+{
+  "contract_version": "v2.0",
+  "contract_id": "audit-conversations-bridge-runner-wave20",
+  "execution_mode": "AUTONOMOUS",
+  "human_in_loop": false,
+  "architecture_level": 35,
+  "autonomous_wave_level": 20,
+  "stop_condition": "never",
+  "source": {
+    "type": "google_drive",
+    "principal": "gdrive-crawler@mcp-bridge-478002.iam.gserviceaccount.com",
+    "file_id": "1V76A56knqISMEzU9GgqcRrNOxwbAi-Fs",
+    "expected_name": "conversations (1).json"
+  },
+  "invoke": {
+    "runner": "bridge-runner",
+    "mode": "continuous",
+    "schedule_minutes": 15,
+    "singleton_key": "conversations-audit-loop",
+    "self_healing": true,
+    "retry_policy": {
+      "max_attempts": 999999,
+      "backoff_seconds": [30, 120, 300, 900]
+    }
+  },
+  "artifacts": {
+    "expected_outputs": [
+      "/tmp/conversations_split/threads_manifest.jsonl",
+      "/tmp/conversations_split/unfinished_threads.jsonl",
+      "/tmp/conversations_split/open_threads_first_500.csv",
+      "/tmp/conversations_split/open_threads_full.csv"
+    ]
+  },
+  "writebacks": {
+    "supabase_tables": [
+      "conversation_source_registry",
+      "conversation_ingest_run",
+      "conversation_split_artifact",
+      "conversation_thread_state",
+      "conversation_open_audit",
+      "conversation_failure_log",
+      "conversation_delta_checkpoint"
+    ],
+    "required_views": [
+      "v_conversation_open_summary",
+      "v_conversation_open_first_500",
+      "v_conversation_pipeline_health"
+    ]
+  },
+  "success_criteria": [
+    "Drive file accessible by crawler principal",
+    "Split artifacts created",
+    "Open thread state loaded into canonical tables",
+    "All open threads uplifted to architecture_level >= 35",
+    "All open threads uplifted to autonomous_wave_level >= 20",
+    "First 500 export produced",
+    "Loop requeued without HITL"
+  ]
+}
