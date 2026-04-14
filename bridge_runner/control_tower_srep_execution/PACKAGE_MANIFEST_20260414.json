@@ -1,0 +1,33 @@
+{
+  "package_name": "control_tower_srep_execution_bridge_runner",
+  "version": "2026.04.14",
+  "status": "production_ready",
+  "entry_point": "bridge_runner/control_tower_srep_execution/ACTIVE_PAYLOAD.json",
+  "repository": {
+    "name": "TML-4PM/mcp-command-centre",
+    "branch": "main"
+  },
+  "components": {
+    "execution": "bridge_runner/control_tower_srep_execution/ACTIVE_PAYLOAD.json",
+    "project_pack": "ops/control-tower/CONTROL_TOWER_REHYDRATION_PROJECT_PACK_20260414.md",
+    "board_paper": "ops/control-tower/CONTROL_TOWER_BOARD_PAPER_20260414.md",
+    "closure_register": "ops/closure/THREAD_CLOSURE_REGISTER_20260413.md"
+  },
+  "execution_contract": {
+    "mode": "create_or_update",
+    "target": "github_repo_only",
+    "repo_pin": "TML-4PM/mcp-command-centre",
+    "auto_execute": true
+  },
+  "bridge_runner_instruction": {
+    "load": "entry_point",
+    "execute": true,
+    "log": true,
+    "enforce_guard": false
+  },
+  "notes": [
+    "This pack uses existing control tower and control plane doctrine",
+    "Do not recreate control tower surfaces; rehydrate and enforce existing assets",
+    "Primary commands are /rehydrate, /sweep, /prove"
+  ]
+}
