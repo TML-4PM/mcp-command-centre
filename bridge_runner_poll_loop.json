@@ -1,7 +1,8 @@
 {
   "name": "bridge_runner_poll_loop",
-  "version": "1.0",
+  "version": "2.0",
   "mode": "poll",
+  "fix_log": "2026-04-14: corrected watch paths from telegram to control_tower_eventbridge_autofix",
   "source": {
     "provider": "github",
     "repository": "TML-4PM/mcp-command-centre",
@@ -13,51 +14,24 @@
   },
   "watch": {
     "paths": [
-      "bridge/payloads/telegram/",
-      "bridge_runner_payload.json",
-      "telegram-final-pack.md",
-      ".github/workflows/bridge-runner-telegram.yml"
+      "bridge_runner/control_tower_eventbridge_autofix/ACTIVE_PAYLOAD.json",
+      "bridge_runner/control_tower_eventbridge_autofix/RUNTIME_GUARD.json",
+      "bridge_runner/inbox/",
+      "bridge_runner/trigger.json"
     ]
   },
   "dedupe": {
     "strategy": "commit_sha",
-    "state_key": "bridge_runner:last_processed_sha:telegram"
+    "state_key": "bridge_runner:last_processed_sha:control_tower"
   },
   "actions": [
-    {
-      "step": "fetch_latest_commit",
-      "required": true
-    },
-    {
-      "step": "compare_with_last_processed_sha",
-      "required": true
-    },
-    {
-      "step": "pull_repo_if_changed",
-      "required": true
-    },
-    {
-      "step": "detect_payload_ready",
-      "required": true,
-      "files": [
-        "bridge/payloads/telegram/deployment_manifest.json",
-        "bridge/payloads/telegram/index.canonical.js",
-        "bridge/payloads/telegram/template.yaml"
-      ]
-    },
-    {
-      "step": "deploy_lambda",
-      "required": true,
-      "script": "bridge/payloads/telegram/deploy.sh"
-    },
-    {
-      "step": "wire_webhook",
-      "required": true,
-      "script": "bridge/payloads/telegram/wire_webhook.sh"
-    },
-    {
-      "step": "mark_processed_sha",
-      "required": true
-    }
+    {"step": "fetch_latest_commit", "required": true},
+    {"step": "compare_with_last_processed_sha", "required": true},
+    {"step": "pull_repo_if_changed", "required": true},
+    {"step": "validate_against_runtime_guard", "required": true, "guard_path": "bridge_runner/control_tower_eventbridge_autofix/RUNTIME_GUARD.json"},
+    {"step": "load_active_payload", "required": true, "payload_path": "bridge_runner/control_tower_eventbridge_autofix/ACTIVE_PAYLOAD.json"},
+    {"step": "invoke_bridge_lambda", "required": true},
+    {"step": "write_execution_log", "required": true, "table": "bridge_runner_execution_log"},
+    {"step": "mark_processed_sha", "required": true}
   ]
 }
