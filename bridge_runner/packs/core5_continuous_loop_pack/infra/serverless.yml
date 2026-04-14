@@ -1,0 +1,12 @@
+service: core5-loop
+provider:
+  name: aws
+  runtime: python3.11
+  region: ap-southeast-2
+functions:
+  core5Loop:
+    handler: lambda/core5_loop_handler.handler
+    events:
+      - http:
+          path: core5-loop/run
+          method: post
