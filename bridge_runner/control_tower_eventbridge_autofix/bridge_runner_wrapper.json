@@ -1,0 +1,83 @@
+{
+  "version": "1.0",
+  "request_id": "deploy-control-tower-schedulers-20260414",
+  "intent": "execute_and_validate",
+  "priority": "critical",
+  "system": "t4h-control-plane",
+  "target_repo": "TML-4PM/mcp-command-centre",
+  "execution_contract": {
+    "mode": "execute",
+    "dry_run": false,
+    "autonomous": true,
+    "self_heal": true,
+    "require_evidence": true,
+    "stop_only_when": "runtime_validated_or_exact_blocker_returned"
+  },
+  "objective": "Deploy and validate control tower EventBridge and AWS Scheduler runtime so hourly and nightly control-plane automations are real, live, and evidenced.",
+  "actions": [
+    {
+      "step": 1,
+      "type": "aws_cli_bootstrap",
+      "path": "bridge_runner/control_tower_eventbridge_autofix/aws/aws_cli_bootstrap.sh",
+      "expect": [
+        "event_bus:t4h-control-tower",
+        "rule:t4h-site-violation-detected",
+        "scheduler:t4h-site-scan-hourly"
+      ]
+    },
+    {
+      "step": 2,
+      "type": "github_actions_workflow_dispatch",
+      "workflow_path": ".github/workflows/deploy-control-tower-lambdas.yml",
+      "inputs": {
+        "dry_run": "false"
+      },
+      "expect": [
+        "lambda:t4h-site-scan-launcher",
+        "lambda:t4h-autofix-router",
+        "lambda:t4h-autofix-health-refresh",
+        "lambda:t4h-autofix-reality-recalc"
+      ]
+    },
+    {
+      "step": 3,
+      "type": "aws_validation",
+      "checks": [
+        "aws events describe-event-bus --name t4h-control-tower --region ap-southeast-2",
+        "aws events describe-rule --name t4h-site-violation-detected --event-bus-name t4h-control-tower --region ap-southeast-2",
+        "aws events list-targets-by-rule --rule t4h-site-violation-detected --event-bus-name t4h-control-tower --region ap-southeast-2",
+        "aws scheduler get-schedule --name t4h-site-scan-hourly --group-name default --region ap-southeast-2",
+        "aws lambda get-policy --function-name t4h-site-scan-launcher --region ap-southeast-2",
+        "aws lambda get-policy --function-name t4h-autofix-router --region ap-southeast-2",
+        "aws lambda get-policy --function-name t4h-autofix-health-refresh --region ap-southeast-2",
+        "aws lambda get-policy --function-name t4h-autofix-reality-recalc --region ap-southeast-2"
+      ]
+    },
+    {
+      "step": 4,
+      "type": "nightly_scheduler_gap_check",
+      "instruction": "Validate whether a nightly scheduler exists for t4h-autofix-reality-recalc. If absent, create it using scheduler_nightly_input.json and a sensible nightly schedule expression, then validate with aws scheduler get-schedule."
+    },
+    {
+      "step": 5,
+      "type": "evidence_return",
+      "deliverables": [
+        "actual command outputs",
+        "rule arns",
+        "target arns",
+        "scheduler arn",
+        "last workflow run status",
+        "exact blocker if any"
+      ]
+    }
+  ],
+  "truth_requirements": {
+    "classification": "REAL only with attached evidence",
+    "required_evidence": [
+      "aws stdout/stderr",
+      "workflow result",
+      "resource identifiers",
+      "validation command outputs"
+    ]
+  }
+}
