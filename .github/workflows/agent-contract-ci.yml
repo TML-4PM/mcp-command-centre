@@ -11,8 +11,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run CI gate
+      - name: Run CI gate via Supabase REST
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "select ops.fn_ci_gate_agent_contract(null);"
+          RESPONSE=$(curl -sf \
+            -X POST "${SUPABASE_URL}/rest/v1/rpc/fn_ci_gate_agent_contract" \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"p_contract_id": null}')
+
+          echo "Response: $RESPONSE"
+
+          CI_STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('ci_status','FAIL'))" 2>/dev/null || echo "FAIL")
+
+          if [ "$CI_STATUS" = "PASS" ]; then
+            echo "✅ Agent Contract CI: PASS"
+          else
+            echo "❌ Agent Contract CI: FAIL — $RESPONSE"
+            exit 1
+          fi
