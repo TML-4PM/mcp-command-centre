@@ -1,0 +1,24 @@
+{
+  "system": "mcp-command-centre",
+  "version": "2.0.0",
+  "environment": "prod",
+  "region": "ap-southeast-2",
+  "bridge": {
+    "endpoint": "zdgnab3py0.execute-api.ap-southeast-2.amazonaws.com/prod/lambda/invoke",
+    "orchestrator": "t4h.bridge.orchestrator",
+    "autonomy": "GATED"
+  },
+  "supabase": {
+    "ref": "lzfgigiyqpuuxslsygjt",
+    "schema": [
+      "core",
+      "ops",
+      "runtime",
+      "cc"
+    ]
+  },
+  "wave": "wave10",
+  "org": "TML-4PM",
+  "abn": "70 666 271 272",
+  "updated_utc": "2026-04-14T00:00:00Z"
+}
