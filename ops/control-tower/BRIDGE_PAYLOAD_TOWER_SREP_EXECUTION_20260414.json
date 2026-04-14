@@ -1,0 +1,51 @@
+{
+  "request_id": "tower-srep-20260414",
+  "contract": "T4H_CONTROL_TOWER_EXECUTION",
+  "mode": "EXECUTE",
+  "commands": [
+    "/rehydrate",
+    "/sweep",
+    "/prove"
+  ],
+  "scope": {
+    "include": [
+      "github_repos",
+      "bridge_packs",
+      "lambda_functions",
+      "eventbridge_rules",
+      "cron_jobs",
+      "supabase_objects",
+      "ui_widgets",
+      "drive_assets",
+      "notion_assets"
+    ],
+    "exclude": []
+  },
+  "rules": {
+    "no_hitl": true,
+    "auto_retry": true,
+    "evidence_required": true,
+    "truth_binding": "REAL|PARTIAL|PRETEND",
+    "fail_fast": false
+  },
+  "execution_order": [
+    "inventory",
+    "classify",
+    "bind",
+    "execute",
+    "prove",
+    "schedule"
+  ],
+  "outputs": {
+    "expected": [
+      "inventory_count",
+      "real_count",
+      "partial_count",
+      "pretend_count",
+      "repaired_count",
+      "failed_count",
+      "scheduled_count",
+      "proof_bound_count"
+    ]
+  }
+}
