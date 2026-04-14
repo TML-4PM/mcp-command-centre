@@ -1,0 +1,20 @@
+{
+  "action": "invoke_function",
+  "function_name": "t4h.bridge.orchestrator",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "source": "mcp-command-centre",
+    "command": "<command>",
+    "context": {},
+    "timestamp_utc": "<timestamp>"
+  },
+  "metadata": {
+    "request_id": "<uuid>",
+    "source": "mcp-command-centre",
+    "timestamp_utc": "<timestamp>",
+    "schema_version": "2.0",
+    "auth_context": {
+      "channel": "github_actions"
+    }
+  }
+}
