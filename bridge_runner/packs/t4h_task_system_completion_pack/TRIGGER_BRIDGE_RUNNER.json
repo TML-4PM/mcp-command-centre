@@ -1,0 +1,16 @@
+{
+  "pack_name": "t4h_task_system_completion_pack",
+  "status": "READY_FOR_PICKUP",
+  "execute_file": "bridge_runner/packs/t4h_task_system_completion_pack/docs/bridge_runner_execute.sql",
+  "runner_ready_file": "bridge_runner/packs/t4h_task_system_completion_pack/RUNNER_READY.md",
+  "invoke_envelope": "bridge_runner/packs/t4h_task_system_completion_pack/docs/bridge_runner_invoke_envelope.json",
+  "executor": "troy-sql-executor",
+  "expected_outcomes": [
+    "public.t4h_task_queue exists",
+    "public.t4h_task_run exists",
+    "public.t4h_task_dependency exists",
+    "8 requested tasks seeded",
+    "dependency chain seeded",
+    "public.v_t4h_task_board exists"
+  ]
+}
