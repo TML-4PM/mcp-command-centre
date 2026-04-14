@@ -1,0 +1,52 @@
+{
+  "name": "bridge_runner_webhook_receiver",
+  "version": "1.0",
+  "mode": "webhook",
+  "endpoint": "/bridge-runner/github",
+  "methods": ["POST"],
+  "validation": {
+    "type": "github_signature",
+    "header": "x-hub-signature-256"
+  },
+  "triggers": [
+    {
+      "event": "push",
+      "branch": "main",
+      "paths": [
+        "bridge/payloads/telegram/",
+        "bridge_runner_payload.json",
+        "telegram-final-pack.md"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "step": "parse_event",
+      "required": true
+    },
+    {
+      "step": "extract_commit_sha",
+      "required": true
+    },
+    {
+      "step": "pull_repo",
+      "required": true
+    },
+    {
+      "step": "detect_payload",
+      "required": true
+    },
+    {
+      "step": "deploy_lambda",
+      "required": true
+    },
+    {
+      "step": "wire_webhook",
+      "required": true
+    },
+    {
+      "step": "emit_success_event",
+      "required": true
+    }
+  ]
+}
