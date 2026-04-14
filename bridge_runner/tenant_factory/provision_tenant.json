@@ -1,0 +1,85 @@
+{
+  "pack": "tenant_factory",
+  "version": "v1",
+  "mode": "provision",
+  "tenant": {
+    "tenant_id": "client_001",
+    "plan": "growth",
+    "region": "ap-southeast-2"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "action": "create_tenant_record",
+      "target": "supabase",
+      "table": "tenants"
+    },
+    {
+      "step": 2,
+      "action": "apply_sql",
+      "files": [
+        "supabase/sql/v_sql_execution_activity.sql",
+        "supabase/sql/reality_ledger_binding.sql",
+        "supabase/sql/tenant_usage_metering.sql"
+      ]
+    },
+    {
+      "step": 3,
+      "action": "deploy_lambda",
+      "functions": [
+        {
+          "function_name": "troy-sql-guardrail",
+          "source": "lambda/troy_sql_guardrail.py",
+          "handler": "troy_sql_guardrail.lambda_handler",
+          "runtime": "python3.11"
+        },
+        {
+          "function_name": "troy-sql-replay",
+          "source": "lambda/troy_sql_replay.py",
+          "handler": "troy_sql_replay.lambda_handler",
+          "runtime": "python3.11"
+        },
+        {
+          "function_name": "troy-sql-fallback-router",
+          "source": "lambda/troy_sql_fallback_router.py",
+          "handler": "troy_sql_fallback_router.lambda_handler",
+          "runtime": "python3.11"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "action": "inject_env",
+      "source": "tenants/_template/env.template",
+      "target": "tenant_env"
+    },
+    {
+      "step": 5,
+      "action": "wire_bridge",
+      "route": "bridge/bridge_runner_sql_route.json"
+    },
+    {
+      "step": 6,
+      "action": "apply_policy",
+      "policy": "bridge/sql_execution_sealed_policy.md"
+    },
+    {
+      "step": 7,
+      "action": "seed_dashboard",
+      "target": "command_centre",
+      "widget_spec": "command_centre/widgets/tenant_portfolio_widget_spec.md"
+    },
+    {
+      "step": 8,
+      "action": "register_billing",
+      "provider": "stripe",
+      "plan": "growth"
+    },
+    {
+      "step": 9,
+      "action": "run_validation",
+      "manifest": "bridge_runner/tenant_factory/validate_tenant.json"
+    }
+  ],
+  "completion_condition": "validation == REAL"
+}
