@@ -1,0 +1,34 @@
+name: Reconcile Control Tower Scheduler
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "bridge_runner/control_tower_eventbridge_autofix/aws/**"
+  schedule:
+    - cron: "15 0 * * *"
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::140548542136:role/troy-lambda-deployer-role
+          aws-region: ap-southeast-2
+
+      - name: Run scheduler reconcile
+        run: |
+          chmod +x bridge_runner/control_tower_eventbridge_autofix/aws/reconcile_scheduler.sh
+          bridge_runner/control_tower_eventbridge_autofix/aws/reconcile_scheduler.sh
+
+      - name: Output status
+        run: echo "Scheduler reconciliation completed"
