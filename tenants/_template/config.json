@@ -1,0 +1,11 @@
+{
+  "tenant_id": "{{tenant_id}}",
+  "plan": "{{plan}}",
+  "guardrail_mode": "strict",
+  "replay_enabled": true,
+  "billing_enabled": true,
+  "limits": {
+    "max_queries_per_day": 5000,
+    "max_concurrent_requests": 20
+  }
+}
