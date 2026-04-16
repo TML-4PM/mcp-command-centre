@@ -142,9 +142,82 @@ def save_state(path: Path, state: Dict[str, Any]) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Google Drive
+# Google Drive — direct public URL download (no SA required)
+# Works for any file shared as "Anyone with the link"
 # ---------------------------------------------------------------------------
 
+def _gdrive_confirm_token(session: Any, response: Any) -> Optional[str]:
+    """Extract Google Drive large-file download confirmation token."""
+    import re as _re
+    # Modern Drive: __Secure-1PSIDTS cookie or 'confirm' query param
+    for key, value in response.cookies.items():
+        if key.startswith("download_warning"):
+            return value
+    # Fallback: parse HTML for confirm token
+    try:
+        text = response.text
+        m = _re.search(r'confirm=([0-9A-Za-z_\-]+)', text)
+        if m:
+            return m.group(1)
+    except Exception:
+        pass
+    return None
+
+
+def download_via_public_url(file_id: str, target: Path) -> Dict[str, Any]:
+    """Download a Google Drive file using public share URL. No SA required."""
+    if not REQUESTS_OK:
+        raise RuntimeError("requests library not installed")
+    import requests
+
+    session = requests.Session()
+    base_url = "https://drive.google.com/uc"
+    params = {"export": "download", "id": file_id}
+
+    LOGGER.info("Drive public download → %s", file_id)
+    response = session.get(base_url, params=params, stream=True, timeout=60)
+    response.raise_for_status()
+
+    # Google shows a confirmation page for large files
+    if "text/html" in response.headers.get("Content-Type", ""):
+        token = _gdrive_confirm_token(session, response)
+        if token:
+            params["confirm"] = token
+            params["uuid"] = ""
+        else:
+            # Try newer endpoint
+            params = {"id": file_id, "confirm": "t", "export": "download"}
+        LOGGER.info("Large file — retrying with confirm token")
+        response = session.get(base_url, params=params, stream=True, timeout=60)
+        response.raise_for_status()
+
+    total = int(response.headers.get("Content-Length", 0))
+    downloaded = 0
+    chunk_size = 16 * 1024 * 1024  # 16MB
+
+    with target.open("wb") as fh:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                fh.write(chunk)
+                downloaded += len(chunk)
+                if total:
+                    LOGGER.info("Drive download %.1f%%", 100 * downloaded / total)
+
+    content_disp = response.headers.get("Content-Disposition", "")
+    import re as _re
+    name_match = _re.search(r'filename\*?=['"]?(?:UTF-8\'\')?([^'"\n;]+)', content_disp)
+    detected_name = name_match.group(1).strip() if name_match else f"{file_id}.json"
+
+    return {
+        "id": file_id,
+        "name": detected_name,
+        "mimeType": response.headers.get("Content-Type", "application/json"),
+        "size": str(downloaded),
+        "modifiedTime": None,
+    }
+
+
+# Keep SA functions as optional (unused by default)
 def build_drive_service() -> Any:
     if not GDRIVE_OK:
         raise RuntimeError("google-api-python-client not installed")
@@ -632,15 +705,16 @@ def main() -> int:
     state = load_state(state_file)
 
     s3 = boto3.client("s3", region_name=os.getenv("AWS_REGION", "ap-southeast-2"))
-    service = build_drive_service()
 
-    LOGGER.info("Fetching Drive metadata for %s", args.drive_file_id)
-    meta = fetch_drive_metadata(service, args.drive_file_id)
+    # Use direct public URL download — no service account required
+    raw_path_tmp = raw_dir / f"{args.drive_file_id}.json"
+    meta = download_via_public_url(args.drive_file_id, raw_path_tmp)
     raw_name = meta.get("name") or f"{args.drive_file_id}.json"
+    # Rename to detected filename if different
     raw_path = raw_dir / raw_name
-
-    LOGGER.info("Downloading %s", raw_name)
-    download_drive_file(service, args.drive_file_id, raw_path)
+    if raw_path_tmp != raw_path and raw_path_tmp.exists():
+        raw_path_tmp.rename(raw_path)
+    LOGGER.info("Downloaded as %s (%s bytes)", raw_name, meta.get("size", "?"))
 
     raw_sha = sha256_file(raw_path)
     changed = raw_sha != state.get("raw_sha256")
