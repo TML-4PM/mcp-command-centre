@@ -182,3 +182,6 @@ Write your response to:
 - Treat Supabase canonical records as higher authority than stale prose unless evidence proves otherwise.
 - Any deprecated object must include a replacement mapping.
 - Prefer one durable operating model over many clever descriptions.
+
+
+<!-- runner-trigger: 2026-04-16T00:02:58Z -->
