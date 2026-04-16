@@ -1,0 +1,31 @@
+name: Deploy linkedin-scraper
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::140548542136:role/troy-lambda-deployer-role
+          aws-region: ap-southeast-2
+
+      - name: Package and deploy linkedin-scraper
+        run: |
+          set -euo pipefail
+          cd lambdas/linkedin-scraper
+          zip /tmp/linkedin-scraper.zip index.js
+          aws lambda update-function-code \
+            --function-name linkedin-scraper \
+            --zip-file fileb:///tmp/linkedin-scraper.zip \
+            --region ap-southeast-2 \
+            --output json | jq '{FunctionName,CodeSize,LastModified}'
+          echo "DEPLOYED: linkedin-scraper"
