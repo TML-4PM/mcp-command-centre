@@ -1,0 +1,38 @@
+{
+  "pack": "ahc_control_plane_launch",
+  "version": "v1",
+  "status": "ready_for_execution",
+  "objective": "Launch AHC Control Plane as a repeatable, billable, multi-tenant product",
+  "components": {
+    "landing_page_spec": "launch/ahc_control_plane/landing_page_spec.md",
+    "onboarding_flow_spec": "launch/ahc_control_plane/onboarding_flow_spec.md",
+    "stripe_pricing_spec": "launch/ahc_control_plane/stripe_pricing_spec.md",
+    "sales_deck_outline": "launch/ahc_control_plane/sales_deck_outline.md",
+    "pilot_outreach_script": "launch/ahc_control_plane/pilot_outreach_script.md"
+  },
+  "execution_sequence": [
+    {
+      "step": 1,
+      "action": "build_landing_page",
+      "source": "launch/ahc_control_plane/landing_page_spec.md"
+    },
+    {
+      "step": 2,
+      "action": "build_onboarding_flow",
+      "source": "launch/ahc_control_plane/onboarding_flow_spec.md"
+    },
+    {
+      "step": 3,
+      "action": "configure_stripe",
+      "source": "launch/ahc_control_plane/stripe_pricing_spec.md"
+    },
+    {
+      "step": 4,
+      "action": "generate_sales_assets",
+      "sources": [
+        "launch/ahc_control_plane/sales_deck_outline.md",
+        "launch/ahc_control_plane/pilot_outreach_script.md"
+      ]
+    }
+  ]
+}
