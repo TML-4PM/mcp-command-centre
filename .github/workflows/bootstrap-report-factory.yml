@@ -1,0 +1,57 @@
+name: Bootstrap Report Factory
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Seed Reports
+        run: |
+          curl -X POST "${{ secrets.BRIDGE_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+          -d '{
+            "action": "invoke_function",
+            "function_name": "troy-sql-executor",
+            "payload": {
+              "sql": "update t4h_report_registry set status = ''LIVE'' where report_id in (''R001'',''R005'',''R040'',''R086'',''R121'');"
+            }
+          }'
+
+      - name: Run Report R001
+        run: |
+          curl -X POST "${{ secrets.BRIDGE_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R001"}}'
+
+      - name: Run Report R005
+        run: |
+          curl -X POST "${{ secrets.BRIDGE_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R005"}}'
+
+      - name: Run Report R040
+        run: |
+          curl -X POST "${{ secrets.BRIDGE_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R040"}}'
+
+      - name: Run Report R086
+        run: |
+          curl -X POST "${{ secrets.BRIDGE_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R086"}}'
+
+      - name: Run Report R121
+        run: |
+          curl -X POST "${{ secrets.BRIDGE_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R121"}}'
