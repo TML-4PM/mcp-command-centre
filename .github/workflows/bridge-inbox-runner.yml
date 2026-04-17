@@ -12,6 +12,9 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: write
+
 jobs:
   run-inbox-pack:
     runs-on: ubuntu-latest
