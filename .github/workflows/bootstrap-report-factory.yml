@@ -6,52 +6,72 @@ on:
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Seed Reports
+      - name: Validate bridge secrets
+        shell: bash
         run: |
-          curl -X POST "${{ secrets.BRIDGE_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
-          -d '{
+          set -euo pipefail
+          test -n "${{ secrets.BRIDGE_URL }}"
+          test -n "${{ secrets.BRIDGE_API_KEY }}"
+
+      - name: Seed five reports with SQL and LIVE status
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body -sS -X POST "${{ secrets.BRIDGE_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+            -d @- <<'JSON'
+          {
             "action": "invoke_function",
             "function_name": "troy-sql-executor",
             "payload": {
-              "sql": "update t4h_report_registry set status = ''LIVE'' where report_id in (''R001'',''R005'',''R040'',''R086'',''R121'');"
+              "sql": "update t4h_report_registry set sql_query = case report_id when 'R001' then 'select current_date as date, sum(balance) as total_cash from bank_accounts' when 'R005' then 'select date_trunc(''month'', txn_date) as month, sum(case when type = ''revenue'' then amount else 0 end) as revenue, sum(case when type = ''expense'' then amount else 0 end) as expenses, sum(case when type = ''revenue'' then amount else -amount end) as profit from transactions group by 1 order by 1 desc' when 'R040' then 'select project_id, sum(amount) as rd_spend from transactions where tag = ''R&D'' group by project_id order by rd_spend desc' when 'R086' then 'select (select sum(balance) from bank_accounts) as cash, (select sum(amount) from transactions where type = ''revenue'') as revenue, (select count(*) from customers) as customers' when 'R121' then 'select count(*) filter (where status = ''LIVE'')::float / nullif(count(*),0) * 100 as completion_percent from t4h_report_registry' end, status = 'LIVE' where report_id in ('R001','R005','R040','R086','R121')"
             }
-          }'
+          }
+          JSON
 
-      - name: Run Report R001
+      - name: Run report R001
+        shell: bash
         run: |
-          curl -X POST "${{ secrets.BRIDGE_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
-          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R001"}}'
+          set -euo pipefail
+          curl --fail-with-body -sS -X POST "${{ secrets.BRIDGE_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+            -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R001"}}'
 
-      - name: Run Report R005
+      - name: Run report R005
+        shell: bash
         run: |
-          curl -X POST "${{ secrets.BRIDGE_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
-          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R005"}}'
+          set -euo pipefail
+          curl --fail-with-body -sS -X POST "${{ secrets.BRIDGE_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+            -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R005"}}'
 
-      - name: Run Report R040
+      - name: Run report R040
+        shell: bash
         run: |
-          curl -X POST "${{ secrets.BRIDGE_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
-          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R040"}}'
+          set -euo pipefail
+          curl --fail-with-body -sS -X POST "${{ secrets.BRIDGE_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+            -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R040"}}'
 
-      - name: Run Report R086
+      - name: Run report R086
+        shell: bash
         run: |
-          curl -X POST "${{ secrets.BRIDGE_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
-          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R086"}}'
+          set -euo pipefail
+          curl --fail-with-body -sS -X POST "${{ secrets.BRIDGE_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+            -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R086"}}'
 
-      - name: Run Report R121
+      - name: Run report R121
+        shell: bash
         run: |
-          curl -X POST "${{ secrets.BRIDGE_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
-          -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R121"}}'
+          set -euo pipefail
+          curl --fail-with-body -sS -X POST "${{ secrets.BRIDGE_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.BRIDGE_API_KEY }}" \
+            -d '{"action":"invoke_function","function_name":"t4h-report-runner","payload":{"report_id":"R121"}}'
