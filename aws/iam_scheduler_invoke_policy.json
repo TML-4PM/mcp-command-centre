@@ -1,0 +1,11 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowSchedulerInvokeApiGateway",
+      "Effect": "Allow",
+      "Action": "execute-api:Invoke",
+      "Resource": "arn:aws:execute-api:ap-southeast-2:ACCOUNT_ID:m5oqj21chd/lambda/POST/lambda/invoke"
+    }
+  ]
+}

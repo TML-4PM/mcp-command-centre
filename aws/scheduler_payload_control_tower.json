@@ -1,0 +1,23 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-code-pusher",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "project": "mcp-command-centre-sweep",
+    "mode": "create_or_update",
+    "target": "github_or_bridge_runner",
+    "requested_by": "eventbridge-scheduler",
+    "enforce_canonical_contract": true
+  },
+  "metadata": {
+    "request_id": "mcp-command-centre-sweep-001",
+    "source": "eventbridge-scheduler",
+    "auth_context": "system_scheduled",
+    "hub_repo": "TML-4PM/mcp-command-centre"
+  },
+  "control": {
+    "dry_run": false,
+    "execute": true,
+    "approval_required": false
+  }
+}
