@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       target_file:
-        description: 'Specific inbox file to process (relative path)'
+        description: 'Inbox file to process'
         required: false
         default: ''
 
@@ -18,8 +18,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
           token: ${{ github.token }}
@@ -28,262 +27,54 @@ jobs:
         id: detect
         run: |
           if [ -n "${{ github.event.inputs.target_file }}" ]; then
-            INBOX_FILE="${{ github.event.inputs.target_file }}"
+            F="${{ github.event.inputs.target_file }}"
           else
-            INBOX_FILE=$(git diff --name-only HEAD~1 HEAD -- 'bridge_runner/inbox/' | grep -E '\.(md|json)$' | head -1)
+            F=$(git diff --name-only HEAD~1 HEAD -- 'bridge_runner/inbox/' | grep -E '\.(md|json)$' | head -1)
           fi
+          if [ -z "$F" ]; then echo "skip=true" >> $GITHUB_OUTPUT; exit 0; fi
+          echo "file=$F" >> $GITHUB_OUTPUT
+          echo "basename=$(basename $F .md)" >> $GITHUB_OUTPUT
+          echo "Detected: $F"
 
-          if [ -z "$INBOX_FILE" ]; then
-            echo "No inbox file detected. Listing inbox for manual inspection."
-            ls -la bridge_runner/inbox/ || echo "inbox dir empty/missing"
-            echo "skip=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          echo "file=$INBOX_FILE" >> $GITHUB_OUTPUT
-          echo "basename=$(basename $INBOX_FILE .md)" >> $GITHUB_OUTPUT
-          echo "Detected: $INBOX_FILE"
-
-      - name: Read pack content
-        id: pack
+      - name: Read pack to file
         if: steps.detect.outputs.skip != 'true'
         run: |
-          FILE="${{ steps.detect.outputs.file }}"
-          CONTENT=$(cat "$FILE" 2>/dev/null || echo "FILE_NOT_FOUND: $FILE")
-          # Truncate to ~8000 chars for API safety
-          CONTENT="${CONTENT:0:8000}"
-          # Escape for JSON
-          CONTENT_ESCAPED=$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" <<< "$CONTENT")
-          echo "content=$CONTENT_ESCAPED" >> $GITHUB_OUTPUT
-          echo "Pack size: ${#CONTENT} chars"
+          head -c 6000 "${{ steps.detect.outputs.file }}" > /tmp/pack_content.txt
+          echo "Pack size: $(wc -c < /tmp/pack_content.txt) chars"
 
-      - name: Fetch LLM keys from bridge
-        id: keys
+      - name: Fetch LLM keys
         if: steps.detect.outputs.skip != 'true'
-        run: |
-          BRIDGE="https://zdgnab3py0.execute-api.ap-southeast-2.amazonaws.com/prod/lambda/invoke"
-          BKEY="bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4"
+        run: python3 bridge_runner/scripts/fetch_keys.py
 
-          RESP=$(curl -s -X POST "$BRIDGE" \
-            -H "x-api-key: $BKEY" \
-            -H "Content-Type: application/json" \
-            -d '{"fn":"troy-sql-executor","payload":{"sql":"SELECT key, value FROM cap_secrets WHERE key IN ('"'"'ANTHROPIC_API_KEY'"'"','"'"'OPENAI_API_KEY'"'"','"'"'PERPLEXITY_API_KEY'"'"')"}}')
+      - name: Call Claude
+        if: steps.detect.outputs.skip != 'true'
+        run: python3 bridge_runner/scripts/call_llm.py anthropic
 
-          ANTHROPIC_KEY=$(echo "$RESP" | python3 -c "import sys,json; rows=json.load(sys.stdin).get('rows',[]); print(next((r['value'] for r in rows if r['key']=='ANTHROPIC_API_KEY'),''))" 2>/dev/null)
-          OPENAI_KEY=$(echo "$RESP" | python3 -c "import sys,json; rows=json.load(sys.stdin).get('rows',[]); print(next((r['value'] for r in rows if r['key']=='OPENAI_API_KEY'),''))" 2>/dev/null)
-          PERPLEXITY_KEY=$(echo "$RESP" | python3 -c "import sys,json; rows=json.load(sys.stdin).get('rows',[]); print(next((r['value'] for r in rows if r['key']=='PERPLEXITY_API_KEY'),''))" 2>/dev/null)
-
-          echo "::add-mask::$ANTHROPIC_KEY"
-          echo "::add-mask::$OPENAI_KEY"
-          echo "::add-mask::$PERPLEXITY_KEY"
-
-          echo "anthropic=$ANTHROPIC_KEY" >> $GITHUB_OUTPUT
-          echo "openai=$OPENAI_KEY" >> $GITHUB_OUTPUT
-          echo "perplexity=$PERPLEXITY_KEY" >> $GITHUB_OUTPUT
-
-          [ -n "$ANTHROPIC_KEY" ] && echo "anthropic_ok=true" >> $GITHUB_OUTPUT || echo "anthropic_ok=false" >> $GITHUB_OUTPUT
-          [ -n "$OPENAI_KEY" ] && echo "openai_ok=true" >> $GITHUB_OUTPUT || echo "openai_ok=false" >> $GITHUB_OUTPUT
-          [ -n "$PERPLEXITY_KEY" ] && echo "perplexity_ok=true" >> $GITHUB_OUTPUT || echo "perplexity_ok=false" >> $GITHUB_OUTPUT
-
-      - name: Call Claude (Anthropic)
-        id: claude
-        if: steps.detect.outputs.skip != 'true' && steps.keys.outputs.anthropic_ok == 'true'
-        run: |
-          PACK_CONTENT=${{ steps.pack.outputs.content }}
-          SYSTEM_PROMPT="You are a principal systems architect reviewing an operations closure and merge request for Tech 4 Humanity (T4H). Respond with: (1) canonical merge decisions with rationale, (2) gaps or risks not covered, (3) any duplicate or conflicting patterns you detect, (4) recommended next executable action. Be specific, structured, evidence-bound. No filler."
-
-          RESPONSE=$(python3 - <<'PYEOF'
-import json, urllib.request, os, sys
-
-pack = ${{ steps.pack.outputs.content }}
-api_key = "${{ steps.keys.outputs.anthropic }}"
-
-payload = {
-    "model": "claude-opus-4-5",
-    "max_tokens": 2000,
-    "system": "You are a principal systems architect reviewing an operations closure and merge request for Tech 4 Humanity (T4H). Respond with: (1) canonical merge decisions with rationale, (2) gaps or risks not covered, (3) any duplicate or conflicting patterns you detect, (4) recommended next executable action. Be specific, structured, evidence-bound. No filler.",
-    "messages": [{"role": "user", "content": f"Review this closure/merge pack and respond per your instructions:\n\n{pack}"}]
-}
-
-req = urllib.request.Request(
-    "https://api.anthropic.com/v1/messages",
-    data=json.dumps(payload).encode(),
-    headers={
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-)
-
-try:
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read())
-        text = data.get("content", [{}])[0].get("text", "NO_TEXT")
-        print(text[:5000])
-except Exception as e:
-    print(f"ERROR: {e}")
-PYEOF
-          )
-          echo "$RESPONSE" > /tmp/claude_response.txt
-          echo "Claude response: ${#RESPONSE} chars"
-
-      - name: Call GPT (OpenAI)
-        id: gpt
-        if: steps.detect.outputs.skip != 'true' && steps.keys.outputs.openai_ok == 'true'
-        run: |
-          python3 - <<'PYEOF' > /tmp/gpt_response.txt
-import json, urllib.request
-
-pack = ${{ steps.pack.outputs.content }}
-api_key = "${{ steps.keys.outputs.openai }}"
-
-payload = {
-    "model": "gpt-4o",
-    "max_tokens": 2000,
-    "messages": [
-        {
-            "role": "system",
-            "content": "You are a principal systems architect reviewing an operations closure and merge request for Tech 4 Humanity (T4H). Respond with: (1) canonical merge decisions with rationale, (2) gaps or risks not covered, (3) any duplicate or conflicting patterns you detect, (4) recommended next executable action. Be specific, structured, evidence-bound. No filler."
-        },
-        {
-            "role": "user",
-            "content": f"Review this closure/merge pack and respond per your instructions:\n\n{pack}"
-        }
-    ]
-}
-
-req = urllib.request.Request(
-    "https://api.openai.com/v1/chat/completions",
-    data=json.dumps(payload).encode(),
-    headers={
-        "Authorization": f"Bearer {api_key}",
-        "content-type": "application/json"
-    }
-)
-
-try:
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read())
-        text = data.get("choices", [{}])[0].get("message", {}).get("content", "NO_TEXT")
-        print(text[:5000])
-except Exception as e:
-    print(f"ERROR: {e}")
-PYEOF
-          echo "GPT response: $(wc -c < /tmp/gpt_response.txt) chars"
+      - name: Call GPT
+        if: steps.detect.outputs.skip != 'true'
+        run: python3 bridge_runner/scripts/call_llm.py openai
 
       - name: Call Perplexity
-        id: perplexity
-        if: steps.detect.outputs.skip != 'true' && steps.keys.outputs.perplexity_ok == 'true'
-        run: |
-          python3 - <<'PYEOF' > /tmp/perplexity_response.txt
-import json, urllib.request
+        if: steps.detect.outputs.skip != 'true'
+        run: python3 bridge_runner/scripts/call_llm.py perplexity
 
-pack = ${{ steps.pack.outputs.content }}
-api_key = "${{ steps.keys.outputs.perplexity }}"
-
-payload = {
-    "model": "sonar-pro",
-    "max_tokens": 2000,
-    "messages": [
-        {
-            "role": "system",
-            "content": "You are a principal systems architect reviewing an operations closure and merge request for Tech 4 Humanity (T4H). Respond with: (1) canonical merge decisions with rationale, (2) gaps or risks not covered, (3) any duplicate or conflicting patterns you detect, (4) recommended next executable action. Be specific, structured, evidence-bound. No filler."
-        },
-        {
-            "role": "user",
-            "content": f"Review this closure/merge pack and respond per your instructions:\n\n{pack}"
-        }
-    ]
-}
-
-req = urllib.request.Request(
-    "https://api.perplexity.ai/chat/completions",
-    data=json.dumps(payload).encode(),
-    headers={
-        "Authorization": f"Bearer {api_key}",
-        "content-type": "application/json"
-    }
-)
-
-try:
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read())
-        text = data.get("choices", [{}])[0].get("message", {}).get("content", "NO_TEXT")
-        print(text[:5000])
-except Exception as e:
-    print(f"ERROR: {e}")
-PYEOF
-          echo "Perplexity response: $(wc -c < /tmp/perplexity_response.txt) chars"
-
-      - name: Synthesise and write outbox
+      - name: Write outbox
         if: steps.detect.outputs.skip != 'true'
         run: |
-          BASENAME="${{ steps.detect.outputs.basename }}"
-          OUTDIR="bridge_runner/outbox/${BASENAME}"
+          OUTDIR="bridge_runner/outbox/${{ steps.detect.outputs.basename }}"
           mkdir -p "$OUTDIR"
-          DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-
-          # Copy individual responses
-          [ -f /tmp/claude_response.txt ] && cp /tmp/claude_response.txt "$OUTDIR/claude_response.md"
-          [ -f /tmp/gpt_response.txt ] && cp /tmp/gpt_response.txt "$OUTDIR/gpt_response.md"
-          [ -f /tmp/perplexity_response.txt ] && cp /tmp/perplexity_response.txt "$OUTDIR/perplexity_response.md"
-
-          # Build synthesis
-          python3 - <<PYEOF > "$OUTDIR/bridge_runner_summary.md"
-import os
-
-claude = open('/tmp/claude_response.txt').read() if os.path.exists('/tmp/claude_response.txt') else 'NOT_RUN'
-gpt = open('/tmp/gpt_response.txt').read() if os.path.exists('/tmp/gpt_response.txt') else 'NOT_RUN'
-perplexity = open('/tmp/perplexity_response.txt').read() if os.path.exists('/tmp/perplexity_response.txt') else 'NOT_RUN'
-
-# Simple dedup: find common themes
-all_text = f"{claude}\n{gpt}\n{perplexity}"
-import re
-# Extract any lines starting with numbers or bullets as action items
-actions = set()
-for line in all_text.split('\n'):
-    stripped = line.strip()
-    if re.match(r'^[\d\-\*•]', stripped) and len(stripped) > 20:
-        actions.add(stripped[:200])
-
-print(f"""# Bridge Runner Summary — {os.environ.get('BASENAME', 'unknown')}
-Generated: $DATE
-Runner: github-actions
-Pack: ${{ steps.detect.outputs.file }}
-
-## Execution Status
-| Model | Status | Size |
-|-------|--------|------|
-| Claude | {'REAL' if 'ERROR' not in claude[:50] else 'FAILED'} | {len(claude)} chars |
-| GPT-4o | {'REAL' if 'ERROR' not in gpt[:50] else 'FAILED'} | {len(gpt)} chars |
-| Perplexity | {'REAL' if 'ERROR' not in perplexity[:50] else 'FAILED'} | {len(perplexity)} chars |
-
-## Consensus Actions Detected
-""" + '\n'.join(list(actions)[:20]) + f"""
-
-## Truth State
-REAL — all 3 models executed, responses written to outbox
-
-## Files Written
-- claude_response.md
-- gpt_response.md
-- perplexity_response.md
-- bridge_runner_summary.md (this file)
-
-## Next Action
-Review individual responses. Apply canonical merge map. Seed ops.build_closure_register.
-""")
-PYEOF
-          echo "Outbox written to: $OUTDIR"
+          cp /tmp/anthropic_response.txt "$OUTDIR/claude_response.md" 2>/dev/null || echo "NO_RESPONSE" > "$OUTDIR/claude_response.md"
+          cp /tmp/openai_response.txt "$OUTDIR/gpt_response.md" 2>/dev/null || echo "NO_RESPONSE" > "$OUTDIR/gpt_response.md"
+          cp /tmp/perplexity_response.txt "$OUTDIR/perplexity_response.md" 2>/dev/null || echo "NO_RESPONSE" > "$OUTDIR/perplexity_response.md"
+          python3 bridge_runner/scripts/write_summary.py "$OUTDIR" "${{ steps.detect.outputs.basename }}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${{ steps.detect.outputs.file }}"
           ls -la "$OUTDIR"
 
-      - name: Commit outbox results
+      - name: Commit outbox
         if: steps.detect.outputs.skip != 'true'
         run: |
           git config user.name "bridge-runner[bot]"
           git config user.email "bridge-runner@tech4humanity.com.au"
           git add bridge_runner/outbox/
-          git status
           git diff --cached --stat
-          git commit -m "bridge-runner: outbox results for ${{ steps.detect.outputs.basename }} [${{ github.run_id }}]" || echo "Nothing to commit"
-          git push origin main || echo "Push failed — check permissions"
+          git commit -m "bridge-runner: outbox ${{ steps.detect.outputs.basename }} [run ${{ github.run_id }}]" || echo "Nothing to commit"
+          git push origin main
