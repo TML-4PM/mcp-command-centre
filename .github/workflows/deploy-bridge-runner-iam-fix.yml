@@ -1,0 +1,106 @@
+name: deploy-bridge-runner-iam-fix
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::140548542136:role/troy-lambda-deployer-role
+          aws-region: ap-southeast-2
+
+      - name: Fix IAM - grant bridge invoke permissions
+        run: |
+          set -euo pipefail
+          aws iam put-role-policy \
+            --role-name lambda-execution-role \
+            --policy-name bridge-invoke-allowlist \
+            --policy-document '{
+              "Version":"2012-10-17",
+              "Statement":[{
+                "Effect":"Allow",
+                "Action":"lambda:InvokeFunction",
+                "Resource":[
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:troy-ec2-manager",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:troy-cfn-deployer",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:bridge-runner-distribution",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:bridge-runner-reading",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:bridge-runner-receiving",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:bridge-runner-research",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:bridge-runner-task-executor",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:bridge-runner-writing",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:comms-morning-briefing",
+                  "arn:aws:lambda:ap-southeast-2:140548542136:function:holo-morning-brief"
+                ]
+              }]
+            }' --region ap-southeast-2
+          echo "IAM policy applied"
+
+      - name: Deploy troy-bridge-runner CFN stack
+        run: |
+          set -euo pipefail
+          cat > /tmp/tbr.yaml << 'EOF'
+          AWSTemplateFormatVersion: '2010-09-09'
+          Resources:
+            BridgeRunner:
+              Type: AWS::Lambda::Function
+              Properties:
+                FunctionName: troy-bridge-runner
+                Runtime: nodejs18.x
+                Handler: index.handler
+                Role: arn:aws:iam::140548542136:role/lambda-execution-role
+                Timeout: 60
+                MemorySize: 256
+                Environment:
+                  Variables:
+                    BRIDGE_ENDPOINT: "https://zdgnab3py0.execute-api.ap-southeast-2.amazonaws.com/prod/lambda/invoke"
+                    BRIDGE_API_KEY: "bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4"
+                    S3_BUCKET: "troylatter-sydney-downloads"
+                    S3_PREFIX: "bridge_runner/incoming/"
+                    S3_DONE: "bridge_runner/processed/"
+                Code:
+                  ZipFile: |
+                    const{S3Client,ListObjectsV2Command,GetObjectCommand,CopyObjectCommand,DeleteObjectCommand}=require('@aws-sdk/client-s3');
+                    const https=require('https');
+                    const s3=new S3Client({region:'ap-southeast-2'});
+                    const BUCKET=process.env.S3_BUCKET,PREFIX=process.env.S3_PREFIX,DONE=process.env.S3_DONE;
+                    const BU=new URL(process.env.BRIDGE_ENDPOINT),BK=process.env.BRIDGE_API_KEY;
+                    function post(b){return new Promise((res,rej)=>{const d=JSON.stringify(b);const r=https.request({hostname:BU.hostname,path:BU.pathname,method:'POST',headers:{'Content-Type':'application/json','x-api-key':BK,'Content-Length':Buffer.byteLength(d)}},rsp=>{let b='';rsp.on('data',c=>b+=c);rsp.on('end',()=>res({status:rsp.statusCode,body:b}))});r.on('error',rej);r.write(d);r.end();});}
+                    async function str(s){const c=[];for await(const x of s)c.push(x);return Buffer.concat(c).toString();}
+                    exports.handler=async()=>{const list=await s3.send(new ListObjectsV2Command({Bucket:BUCKET,Prefix:PREFIX}));const files=(list.Contents||[]).filter(o=>o.Key.endsWith('.json')&&o.Key!==PREFIX);const results=[];for(const f of files){try{const obj=await s3.send(new GetObjectCommand({Bucket:BUCKET,Key:f.Key}));const task=JSON.parse(await str(obj.Body));const result=await post(task);const dest=DONE+f.Key.slice(PREFIX.length)+'.'+Date.now()+'.done';await s3.send(new CopyObjectCommand({Bucket:BUCKET,CopySource:BUCKET+'/'+f.Key,Key:dest}));await s3.send(new DeleteObjectCommand({Bucket:BUCKET,Key:f.Key}));results.push({file:f.Key,status:result.status});console.log(JSON.stringify({ok:true,file:f.Key,status:result.status}));}catch(e){results.push({file:f.Key,error:e.message});}}return{processed:results.length,results};};
+            Schedule:
+              Type: AWS::Events::Rule
+              Properties:
+                Name: troy-bridge-runner-cron
+                ScheduleExpression: rate(1 minute)
+                State: ENABLED
+                Targets:
+                  - Id: target
+                    Arn: !GetAtt BridgeRunner.Arn
+            Permission:
+              Type: AWS::Lambda::Permission
+              Properties:
+                FunctionName: !Ref BridgeRunner
+                Action: lambda:InvokeFunction
+                Principal: events.amazonaws.com
+                SourceArn: !GetAtt Schedule.Arn
+          Outputs:
+            FunctionArn:
+              Value: !GetAtt BridgeRunner.Arn
+          EOF
+          aws cloudformation deploy \
+            --stack-name troy-bridge-runner \
+            --template-file /tmp/tbr.yaml \
+            --region ap-southeast-2 \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset
+          echo "CFN deploy done"
+          aws cloudformation describe-stacks --stack-name troy-bridge-runner --region ap-southeast-2 --query 'Stacks[0].StackStatus' --output text
