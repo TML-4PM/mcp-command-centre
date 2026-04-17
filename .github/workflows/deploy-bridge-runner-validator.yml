@@ -4,23 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run only'
+        description: "Dry run only"
         required: false
-        default: 'false'
+        default: "false"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::140548542136:role/troy-lambda-deployer-role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
 
       - name: Package and deploy bridge-runner-validator
@@ -32,26 +30,21 @@ jobs:
           FN_NAME="bridge-runner-validator"
           SRC="bridge/packs/bridge-runner-runtime-enforcement/lambda/bridge_runner_validator.py"
           REGION="ap-southeast-2"
-          ACCOUNT="140548542136"
-          ROLE_ARN="arn:aws:iam::${ACCOUNT}:role/troy-lambda-deployer-role"
+          ROLE_ARN="arn:aws:iam::140548542136:role/lambda-execution-role"
           SB_URL="https://lzfgigiyqpuuxslsygjp.supabase.co"
 
           mkdir -p /tmp/validator_pkg
           cp "$SRC" /tmp/validator_pkg/handler.py
           cd /tmp/validator_pkg && zip -q /tmp/${FN_NAME}.zip handler.py && cd -
+          echo "ZIP: $(wc -c < /tmp/${FN_NAME}.zip) bytes"
 
-          echo "ZIP size: $(wc -c < /tmp/${FN_NAME}.zip) bytes"
-
-          if [ "$DRY_RUN" = "true" ]; then
-            echo "[DRY] Would deploy $FN_NAME"
-            exit 0
-          fi
-
-          EXISTS=$(aws lambda get-function --function-name "$FN_NAME" \
-            --region "$REGION" --query 'Configuration.FunctionName' \
-            --output text 2>/dev/null || echo "")
+          if [ "$DRY_RUN" = "true" ]; then echo "[DRY] skip"; exit 0; fi
 
           ENV_VARS="Variables={SUPABASE_URL=${SB_URL},SUPABASE_SERVICE_KEY=${SB_KEY}}"
+
+          EXISTS=$(aws lambda get-function --function-name "$FN_NAME" \
+            --region "$REGION" --query "Configuration.FunctionName" \
+            --output text 2>/dev/null || echo "")
 
           if [ -z "$EXISTS" ]; then
             echo "Creating $FN_NAME..."
@@ -61,30 +54,28 @@ jobs:
               --role "$ROLE_ARN" \
               --handler handler.handler \
               --zip-file "fileb:///tmp/${FN_NAME}.zip" \
-              --timeout 30 \
-              --memory-size 256 \
+              --timeout 30 --memory-size 256 \
               --environment "$ENV_VARS" \
               --tags "project=bridge-runner-enforcement,is_rd=true,project_code=BRIDGE-RUNNER-ENFORCEMENT" \
-              --region "$REGION" \
-              --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print('CREATED:', d['FunctionName'], d['State'])"
+              --region "$REGION" --output text --query "State"
           else
             echo "Updating $FN_NAME code..."
             aws lambda update-function-code \
               --function-name "$FN_NAME" \
               --zip-file "fileb:///tmp/${FN_NAME}.zip" \
-              --region "$REGION" --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print('CODE_UPDATED:', d['FunctionName'])"
-            sleep 5
+              --region "$REGION" --output text --query "CodeSize"
+            sleep 8
             aws lambda update-function-configuration \
               --function-name "$FN_NAME" \
               --handler handler.handler \
               --timeout 30 --memory-size 256 \
               --environment "$ENV_VARS" \
-              --region "$REGION" --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print('CONFIG_UPDATED:', d['FunctionName'], d['State'])"
+              --region "$REGION" --output text --query "State"
           fi
 
           echo "=== VERIFY ==="
           aws lambda get-function \
-            --function-name "$FN_NAME" \
-            --region "$REGION" \
-            --query 'Configuration.{Name:FunctionName,State:State,Handler:Handler,Modified:LastModified}' \
+            --function-name "$FN_NAME" --region "$REGION" \
+            --query "Configuration.{Name:FunctionName,State:State,Handler:Handler,Modified:LastModified}" \
             --output json
+
