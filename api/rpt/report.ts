@@ -1,9 +1,9 @@
 export const config = { runtime: 'edge' };
 
 const SUPABASE_URL = 'https://lzfgigiyqpuuxslsygjt.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZmdpZ2l5cXB1dXhzbHN5Z2p0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDQxNzQ2OSwiZXhwIjoyMDU5OTkzNDY5fQ.B6SMaQNb8tER_vqrqkmjNW2BFjcoIowulQOREtRcD8Q';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const BRIDGE_URL = 'https://m5oqj21chd.execute-api.ap-southeast-2.amazonaws.com/lambda/invoke';
-const BRIDGE_KEY = process.env.BRIDGE_API_KEY || 'bk_tOH8P5WD3mxBKfICa4yI56vJhpuYOynfdf1d_GfvdK4';
+const BRIDGE_KEY = process.env.BRIDGE_API_KEY;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +13,7 @@ const CORS = {
 };
 
 async function supa(path: string) {
+  if (!SUPABASE_KEY) throw new Error('Missing SUPABASE_SERVICE_KEY');
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
@@ -21,6 +22,7 @@ async function supa(path: string) {
 }
 
 async function bridge(sql: string) {
+  if (!BRIDGE_KEY) throw new Error('Missing BRIDGE_API_KEY');
   const r = await fetch(BRIDGE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${BRIDGE_KEY}`, 'x-api-key': BRIDGE_KEY },
@@ -34,7 +36,7 @@ async function logRun(slug: string, status: string, rowCount: number, summary: s
     const now = new Date().toISOString();
     await fetch(`${SUPABASE_URL}/rest/v1/rpt_run`, {
       method: 'POST',
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+      headers: { apikey: SUPABASE_KEY!, Authorization: `Bearer ${SUPABASE_KEY!}`,
         'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({
         report_slug: slug, run_type: 'report', status,
@@ -49,7 +51,6 @@ async function logRun(slug: string, status: string, rowCount: number, summary: s
 export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers: CORS });
 
-  // Internal-only: requires x-internal-token header
   const _tok = req.headers.get('x-internal-token');
   const _exp = process.env.INTERNAL_API_TOKEN || '';
   if (!_tok || _tok !== _exp) {
@@ -64,12 +65,10 @@ export default async function handler(req: Request) {
   if (!slug) return new Response(JSON.stringify({ error: 'slug required' }), { status: 400, headers: CORS });
 
   try {
-    // Lookup in rpt_registry (canonical table)
     const reports = await supa(`rpt_registry?report_slug=eq.${encodeURIComponent(slug)}&select=*&limit=1`);
     if (!reports?.length) return new Response(JSON.stringify({ error: `Not found: ${slug}` }), { status: 404, headers: CORS });
     const report = reports[0];
 
-    // Draft — return status without running
     if (report.status !== 'live') {
       return new Response(JSON.stringify({
         slug, name: report.report_name, domain: report.domain,
@@ -80,7 +79,6 @@ export default async function handler(req: Request) {
       }), { status: 200, headers: CORS });
     }
 
-    // Fetch data
     let data: any[] = [];
     let runStatus = 'success';
     let errorMsg = '';
