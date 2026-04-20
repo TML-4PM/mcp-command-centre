@@ -1,10 +1,11 @@
 # MCP Command Centre — Real Hub Contract
 
 Production path:
-EventBridge Scheduler -> API Gateway invoke -> troy-code-pusher
+Operator, UI, or agent -> Vercel bridge or direct API Gateway invoke -> troy-code-pusher
 
-Secondary/manual path:
-Operator or UI -> Vercel bridge -> API Gateway invoke
+Retired path:
+EventBridge Scheduler, EventBridge Rules, and cron-based orchestration are retired for this hub.
+Do not create, update, or rely on scheduled triggers for command-centre execution.
 
 Canonical repo:
 TML-4PM/mcp-command-centre
@@ -12,13 +13,11 @@ TML-4PM/mcp-command-centre
 Canonical function:
 troy-code-pusher
 
-Canonical scheduler payload:
-aws/scheduler_payload_control_tower.json
+Canonical bridge payload:
+aws/bridge_payload_control_tower.json
 
-Security rules:
-- No secrets in source
-- BRIDGE_API_KEY from environment only
-- SCHEDULER_SECRET from environment only
+Canonical bridge invoke script:
+aws/invoke_bridge_control_tower.sh
 
 Reality rules:
-System is REAL only when scheduler exists, is enabled, invokes correctly, and writes execution evidence
+System is REAL only when the bridge endpoint exists, accepts authenticated invoke requests, executes troy-code-pusher successfully, and writes execution evidence.
