@@ -158,13 +158,13 @@
   );
 
   // ── CANONICAL CHANGE EMIT ───────────────────────────────────────
-  // Evidence layer. Writes to t4h_canonical_changes with enum-valid types.
+  // Evidence layer. Writes to t4h_canonical_changes (matches real schema).
   server.registerTool(
     "t4h_canonical_emit",
     {
       title: "T4H Canonical Change Emit",
       description:
-        "Records a canonical change event for audit/evidence. Triggers Telegram broadcast if configured.",
+        "Records a canonical change event for audit/evidence. Triggers Telegram broadcast via fn_broadcast_canonical_change() if broadcast_to is set.",
       inputSchema: {
         change_type: z.enum([
           "MILESTONE",
@@ -178,24 +178,31 @@
           "DECISION",
         ]),
         severity: z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]).default("NORMAL"),
-        summary: z.string().min(3).max(500),
-        details: z.string().optional(),
-        source: z.string().default("mcp-remote"),
+        title: z.string().min(3).max(200),
+        summary: z.string().min(3).max(2000),
+        affected: z.array(z.string()).default([]),
+        evidence_ref: z.string().optional(),
+        author: z.string().default("mcp-remote"),
       },
     },
-    async ({ change_type, severity, summary, details, source }) => {
+    async ({ change_type, severity, title, summary, affected, evidence_ref, author }) => {
+      const affectedArr = affected.length
+        ? `ARRAY[${affected.map((a) => `'${a.replace(/'/g, "''")}'`).join(",")}]::text[]`
+        : "ARRAY[]::text[]";
       const sql = `
         INSERT INTO public.t4h_canonical_changes
-          (change_type, severity, summary, details, source, created_at)
+          (change_type, severity, title, summary, affected, evidence_ref, author, created_at)
         VALUES (
           '${change_type}',
           '${severity}',
+          '${title.replace(/'/g, "''")}',
           '${summary.replace(/'/g, "''")}',
-          ${details ? `'${details.replace(/'/g, "''")}'` : "NULL"},
-          '${source.replace(/'/g, "''")}',
+          ${affectedArr},
+          ${evidence_ref ? `'${evidence_ref.replace(/'/g, "''")}'` : "NULL"},
+          '${author.replace(/'/g, "''")}',
           NOW()
         )
-        RETURNING id, change_type, severity, created_at
+        RETURNING id, change_type, severity, title, created_at
       `;
       const result = await runSupabaseSql(sql);
       return jsonText({ status: "REAL", ...result });
@@ -235,7 +242,7 @@
         ev AS (
           SELECT COUNT(*) AS evidence_count
           FROM public.t4h_canonical_changes
-          WHERE summary ILIKE '%${safe}%' OR details ILIKE '%${safe}%'
+          WHERE title ILIKE '%${safe}%' OR summary ILIKE '%${safe}%' OR '${safe}' = ANY(affected)
         )
         SELECT
           (SELECT row_to_json(lam) FROM lam) AS lambda_row,
