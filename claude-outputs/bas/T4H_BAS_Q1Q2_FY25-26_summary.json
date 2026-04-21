@@ -1,0 +1,73 @@
+{
+  "generated_at_utc": "2026-04-21T07:10:27.386563Z",
+  "entity": {
+    "name": "Tech 4 Humanity Pty Ltd",
+    "abn": "70 666 271 272",
+    "entity_id_maat": "28b43c1b-fc56-4200-b95b-9f3894254dc6",
+    "gst_registered": true,
+    "bas_frequency": "quarterly"
+  },
+  "periods": [
+    {
+      "quarter": "Q1",
+      "financial_year": "FY25-26",
+      "period_start": "2025-07-01",
+      "period_end": "2025-09-30",
+      "due_date": "2025-10-28",
+      "overdue_months": 6,
+      "labels": {
+        "G1_total_sales_inc_gst": 0.0,
+        "G2_export_sales": 0.0,
+        "G3_other_gst_free_sales": 20697.11,
+        "G10_capital_purchases": 0.0,
+        "G11_non_capital_purchases_inc_gst": 5759.43,
+        "G13_purchases_input_taxed": 418.0,
+        "G14_purchases_no_gst_in_price": 11724.02,
+        "W1_total_salary_wages": 0.0,
+        "W2_amounts_withheld_from_W1": 0.0,
+        "1A_gst_on_sales": 0.0,
+        "1B_gst_on_purchases": 523.56
+      },
+      "net_gst_refundable_from_ato": 523.56,
+      "txn_count": 245,
+      "classified_pct": 100,
+      "locked_pct": 3.3
+    },
+    {
+      "quarter": "Q2",
+      "financial_year": "FY25-26",
+      "period_start": "2025-10-01",
+      "period_end": "2025-12-31",
+      "due_date": "2026-02-28",
+      "overdue_months": 2,
+      "labels": {
+        "G1_total_sales_inc_gst": 0.0,
+        "G2_export_sales": 0.0,
+        "G3_other_gst_free_sales": 9667.81,
+        "G10_capital_purchases": 0.0,
+        "G11_non_capital_purchases_inc_gst": 3403.33,
+        "G13_purchases_input_taxed": 0.0,
+        "G14_purchases_no_gst_in_price": 19157.1,
+        "W1_total_salary_wages": 0.0,
+        "W2_amounts_withheld_from_W1": 0.0,
+        "1A_gst_on_sales": 0.0,
+        "1B_gst_on_purchases": 309.39
+      },
+      "net_gst_refundable_from_ato": 309.39,
+      "txn_count": 272,
+      "classified_pct": 100,
+      "locked_pct": 4.0
+    }
+  ],
+  "combined_refund_due_from_ato": 832.95,
+  "flags": [
+    "v_maat_api_bas_export has WRONG ABN hardcoded (61 605 746 618). Correct ABN per canon = 70 666 271 272. View also missing FY25-26 quarters. Do NOT use this view for lodgement until fixed.",
+    "W1 Q1 FY25-26 showed $24,049 at aggregate level but this was Personal entity (958df194), not T4H. T4H W1 = $0 for both quarters. Confirm no director wages paid by T4H in this period (historical T4H W1 = $248,975 across 163 txns, so historically pays wages).",
+    "No G1 (GST-collected sales) in either quarter. All income classified G3 (GST-free). Consistent with R&D-heavy company taking grants/refunds. Confirm no sales with GST were misclassified as G3.",
+    "No W2 (PAYGW) classifications anywhere in T4H MAAT data. Either no PAYG withholding obligations or data gap.",
+    "517 of 517 txns classified (100%). 19 of 517 locked (3.7%). Convention is to review+lock before lodging but unlocked does not prevent lodgement."
+  ],
+  "source_of_truth": "maat_transactions filtered entity_id='28b43c1b-fc56-4200-b95b-9f3894254dc6', posted_at range with personal_pct applied",
+  "supersedes": "v_maat_api_bas_export (stale+wrong ABN)",
+  "evidence_file": "T4H_BAS_Q1Q2_FY25-26_line_items.csv"
+}
