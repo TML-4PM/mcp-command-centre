@@ -1,0 +1,26 @@
+name: Revenue Engine Gate
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  enforce-revenue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Ensure revenue engine files exist
+        run: |
+          test -f packs/universal-agent-contract/007_autonomous_revenue_engine.sql
+          test -f packs/universal-agent-contract/bridge/revenue_routing_contract.yaml
+
+      - name: Block unpriced or unprofitable flows (placeholder)
+        run: echo "Revenue engine structure present. Runtime DB gate will enforce margins."
+
+      - name: Pass Revenue Gate
+        run: echo "Revenue Engine Gate PASSED"
