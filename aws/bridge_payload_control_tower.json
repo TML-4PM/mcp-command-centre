@@ -1,0 +1,5 @@
+{
+"action":"invoke_function",
+"function_name":"troy-code-pusher",
+"payload":{"project":"mcp-command-centre-sweep","mode":"create_or_update"}
+}
