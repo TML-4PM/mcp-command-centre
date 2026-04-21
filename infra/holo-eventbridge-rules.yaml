@@ -1,69 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  T4H HoloOrg EventBridge Rules — wires holo-morning-brief and holo-weekly-adaptive-tune.
-  Replaces holoorg-alert-author, holoorg-freshness-watcher, holoorg-signal-harvester (retired 2026-04-17).
-  Deploy: aws cloudformation deploy --template-file holo-eventbridge-rules.yaml --stack-name t4h-holo-eventbridge --region ap-southeast-2
+  RETIRED: EventBridge rules removed. Execution is now bridge-driven only.
 
-Parameters:
-  AwsAccountId:
-    Type: String
-    Default: '140548542136'
-  Region:
-    Type: String
-    Default: ap-southeast-2
-
-Resources:
-
-  # ── holo-morning-brief ─────────────────────────────────────────────────────
-  # 6am AEST daily = 20:00 UTC daily
-  HoloMorningBriefRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: holo-morning-brief-daily
-      Description: "Augmented Humanity morning brief — 6am AEST daily"
-      ScheduleExpression: "cron(0 20 * * ? *)"
-      State: ENABLED
-      Targets:
-        - Id: holo-morning-brief-target
-          Arn: !Sub "arn:aws:lambda:${Region}:${AwsAccountId}:function:holo-morning-brief"
-          Input: '{"source":"eventbridge","routine":"holo-morning-brief","scheduled":true}'
-
-  HoloMorningBriefPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: holo-morning-brief
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt HoloMorningBriefRule.Arn
-
-  # ── holo-weekly-adaptive-tune ──────────────────────────────────────────────
-  # Sunday 1am AEST = Saturday 15:00 UTC
-  HoloWeeklyTuneRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: holo-weekly-adaptive-tune-sunday
-      Description: "HoloOrg weekly pack rebalancing — Sunday 1am AEST"
-      ScheduleExpression: "cron(0 15 ? * SAT *)"
-      State: ENABLED
-      Targets:
-        - Id: holo-weekly-adaptive-tune-target
-          Arn: !Sub "arn:aws:lambda:${Region}:${AwsAccountId}:function:holo-weekly-adaptive-tune"
-          Input: '{"source":"eventbridge","routine":"holo-weekly-adaptive-tune","scheduled":true}'
-
-  HoloWeeklyTunePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: holo-weekly-adaptive-tune
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt HoloWeeklyTuneRule.Arn
+Resources: {}
 
 Outputs:
-  MorningBriefRuleArn:
-    Value: !GetAtt HoloMorningBriefRule.Arn
-    Export:
-      Name: holo-morning-brief-rule-arn
-  WeeklyTuneRuleArn:
-    Value: !GetAtt HoloWeeklyTuneRule.Arn
-    Export:
-      Name: holo-weekly-adaptive-tune-rule-arn
+  Status:
+    Value: "EventBridge retired for this stack"
