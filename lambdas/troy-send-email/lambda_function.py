@@ -1,9 +1,13 @@
 import json, os, re, html as html_lib, boto3
+from urllib import request as urlrequest
+from urllib import error as urlerror
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 ses = boto3.client("ses", region_name=os.environ.get("AWS_SES_REGION", "ap-southeast-2"))
 FROM = os.environ.get("SES_FROM", "noreply@tech4humanity.com.au")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 HTML_HINT_RE = re.compile(r"<!DOCTYPE\s+html|<html\b|<body\b|<[a-zA-Z][^>]*>", re.IGNORECASE)
 TAG_RE = re.compile(r"<[^>]+>")
 MULTISPACE_RE = re.compile(r"[ \t]+")
@@ -39,6 +43,25 @@ def _html_to_text(value: str) -> str:
     return text.strip()
 
 
+def _log(payload):
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return
+    try:
+        req = urlrequest.Request(
+            f"{SUPABASE_URL}/rest/v1/email_log",
+            data=json.dumps(payload).encode(),
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": "application/json"
+            },
+            method="POST"
+        )
+        urlrequest.urlopen(req, timeout=5)
+    except Exception:
+        pass
+
+
 def handler(event, context):
     body = _coerce_body(event)
     to = body.get("to") or body.get("recipient")
@@ -46,6 +69,19 @@ def handler(event, context):
     html = body.get("html") or body.get("body_html") or ""
     text = body.get("text") or body.get("body_text") or ""
     from_addr = body.get("from", FROM)
+    source = body.get("source", "unknown")
+
+    if body.get("preview"):
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "html": html,
+                "text": text,
+                "has_html": bool(html),
+                "has_text": bool(text),
+                "source": source
+            })
+        }
 
     if not to:
         return {"statusCode": 400, "body": json.dumps({"error": "to required"})}
@@ -77,19 +113,16 @@ def handler(event, context):
             Destinations=[to] if isinstance(to, str) else to,
             RawMessage={"Data": msg.as_string()},
         )
-        print(
-            json.dumps(
-                {
-                    "action": "send_email",
-                    "to": to,
-                    "subject": subject,
-                    "msg_id": r["MessageId"],
-                    "has_html": bool(html),
-                    "has_text": bool(text),
-                }
-            )
-        )
-        return {"statusCode": 200, "body": json.dumps({"ok": True, "message_id": r["MessageId"]})}
+
+        _log({
+            "to_addr": to,
+            "subject": subject,
+            "has_html": bool(html),
+            "has_text": bool(text),
+            "source": source,
+            "message_id": r["MessageId"]
+        })
+
+        return {"statusCode": 200, "body": json.dumps({"ok": True})}
     except Exception as e:
-        print(json.dumps({"action": "send_email_error", "error": str(e)}))
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
