@@ -64,31 +64,34 @@
     },
     async ({ source, filter, limit }) => {
       const safeFilter = filter?.replace(/'/g, "''");
-      const filterClause = safeFilter ? ` AND (name ILIKE '%${safeFilter}%')` : "";
-
       const out: JsonRecord = {};
 
       if (source === "lambdas" || source === "both") {
+        const lamFilter = safeFilter
+          ? ` AND (function_name ILIKE '%${safeFilter}%' OR category ILIKE '%${safeFilter}%')`
+          : "";
         const sql = `
-          SELECT name, business_key, autonomy_level, is_callable,
-                 last_invoked_at, invocation_count
+          SELECT function_name, category, pillar, business_key,
+                 invocation_pattern, is_callable, callable_reason,
+                 last_invoked_at, invocation_count, status
           FROM public.mcp_lambda_registry
-          WHERE is_callable = true ${filterClause}
-          ORDER BY name
+          WHERE is_callable = true ${lamFilter}
+          ORDER BY function_name
           LIMIT ${limit}
         `;
         out.lambdas = await runSupabaseSql(sql);
       }
 
       if (source === "entities" || source === "both") {
-        const slugFilter = safeFilter
-          ? ` AND (slug ILIKE '%${safeFilter}%' OR name ILIKE '%${safeFilter}%')`
+        const entFilter = safeFilter
+          ? ` AND (entity_key ILIKE '%${safeFilter}%' OR name ILIKE '%${safeFilter}%')`
           : "";
         const sql = `
-          SELECT slug, name, entity_type, autonomy_level, is_active
+          SELECT entity_key, name, entity_type::text AS entity_type,
+                 status::text AS status, autonomy_tier::text AS autonomy_tier
           FROM core.registry_entities
-          WHERE is_active = true ${slugFilter}
-          ORDER BY slug
+          WHERE status = 'active' ${entFilter}
+          ORDER BY entity_key
           LIMIT ${limit}
         `;
         out.entities = await runSupabaseSql(sql);
@@ -228,15 +231,16 @@
       const safe = entity_name.replace(/'/g, "''");
       const sql = `
         WITH lam AS (
-          SELECT name, is_callable, last_invoked_at, invocation_count
+          SELECT function_name, is_callable, last_invoked_at, invocation_count,
+                 status, invocation_pattern
           FROM public.mcp_lambda_registry
-          WHERE name = '${safe}'
+          WHERE function_name = '${safe}'
           LIMIT 1
         ),
         ent AS (
-          SELECT slug, is_active, autonomy_level
+          SELECT entity_key, status::text AS status, autonomy_tier::text AS autonomy_tier
           FROM core.registry_entities
-          WHERE slug = '${safe}' OR name = '${safe}'
+          WHERE entity_key = '${safe}' OR entity_key = 'lambda.${safe}' OR name = '${safe}'
           LIMIT 1
         ),
         ev AS (
@@ -254,7 +258,7 @@
               AND (SELECT evidence_count FROM ev) > 0
             THEN 'REAL'
             WHEN (SELECT is_callable FROM lam) = true
-              OR (SELECT is_active FROM ent) = true
+              OR (SELECT status FROM ent) = 'active'
             THEN 'PARTIAL'
             ELSE 'PRETEND'
           END AS state
