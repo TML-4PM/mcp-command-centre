@@ -1,0 +1,308 @@
+[
+  {
+    "idx": 1,
+    "ok": true,
+    "head": "-- ========================================================= -- AHC MASTER SYSTEM PACK v1 (deployment: ahc-full-deploy-v...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 2,
+    "ok": true,
+    "head": "-- ---------- 2. PROFILES IDENTITY EXTENSION (additive) ---------- alter table public.profiles add column if not exists ...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 3,
+    "ok": true,
+    "head": "alter table public.profiles add column if not exists lifecycle_stage text default 'NEW'",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "ALTER"
+    }
+  },
+  {
+    "idx": 4,
+    "ok": true,
+    "head": "alter table public.profiles add column if not exists ahc_agent_id text",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "ALTER"
+    }
+  },
+  {
+    "idx": 5,
+    "ok": true,
+    "head": "alter table public.profiles add column if not exists org_id text",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "ALTER"
+    }
+  },
+  {
+    "idx": 6,
+    "ok": true,
+    "head": "alter table public.profiles add column if not exists signal_score numeric default 0",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "ALTER"
+    }
+  },
+  {
+    "idx": 7,
+    "ok": true,
+    "head": "alter table public.profiles add column if not exists revenue_value numeric default 0",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "ALTER"
+    }
+  },
+  {
+    "idx": 8,
+    "ok": true,
+    "head": "alter table public.profiles add column if not exists last_active timestamptz",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "ALTER"
+    }
+  },
+  {
+    "idx": 9,
+    "ok": true,
+    "head": "-- ---------- 3. AUTH EVENT LOG ---------- create table if not exists public.auth_event_log ( id uuid primary key defaul...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 10,
+    "ok": true,
+    "head": "create index if not exists auth_event_log_status_idx on public.auth_event_log(status, created_at desc)",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 11,
+    "ok": true,
+    "head": "create index if not exists auth_event_log_user_id_idx on public.auth_event_log(user_id)",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 12,
+    "ok": true,
+    "head": "-- ---------- 4. USER EVENTS (LifeGraph lite) ---------- create table if not exists public.user_events ( id uuid primary...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 13,
+    "ok": true,
+    "head": "create index if not exists user_events_user_idx on public.user_events(user_id, created_at desc)",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 14,
+    "ok": true,
+    "head": "create index if not exists user_events_event_type_idx on public.user_events(event_type)",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 15,
+    "ok": true,
+    "head": "-- ---------- 5. AHC JOBS ---------- create table if not exists public.ahc_jobs ( id uuid primary key default gen_random...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 16,
+    "ok": true,
+    "head": "create index if not exists ahc_jobs_user_idx on public.ahc_jobs(user_id, created_at desc)",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 17,
+    "ok": true,
+    "head": "create index if not exists ahc_jobs_status_idx on public.ahc_jobs(status) where status in ('PENDING','RUNNING')",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 18,
+    "ok": true,
+    "head": "-- ---------- 6. VALUE EVENTS (revenue loop) ---------- create table if not exists public.value_events ( id uuid primary...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 19,
+    "ok": true,
+    "head": "create index if not exists value_events_user_idx on public.value_events(user_id, created_at desc)",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 20,
+    "ok": true,
+    "head": "create index if not exists value_events_source_idx on public.value_events(source)",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 21,
+    "ok": true,
+    "head": "-- ---------- 7. TRIGGER FUNCTION \u2014 schema-correct, exception-safe ---------- -- Existing function was inserting first_n...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 22,
+    "ok": false,
+    "head": "-- ---------- 8. TRIGGER (replace in place \u2014 atomic) ---------- drop trigger if exists on_auth_user_created on auth.user...",
+    "result": {
+      "success": false,
+      "http": 400,
+      "error": "{\"success\":false,\"error\":\"sql_error\",\"rows\":[],\"count\":0,\"command\":null}"
+    }
+  },
+  {
+    "idx": 23,
+    "ok": false,
+    "head": "create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user()",
+    "result": {
+      "success": false,
+      "http": 400,
+      "error": "{\"success\":false,\"error\":\"sql_error\",\"rows\":[],\"count\":0,\"command\":null}"
+    }
+  },
+  {
+    "idx": 24,
+    "ok": true,
+    "head": "-- ---------- 9. COMMAND CENTRE VIEWS ---------- create or replace view cc.v_auth_health as select date_trunc('hour', cr...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 25,
+    "ok": true,
+    "head": "create or replace view cc.v_user_lifecycle as select coalesce(lifecycle_stage,'UNSET') as lifecycle_stage, count(*) as t...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 26,
+    "ok": true,
+    "head": "create or replace view cc.v_value_flow as select source, count(*) as events, sum(value) as total_value, max(created_at) ...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 0,
+      "command": "CREATE"
+    }
+  },
+  {
+    "idx": 27,
+    "ok": true,
+    "head": "-- ---------- 10. BACKFILL: profiles for auth.users without one ---------- insert into public.profiles (id, email, full_...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 4,
+      "command": "--"
+    }
+  },
+  {
+    "idx": 28,
+    "ok": true,
+    "head": "-- ---------- 11. BACKFILL: auth_event_log marker for backfill ---------- insert into public.auth_event_log (user_id, em...",
+    "result": {
+      "success": true,
+      "rows": [],
+      "count": 4,
+      "command": "--"
+    }
+  }
+]
