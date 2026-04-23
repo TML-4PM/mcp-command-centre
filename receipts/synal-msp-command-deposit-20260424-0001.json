@@ -1,0 +1,55 @@
+{
+  "receipt_id": "SYNAL-MSP-COMMAND-DEPOSIT-20260424-0001",
+  "receipt_type": "github_deposit",
+  "created_at_utc": "2026-04-23T23:07:01Z",
+  "deposited_by": "ChatGPT",
+  "target_repository": "TML-4PM/mcp-command-centre",
+  "handover_issue": {
+    "number": 7,
+    "title": "HANDOVER: Synal Golden Autonomous Loop scaffold for MSP Command execution",
+    "url": "https://github.com/TML-4PM/mcp-command-centre/issues/7"
+  },
+  "preferred_target_repository": "TML-4PM/the-pen",
+  "fallback_repository": "TML-4PM/mcp-command-centre",
+  "deposit_status": "REAL",
+  "runtime_status": "PARTIAL_PENDING_EXTERNAL_BINDINGS",
+  "blocked_items": [
+    "TML-4PM/the-pen not visible to ChatGPT GitHub connector in this session",
+    "Stripe secrets not provided",
+    "Supabase service role not provided",
+    "AWS credentials and Lambda names not provided"
+  ],
+  "deposited_assets": [
+    "Synal Golden Autonomous Loop execution handover",
+    "local make prove recovery scaffold",
+    "required repo tree",
+    "execution payload",
+    "acceptance criteria",
+    "known blockers",
+    "Reality Ledger status"
+  ],
+  "acceptance_criteria": [
+    "make prove runs from the correct project directory without MODULE_NOT_FOUND",
+    "scripts/smoke-test.js exists and passes",
+    "Makefile contains an actual prove target",
+    "scaffold is committed to intended repo or fallback execution repo",
+    "Reality Ledger status remains honest: scaffold REAL, deployment PARTIAL until secrets and endpoints are bound"
+  ],
+  "execution_payload": {
+    "action": "deploy_synal_golden_autonomous_loop",
+    "biz_key": "SYNAL",
+    "autonomy_tier": "AUTONOMOUS",
+    "target_repo_preferred": "TML-4PM/the-pen",
+    "fallback_repo_used_for_handover": "TML-4PM/mcp-command-centre",
+    "evidence_required": true,
+    "reality_ledger_required": true
+  },
+  "proof_required_next": [
+    "commit SHA for scaffold",
+    "workflow run URL if GitHub Actions executes",
+    "make prove output",
+    "Stripe binding proof when secrets are attached",
+    "Supabase binding proof when service role is attached",
+    "AWS Lambda proof when credentials are attached"
+  ]
+}
