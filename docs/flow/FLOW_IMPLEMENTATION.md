@@ -2,107 +2,143 @@
 
 This document translates FLOW into an executable system.
 
-It should be read together with the README and the GitHub issue.
+It must be read with the understanding that FLOW is:
+- a hybrid trigger system
+- a selectable autonomy system
+- a multi-surface engine
+
+not just a scheduled Lambda loop.
 
 ## System components
 
 ```text
 Supabase (source of truth)
-→ Views (board / pressure / onboarding)
-→ Command Centre UI
+→ Views (board / pressure / onboarding / drain)
+→ Command Centre / other surfaces
 → Bridge Runner
 → Lambda (flow_orchestrator)
 → EventBridge (scheduler)
+→ External events (CRM, Stripe, forms, etc)
+→ Agents / browser capture
 ```
 
 ## Lifecycle loop
 
 ```text
-create item
-→ assign stage
-→ set next action
-→ move forward
-→ detect stall
-→ resume or flag
+capture (manual / event / agent)
+→ place in FLOW
+→ assign next action or review
+→ move forward (manual or automated)
+→ detect stall (scheduled)
+→ resume / flag / advance
 → deliver value
 → expand
 → re-enter flow
 ```
 
+## Trigger model
+
+### Manual trigger
+User creates or updates a FLOW item.
+
+### Event trigger
+External systems call API or Bridge.
+
+### Scheduled trigger
+EventBridge runs pressure sweeps.
+
+### Agent trigger
+Agents create or update items.
+
+All four must be supported.
+
 ## Execution flow diagram
 
 ```text
-[User / Agent]
-        │
-        v
-   flow_items (insert/update)
-        │
-        v
-EventBridge (15 min)
-        │
-        v
-flow_orchestrator (Lambda)
-        │
-        ├── evaluate pressure
-        ├── decide action
-        ├── update item
-        └── write event
-        │
-        v
-Supabase updated state
-        │
-        v
-Command Centre refresh
+[Manual / Event / Agent]
+          │
+          v
+     flow_items
+          │
+          ├──────────────┐
+          │              │
+          v              v
+EventBridge        External triggers
+   (schedule)           (API)
+          │              │
+          └──────┬───────┘
+                 v
+        flow_orchestrator
+                 │
+       ┌─────────┼─────────┐
+       │         │         │
+       v         v         v
+   evaluate   decide    log run
+                 │
+                 v
+           update item
+                 │
+                 v
+           write event
+                 │
+                 v
+             Supabase
+                 │
+                 v
+        Command Centre / UI
 ```
 
 ## Key decisions enforced
 
-### 1. No next action
+### No next action
 → BLOCKED
 
-### 2. Review overdue
-→ RESUMED + suggested next stage
+### Review overdue
+→ RESUMED + suggested stage
 
-### 3. Stale movement
+### Stale movement
 → RESUMED
 
-### 4. Active and healthy
+### Active and healthy
 → no change
 
 ## Data responsibilities
 
 ### flow_items
 - single source of truth
-- holds state, value, ownership
+- holds stage, value, ownership
 
 ### flow_events
-- audit log
-- enables replay and evidence
+- business movement log
+
+### flow_run_log
+- execution trace log
+- required for observability
 
 ### stage_aliases
-- enables multi-language views
+- multi-language mapping
 
-## API layer (expected)
+## API layer
 
-### GET /api/flow/board
-Returns `v_flow_board`
+Must expose:
 
-### GET /api/flow/pressure
-Returns `v_flow_pressure`
+- `GET /api/flow/board`
+- `GET /api/flow/pressure`
+- `GET /api/flow/onboarding`
+- `GET /api/flow/drain-miss`
+- `GET /api/flow/run-log`
 
-### GET /api/flow/onboarding
-Returns `v_flow_onboarding_ramp`
+## Surfaces
 
-## Minimal UI expectation
+### Required
+- Command Centre FLOW board
+- Command Centre pressure/miss view
 
-One board.
-Eight columns.
-Cards showing:
-- title
-- owner
-- next action
-
-No duplication.
+### Optional
+- Synal panel
+- browser extension capture
+- embedded widget
+- API-only integrations
 
 ## Deployment checklist
 
@@ -110,30 +146,31 @@ No duplication.
 - RLS active
 - lambda deployed
 - eventbridge scheduled
-- widget inserted
 - API endpoints live
+- widget inserted
 - at least 4 stages populated
 
 ## Proof of execution
 
 System is not complete until:
-- an item becomes stale
-- the sweep detects it
-- lambda resumes or flags it
+- a stale item is detected
+- orchestrator runs
+- run log is written
 - event is written
-- UI reflects change
+- UI shows updated state
 
 ## Reality alignment
 
-This is not a Kanban board.
+This is not just a Kanban board.
 
 It is:
-- a business lifecycle
+- a business lifecycle engine
 - enforced by automation
-- observable in real time
+- observable through logs and pressure views
+- extensible across multiple trigger sources
 
 ## Final note
 
 If items can still disappear, the system is not working.
 
-If items move without humans noticing, the system is working.
+If items move, log, and surface automatically across multiple triggers, the system is working.
