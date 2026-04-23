@@ -1,14 +1,21 @@
 # FLOW
 
-FLOW is the business-first operating model for making sure work does not die.
+FLOW is the business-first movement engine for making sure work does not die.
 
-It replaces fragmented task tracking with one shared sequence that can be read by different people in different languages without duplicating the underlying work item.
+It is not just a board.
+It is not just a widget.
+It is not just a Lambda.
+It is not just a browser feature.
+
+FLOW is one canonical operating sequence with multiple trigger modes, selectable autonomy, and multiple visible surfaces.
 
 ## Core idea
 
 One canonical work object.
 One shared sequence.
 Many views.
+Many trigger modes.
+Selectable autonomy.
 No silent death.
 
 ## Canonical sequence
@@ -35,6 +42,23 @@ Underneath it, the system can still track technical conditions such as:
 
 Those are enforcement mechanics, not the primary business language.
 
+## What FLOW actually is
+
+FLOW is a backend business movement engine that can be:
+- triggered manually
+- triggered by events
+- triggered by schedules
+- triggered by agents
+
+and surfaced through:
+- Command Centre
+- Synal / browser surfaces
+- API endpoints
+- embedded widgets
+- white-label client views
+
+That means FLOW is universal at the engine level, not tied to a single interface.
+
 ## Why this exists
 
 The problem was not lack of tasks.
@@ -46,16 +70,18 @@ FLOW fixes that by making every item:
 - assigned a next movement
 - reviewable
 - pressure-tested when stale
+- observable when missed or drained
 
 ## Operating contract
 
 Every FLOW item must:
 1. exist once as a canonical object
 2. sit in the shared sequence
-3. have a visible next action
+3. have a visible next action or scheduled review
 4. have an owner or accountable surface
 5. have movement pressure through `last_movement_at` or `next_review_at`
 6. be readable in multiple business languages
+7. support selectable autonomy where appropriate
 
 ### Correct failure wording
 
@@ -68,6 +94,81 @@ Use:
 > any item without movement, explanation, or scheduled review becomes an exception
 
 That matches how a business actually works.
+
+## Trigger modes
+
+FLOW supports four trigger modes.
+
+### 1. Manual trigger
+A human creates or moves an item.
+
+Examples:
+- add an idea to Parking
+- move a lead to Sales
+- mark Delivery as complete
+- set next action or review date
+
+### 2. Event-driven trigger
+A business event updates FLOW.
+
+Examples:
+- form submitted
+- Stripe payment lands
+- CRM stage changes
+- booking created
+- GitHub issue opened
+- email arrives
+
+### 3. Scheduled trigger
+A timed sweep checks for stale, missed, or drained work.
+
+Examples:
+- 15-minute pressure sweep
+- daily review check
+- weekly drained-item scan
+
+### 4. Agent / system trigger
+An agent or orchestration layer creates or advances items.
+
+Examples:
+- agent creates an item from a chat
+- agent suggests next action
+- bridge runner writes back completion evidence
+- browser capture turns unfinished work into a FLOW item
+
+## Autonomy model
+
+FLOW is hybrid by design.
+
+It is not always automatic.
+It is not always manual.
+
+### Manual when
+- humans decide business intent
+- judgment is required
+- explicit control matters
+
+### Automatic when
+- stale work must be surfaced
+- logs and evidence must be written
+- repeatable pressure rules apply
+- safe transitions can be inferred
+
+### User-chosen when
+- a business, stage, or item should run as autonomous, gated, or human-led
+
+Recommended operating split:
+
+```text
+PARKING / DISCOVERY / PRE_SALE / SALES
+= mostly human-led with agent assistance
+
+ONBOARDING / DELIVERY / VALUE / EXPANSION
+= increasingly automated where safe
+
+PRESSURE / LOGGING / MISS DETECTION
+= always automatic
+```
 
 ## Multi-language views
 
@@ -122,37 +223,40 @@ Draft → Transform → Localise → Publish → Repurpose
                                                      │
                                                      └──────────────→ back into FLOW
 
-Exception pressure:
+Pressure across all stages:
 - no next action
 - review overdue
 - stale movement
+- drained item
 
 These do not create a second board.
-They trigger pressure and resume logic on the same item.
+They trigger pressure, logging, and resume logic on the same item.
 ```
 
-## Data flow diagram
+## Data and execution flow diagram
 
 ```text
-User / Agent / Sales / System
-            │
-            v
-      public.flow_items
-            │
-            ├── public.flow_events
-            │
-            ├── public.v_flow_board
-            ├── public.v_flow_pressure
-            └── public.v_flow_onboarding_ramp
-                     │
-                     v
-            Command Centre widget
-                     │
-                     v
-            Bridge / Lambda / EventBridge
-                     │
-                     v
-            updates movement, state, evidence
+Manual UI / Event / Schedule / Agent
+                 │
+                 v
+          public.flow_items
+                 │
+                 ├── public.flow_events
+                 ├── public.flow_run_log
+                 │
+                 ├── public.v_flow_board
+                 ├── public.v_flow_pressure
+                 ├── public.v_flow_onboarding_ramp
+                 └── public.v_flow_drain_and_miss
+                          │
+                          v
+                Command Centre / Synal / Widget / API
+                          │
+                          v
+              Bridge / Lambda / EventBridge / Agents
+                          │
+                          v
+            update movement, state, evidence, logs
 ```
 
 ## Main database objects
@@ -161,34 +265,30 @@ User / Agent / Sales / System
 - `public.flow_items`
 - `public.flow_events`
 - `public.flow_stage_aliases`
+- `public.flow_run_log`
 
 ### Views
 - `public.v_flow_board`
 - `public.v_flow_pressure`
 - `public.v_flow_onboarding_ramp`
+- `public.v_flow_drain_and_miss`
 
-## Automation pattern
+## Surfaces
 
-### Sweep
-EventBridge runs a pressure sweep every 15 minutes.
+### Internal surfaces
+- Command Centre board
+- pressure / misses view
+- onboarding ramp
 
-### Lambda
-`flow_orchestrator` reads a FLOW item, evaluates pressure, and decides whether to:
-- do nothing
-- flag missing action
-- resume stale work
-- advance the item
+### Optional surfaces
+- Synal side panel
+- browser capture UI
+- embedded widget
+- white-label client board
+- API-only integrations
 
-### Bridge envelope
-The orchestrator is bridge-ready and receives a standard invocation envelope.
-
-## Command Centre
-
-The Command Centre should render a single FLOW board from `v_flow_board`.
-
-It should also expose:
-- pressure list from `v_flow_pressure`
-- onboarding ramp from `v_flow_onboarding_ramp`
+This is why FLOW can become a resale product.
+The engine stays the same while the surface changes.
 
 ## What success looks like
 
@@ -197,7 +297,10 @@ You come back days later and see:
 - what is moving
 - what is feeding onboarding
 - what is creating value
-- what needs attention
+- what missed review
+- what drained away
+- what resumed
+- what still has no next action
 
 Not dead work.
 Not hidden work.
