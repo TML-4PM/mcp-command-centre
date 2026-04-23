@@ -1,0 +1,1 @@
+{ "queues": ["ops.work_queue","cc.review_queue","cc.escalation_queue"] }
