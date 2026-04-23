@@ -1,0 +1,2 @@
+-- AGL schema bundle placeholder
+-- (full content in local bundle)
