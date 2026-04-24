@@ -1,0 +1,22 @@
+{
+  "fn": "enqueue_job",
+  "action": "sql.execute",
+  "idempotency_key": "flow-sweeper-001",
+  "payload": {
+    "repo": "TML-4PM/mcp-command-centre",
+    "ref": "main",
+    "sql_file": "bridge-runner/supabase/002_flow_sweeper.sql",
+    "proof_queries": [
+      "select public.flow_sweeper(10, false);",
+      "select * from public.flow_run_log where run_type = 'flow_sweeper' order by created_at desc limit 10;",
+      "select * from public.v_flow_drain_and_miss where flow_health <> 'OK' order by last_movement_at asc limit 20;"
+    ]
+  },
+  "priority": 5,
+  "meta": {
+    "actor": "troy",
+    "source": "flow_sweeper_packet",
+    "mode": "WIP",
+    "endpoint": "mac"
+  }
+}
