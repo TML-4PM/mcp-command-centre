@@ -1,0 +1,18 @@
+{
+  "fn": "enqueue_job",
+  "action": "sql.execute",
+  "idempotency_key": "core-widgets-unblock-001",
+  "payload": {
+    "repo": "TML-4PM/mcp-command-centre",
+    "ref": "main",
+    "sql_file": "bridge-runner/supabase/001_core_widgets_unblock.sql",
+    "proof_query": "select * from core.widgets where widget_id = 'bridge_runner_control_plane';"
+  },
+  "priority": 5,
+  "meta": {
+    "actor": "troy",
+    "source": "wip_execution_packet",
+    "mode": "WIP",
+    "endpoint": "mac"
+  }
+}
