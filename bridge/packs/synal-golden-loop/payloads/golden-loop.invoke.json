@@ -1,0 +1,19 @@
+{
+  "intent": "synal.golden_loop.run",
+  "source": "bridge",
+  "priority": "high",
+  "allowed": true,
+  "monetise": true,
+  "payload": {
+    "mode": "FULL",
+    "phases": [
+      "DISCOVER",
+      "VERIFY",
+      "REMEDIATE",
+      "REPLAY",
+      "ENFORCE"
+    ],
+    "region": "ap-southeast-2",
+    "stack": "synal-global-control"
+  }
+}
