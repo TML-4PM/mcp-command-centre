@@ -1,0 +1,312 @@
+project: T4H_TabFleet_AttentionFabric
+phase: v1.1_hardening
+status: ACTIVE
+created_from: chatgpt_session
+created_date: '2026-04-25'
+repository_target: TML-4PM/mcp-command-centre
+execution_stack:
+  - the-pen
+  - mcp-command-centre
+  - symbio-dev-control-plane
+  - worker_receipt_layer
+  - reality_ledger
+
+objective:
+  - convert existing tabs and saved browser workloads into a managed execution fleet
+  - apply lazy first-touch upgrade rather than mass wake-up
+  - enforce execution contract before work proceeds
+  - route attention only when human involvement is required
+  - auto-complete safe non-human tasks
+  - record all work through receipts and ledger evidence
+  - close hardening gaps before production autonomy scales
+
+operating_rule:
+  mass_wake_up: false
+  strategy: lazy_first_touch_enforcement
+  description: >-
+    Existing tabs, saved browser sessions, and dormant workloads must not be woken all at once.
+    When a browser, tab, saved session, bookmark, or workload is opened, searched, focused, or touched,
+    the system discovers it, injects the current execution contract, classifies it, and routes it to
+    execute, repair, archive, or wait. Sweep and execution must remain separate.
+
+global_contract:
+  version: v1
+  enforcement: STRICT
+  rules:
+    - no_receipt_equals_fail
+    - no_ledger_equals_pretend
+    - no_envelope_equals_block
+    - no_mass_wake_up
+    - no_duplicate_execution
+    - safe_idempotent_tasks_can_auto_finish
+    - human_required_tasks_route_to_attention_queue
+  required_steps:
+    - discover
+    - touch
+    - upgrade
+    - classify
+    - preflight
+    - execute_or_route
+    - receipt
+    - ledger
+    - transparency_summary
+
+core_lifecycle:
+  - DISCOVER
+  - TOUCH
+  - UPGRADE
+  - CLASSIFY
+  - EXECUTE_OR_REPAIR_OR_ARCHIVE_OR_WAIT
+  - RECEIPT
+  - LEDGER
+  - REPORT
+
+hardening_gaps:
+  - id: GAP-001
+    name: job_identity_and_deduplication
+    problem: Same intent can exist across multiple tabs and execute multiple times.
+    required_state: Single canonical job per intent; duplicate tabs become watchers or merged records.
+    work_items:
+      - create job_identity schema
+      - implement job_hash generation from intent and key parameters
+      - link tabs to canonical job_id
+      - prevent more than one active job per job_hash
+      - mark duplicate tabs as DUPLICATE_WATCHER or MERGED
+    success_criteria:
+      - zero duplicate job execution for same job_hash
+      - duplicates visible in Command Centre
+
+  - id: GAP-002
+    name: idempotency_and_execution_safety
+    problem: Retries and parallel execution can rerun unsafe tasks.
+    required_state: Every execution path has idempotency key and lock semantics.
+    work_items:
+      - add idempotency_key to execution payloads
+      - add TTL execution locks
+      - block concurrent execution for locked jobs
+      - allow forced rerun only with explicit override and evidence
+    success_criteria:
+      - 100 percent of execution requests include idempotency_key
+      - no duplicate concurrent execution for same canonical job
+
+  - id: GAP-003
+    name: global_control_modes
+    problem: No central brake exists for runaway sweep or execution.
+    required_state: NORMAL SAFE PAUSED KILL modes enforced across sweep and execution workers.
+    work_items:
+      - create execution_control_config table or config source
+      - enforce mode in sweeper executor attention-router and repair workers
+      - SAFE permits classify and ledger only; no auto execution
+      - PAUSED permits no sweep or execution except health checks
+      - KILL stops all non-essential workers
+      - log every override to ledger
+    success_criteria:
+      - mode change takes effect before next worker action
+      - emergency stop is visible in Command Centre
+
+  - id: GAP-004
+    name: auth_context_and_data_access
+    problem: Browser tab session context may not exist in Lambda or worker context.
+    required_state: Jobs carry auth context and permission requirements; missing auth becomes PARTIAL not silent failure.
+    work_items:
+      - extend job payload with auth_context
+      - distinguish browser_session token_ref service_account and human_context
+      - classify missing permission as PARTIAL_AUTH_REQUIRED
+      - record access failure evidence
+    success_criteria:
+      - no auth failure is misclassified as execution failure
+      - all jobs declare required_permissions or UNKNOWN
+
+  - id: GAP-005
+    name: true_completion_validation
+    problem: Technical success does not prove business outcome.
+    required_state: Completion requires technical_success and outcome_verified where applicable.
+    work_items:
+      - add completion_criteria schema
+      - extend ledger classification with technical_success and outcome_verified
+      - classify tech-only success as PARTIAL unless outcome proof exists
+      - add outcome validation hooks per job type
+    success_criteria:
+      - REAL only used when outcome proof exists or explicit no-outcome-required rule applies
+
+  - id: GAP-006
+    name: priority_and_resource_allocation
+    problem: Low-value work can consume execution capacity.
+    required_state: Priority score drives queue order and execution throttles.
+    work_items:
+      - calculate priority_score as value_score times urgency_score times confidence_score
+      - replace FIFO execution with priority queue
+      - add concurrency limits by priority tier
+      - expose queue ordering in Command Centre
+    success_criteria:
+      - high priority jobs execute before low value work
+      - queue starvation is monitored and reported
+
+  - id: GAP-007
+    name: context_age_and_validity
+    problem: Old tabs may contain stale or invalid assumptions.
+    required_state: Context age is tracked and stale jobs are revalidated or archived.
+    work_items:
+      - add context_age and last_validated_at fields
+      - implement decay function
+      - revalidate stale work before execution
+      - archive low-value stale work with receipt
+    success_criteria:
+      - no stale job executes without revalidation
+
+  - id: GAP-008
+    name: human_trust_and_transparency
+    problem: Autonomous decisions become invisible and reduce trust.
+    required_state: Passive reporting shows what was done, avoided, suppressed, and completed.
+    work_items:
+      - create daily transparency summary
+      - log auto-completions
+      - log suppressed alerts
+      - log tasks archived without interruption
+      - create Command Centre attention/fleet summary widget
+    success_criteria:
+      - operator can see daily system actions without being interrupted
+
+  - id: GAP-009
+    name: cross_job_dependency_management
+    problem: Some workloads depend on earlier jobs and cannot execute independently.
+    required_state: Dependency graph gates execution until upstream dependencies are REAL.
+    work_items:
+      - add depends_on job_hash array
+      - build dependency resolver
+      - block execution until dependencies are REAL or explicitly waived
+      - surface blocked dependencies in Command Centre
+    success_criteria:
+      - no dependent job executes before upstream proof exists
+
+  - id: GAP-010
+    name: cost_vs_value_awareness
+    problem: Autonomous execution can create uncontrolled cost.
+    required_state: Jobs estimate compute cost and value return before execution.
+    work_items:
+      - add compute_cost_estimate and value_return_estimate
+      - classify strategic_override when value is not directly monetary
+      - gate auto-execution when cost exceeds value without override
+      - write cost/value evidence to ledger
+    success_criteria:
+      - auto-execution includes value-cost rationale
+      - runaway cost is prevented by mode and gating
+
+implementation_epics:
+  - name: schema_and_registry
+    owner_agent: architecture_lead
+    target: supabase
+    outputs:
+      - tabs_registry
+      - job_identity
+      - execution_ledger_extensions
+      - attention_queue
+      - execution_control_config
+      - dependency_edges
+      - transparency_log
+
+  - name: browser_fleet_discovery
+    owner_agent: product_engineering_lead
+    target: browser_extension_or_electron_shell
+    outputs:
+      - open_tab_discovery
+      - saved_session_import
+      - bookmark_backlog_import
+      - first_touch_hook
+      - contract_injector
+
+  - name: sweep_and_upgrade_worker
+    owner_agent: platform_engineering_lead
+    target: worker_layer
+    outputs:
+      - sweeper_worker
+      - first_touch_upgrade
+      - classification_engine
+      - stale_context_revalidator
+
+  - name: execution_and_receipts
+    owner_agent: execution_lead
+    target: worker_receipt_layer
+    outputs:
+      - executor_worker
+      - idempotency_lock
+      - retry_policy
+      - receipt_contract
+      - outcome_validator
+
+  - name: attention_and_place_routing
+    owner_agent: signal_place_lead
+    target: command_centre_and_notification_surfaces
+    outputs:
+      - attention_router
+      - escalation_policy
+      - preferred_place_selector
+      - return_to_task_snapshot
+
+  - name: command_centre_visibility
+    owner_agent: ux_command_centre_lead
+    target: mcp-command-centre
+    outputs:
+      - tab_fleet_health_widget
+      - attention_queue_widget
+      - daily_transparency_widget
+      - drift_and_duplicate_view
+
+  - name: symbio_devbox_deploy
+    owner_agent: devbox_lead
+    target: symbio-dev-control-plane
+    outputs:
+      - deployable_migrations
+      - worker_scripts
+      - environment_contract
+      - smoke_tests
+      - rollback_plan
+
+readiness_gates:
+  - gate: RLS_ENABLED
+    requirement: All Supabase tables have RLS and service-role only writes where appropriate.
+  - gate: CONTRACT_ENDPOINT_AVAILABLE
+    requirement: Current execution contract can be fetched by browser hook and worker.
+  - gate: IDEMPOTENCY_ENFORCED
+    requirement: No execution path runs without idempotency_key and lock check.
+  - gate: LEDGER_BOUND
+    requirement: Every execution and archive decision writes a ledger or transparency record.
+  - gate: KILL_SWITCH_TESTED
+    requirement: KILL mode stops all non-essential execution before next action.
+  - gate: COMMAND_CENTRE_VISIBLE
+    requirement: Fleet status, attention queue, and daily summary are visible.
+  - gate: SMOKE_TEST_PASS
+    requirement: Sample tab/job moves through discover touch upgrade classify execute receipt ledger.
+
+bridge_transport:
+  intended_route:
+    - mcp-command-centre
+    - bridge_runner
+    - symbio-dev-control-plane
+    - worker_receipt_layer
+  mode: autonomous_non_destructive
+  human_in_loop_required: false
+  destructive_actions_allowed: false
+  notes: >-
+    Build may create schemas, files, workers, widgets, and queued jobs. It must not delete existing data.
+    Archive-only behaviour is required for retiring stale tabs/jobs.
+
+success_criteria:
+  - all touched tabs upgraded to current execution contract
+  - no mass wake-up performed
+  - all jobs classified before execution
+  - duplicate jobs merged or blocked
+  - idempotency enforced for all execution paths
+  - human attention only routed when required
+  - safe low-risk jobs can auto-finish
+  - all actions produce receipts or transparency records
+  - REAL PARTIAL PRETEND classification bound to evidence
+  - daily passive transparency summary generated
+
+receipt_required_from_next_runner:
+  - commit_or_deploy_reference
+  - migration_status
+  - worker_status
+  - command_centre_widget_status
+  - smoke_test_result
+  - ledger_sample
