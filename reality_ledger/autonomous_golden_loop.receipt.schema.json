@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Autonomous Golden Loop Receipt",
+  "type": "object",
+  "required": ["status", "request_id", "repo", "artifact", "commit_sha", "reality_state"],
+  "properties": {
+    "status": { "type": "string" },
+    "request_id": { "type": "string" },
+    "repo": { "type": "string" },
+    "artifact": { "type": "string" },
+    "commit_sha": { "type": "string" },
+    "bridge_invocation_id": { "type": ["string", "null"] },
+    "reality_state": { "type": "string", "enum": ["REAL", "PARTIAL", "PRETEND"] },
+    "evidence": { "type": "array", "items": { "type": "string" } }
+  }
+}
