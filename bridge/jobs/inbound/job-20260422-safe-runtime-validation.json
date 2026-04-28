@@ -1,0 +1,21 @@
+{
+  "type": "bridge_job",
+  "mode": "runtime_validation",
+  "job_ref": "runtime-test-001",
+  "instructions": {
+    "intent": "validate end-to-end bridge runner",
+    "expected_flow": [
+      "pickup",
+      "claim",
+      "execute",
+      "log",
+      "writeback",
+      "close"
+    ]
+  },
+  "metadata": {
+    "timestamp_utc": "2026-04-22T00:00:00Z",
+    "origin": "chatgpt",
+    "safe": true
+  }
+}
