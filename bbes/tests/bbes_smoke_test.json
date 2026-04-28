@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "schema_tables_exist",
+    "rls_enabled",
+    "handlers_return_contract",
+    "payload_templates_valid",
+    "execution_log_writable",
+    "receipt_writable"
+  ],
+  "expected": {
+    "status": "PASS",
+    "reality_state": "PARTIAL"
+  }
+}
