@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tech4humanity.org/schemas/execution_registry.schema.json",
+  "title": "Autonomous Golden Loop Execution Registry Item",
+  "type": "object",
+  "required": [
+    "id",
+    "source",
+    "captured_at",
+    "title",
+    "intent",
+    "business_keys",
+    "systems_affected",
+    "required_actions",
+    "routing",
+    "status",
+    "reality_state",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "enum": ["chatgpt", "browser", "github", "email", "manual", "bridge", "system"] },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "title": { "type": "string" },
+    "url": { "type": ["string", "null"] },
+    "intent": { "type": "string" },
+    "business_keys": { "type": "array", "items": { "type": "string" } },
+    "systems_affected": { "type": "array", "items": { "type": "string" } },
+    "required_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action_id", "action", "owner", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "action_id": { "type": "string" },
+          "action": { "type": "string" },
+          "owner": { "type": "string" },
+          "status": { "type": "string", "enum": ["new", "queued", "executing", "blocked", "done", "failed"] },
+          "proof_required": { "type": "boolean", "default": true }
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "required": ["github_repo", "bridge_function", "command_centre_surface"],
+      "additionalProperties": false,
+      "properties": {
+        "github_repo": { "type": ["string", "null"] },
+        "bridge_function": { "type": ["string", "null"] },
+        "command_centre_surface": { "type": ["string", "null"] }
+      }
+    },
+    "status": { "type": "string", "enum": ["new", "compiled", "queued", "executed", "proved", "failed", "retired"] },
+    "reality_state": { "type": "string", "enum": ["REAL", "PARTIAL", "PRETEND"] },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "value", "captured_at"],
+        "additionalProperties": false,
+        "properties": {
+          "type": { "type": "string" },
+          "value": { "type": "string" },
+          "captured_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}
