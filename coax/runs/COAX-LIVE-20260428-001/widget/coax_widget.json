@@ -1,0 +1,16 @@
+{
+  "slug": "coax-live-20260428-001",
+  "title": "COAX Federated Execution",
+  "description": "Live federated run across GPT, Claude, Perplexity",
+  "state": "Awaiting Bridge Execution",
+  "reality": "PARTIAL",
+  "data_source": "coax_execution_log",
+  "fields": [
+    "coax_thread_id",
+    "agent",
+    "system",
+    "status",
+    "reality",
+    "created_at"
+  ]
+}
