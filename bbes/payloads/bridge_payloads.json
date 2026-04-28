@@ -1,0 +1,53 @@
+{
+  "capture_batch": {
+    "fn": "bbes-capture-batch",
+    "payload": {
+      "source_name": "browser_session",
+      "source_type": "live_tab",
+      "notes": "auto-captured"
+    }
+  },
+  "triage": {
+    "fn": "bbes-triage",
+    "payload": {
+      "url": "{{url}}",
+      "intent": "{{intent}}",
+      "business_hint": "{{business}}"
+    }
+  },
+  "process": {
+    "fn": "bbes-process",
+    "payload": {
+      "tab_id": "{{tab_id}}"
+    }
+  },
+  "execute": {
+    "fn": "bbes-execute",
+    "payload": {
+      "tab_id": "{{tab_id}}",
+      "execution_payload": {
+        "fn": "troy-code-pusher",
+        "payload": {
+          "target": "bbes",
+          "action": "execute",
+          "data": {}
+        }
+      }
+    }
+  },
+  "calibrate": {
+    "fn": "bbes-calibrate",
+    "payload": {
+      "tab_id": "{{tab_id}}",
+      "actual_value_aud": 0,
+      "actual_cost_aud": 0
+    }
+  },
+  "receipt": {
+    "fn": "bbes-receipt",
+    "payload": {
+      "summary": {},
+      "evidence": {}
+    }
+  }
+}
