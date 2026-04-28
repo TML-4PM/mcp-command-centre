@@ -1,0 +1,64 @@
+{
+  "idempotency_key": "gdrive-gmail-cleanup-2026-04-29-001",
+  "created_at": "2026-04-29T00:00:00+10:00",
+  "source": "chatgpt-coax-g2",
+  "destination": "dev_or_bridge_when_available",
+  "pen_state": "INACTIVE_OPERATOR_CONFIRMED",
+  "bridge_state": "UNVERIFIED_FROM_THIS_SURFACE",
+  "reality": {
+    "gmail_containment": "REAL_PARTIAL",
+    "drive_register": "REAL",
+    "drive_physical_cleanup": "PARTIAL_BLOCKED_CONNECTOR_LIMIT",
+    "pen_push": "NOT_EXECUTED_PEN_INACTIVE",
+    "bridge_push": "NOT_EXECUTED_NO_DIRECT_BRIDGE_TOOL"
+  },
+  "evidence": {
+    "drive_cleanup_register_url": "https://docs.google.com/spreadsheets/d/1s3ysXytAb5Ch21bMIyLRT83caubgOQnD83tA7tIasM4/edit",
+    "gmail_labels_created": [
+      "T4H/Cleanup/Review",
+      "T4H/Finance/AWS"
+    ],
+    "gmail_actions": [
+      "Archived one promotions noise email",
+      "Applied cleanup/review label to initial noisy batch",
+      "Applied finance/AWS label to AWS finance candidates",
+      "Created Gmail draft operational log"
+    ]
+  },
+  "required_runtime_action": {
+    "summary": "Execute Google Drive cleanup from cleanup register with quarantine-before-delete semantics.",
+    "steps": [
+      "Read Drive cleanup register spreadsheet",
+      "Create folders if missing: 00_ACTIVE, 01_SYSTEM_CANONICAL, 02_WIP, 03_ARCHIVE_COLD, 99_QUARANTINE",
+      "Move files according to next_execution column",
+      "Compare DEDUP rows before removing or archiving any duplicate",
+      "Never delete directly; quarantine first",
+      "Generate receipt with moved count, skipped count, error list, rollback map, and timestamp"
+    ],
+    "receipt_required": true,
+    "receipt_target": "repo receipts/runtime/gdrive-gmail-cleanup-2026-04-29-001.receipt.json or equivalent control-plane evidence location"
+  },
+  "cleanup_register_rows": [
+    {"zone":"CANONICAL","action":"KEEP","title":"EXECUTION DOCTRINE v2.5 — AUTONOMOUS SYSTEM (LIVE)","next_execution":"Move to /01_SYSTEM_CANONICAL"},
+    {"zone":"CANONICAL","action":"KEEP","title":"AGL Master Registry — Canonical Schema","next_execution":"Move to /01_SYSTEM_CANONICAL"},
+    {"zone":"CANONICAL","action":"KEEP","title":"AUTONOMOUS GOLDEN LOOP — Perception OS Architecture","next_execution":"Move to /01_SYSTEM_CANONICAL"},
+    {"zone":"CANONICAL","action":"KEEP","title":"TECH 4 HUMANITY CONTROL PLANE – LIVE EXECUTION","next_execution":"Move to /01_SYSTEM_CANONICAL"},
+    {"zone":"ACTIVE","action":"KEEP","title":"Sweepers: Full Inventory","next_execution":"Move to /00_ACTIVE"},
+    {"zone":"ACTIVE","action":"KEEP","title":"Factor_PRFAQ_Template_v1.docx","next_execution":"Move to /00_ACTIVE"},
+    {"zone":"REVIEW","action":"QUARANTINE","title":"Untitled document","next_execution":"Move to /99_QUARANTINE before delete"},
+    {"zone":"REVIEW","action":"DEDUP","title":"index.html","next_execution":"Compare with original_index.html"},
+    {"zone":"REVIEW","action":"DEDUP","title":"original_index.html","next_execution":"Keep one canonical copy"},
+    {"zone":"ARCHIVE","action":"COLD","title":"justpoint 2 grok.pdf","next_execution":"Move to /03_ARCHIVE_COLD"},
+    {"zone":"ARCHIVE","action":"COLD","title":"Predator Gallery.pdf","next_execution":"Move to /03_ARCHIVE_COLD"},
+    {"zone":"ARCHIVE","action":"COLD","title":"re-evaluate - octpare conversation 1.pdf","next_execution":"Move to /03_ARCHIVE_COLD"},
+    {"zone":"ARCHIVE","action":"COLD","title":"When is best to AI.pdf","next_execution":"Move to /03_ARCHIVE_COLD"},
+    {"zone":"ARCHIVE","action":"COLD","title":"grok bundle chat.txt","next_execution":"Move to /03_ARCHIVE_COLD"},
+    {"zone":"ARCHIVE","action":"COLD","title":"products and prices.pdf","next_execution":"Move to /03_ARCHIVE_COLD"}
+  ],
+  "safety": {
+    "delete_policy": "BLOCKED_WITHOUT_QUARANTINE_AND_RECEIPT",
+    "archive_not_delete": true,
+    "rollback_required": true,
+    "evidence_required_before_done": true
+  }
+}
