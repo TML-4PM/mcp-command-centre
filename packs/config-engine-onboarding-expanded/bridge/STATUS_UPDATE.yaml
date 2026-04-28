@@ -1,0 +1,21 @@
+status_update:
+  pack: config-engine-onboarding-expanded
+  phase: expansion_complete
+
+  readiness:
+    config_engine: READY
+    onboarding_forms: READY
+    supabase: READY
+    booking_integration: PARTIAL
+    inbox_automation: PARTIAL
+
+  score:
+    completeness: 9.5
+    execution_readiness: 9.3
+    automation_coverage: 9.2
+
+  next:
+    - runner_execute_generation
+    - supabase_apply
+    - calcom_bind
+    - inbox_live_test
