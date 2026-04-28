@@ -1,0 +1,28 @@
+{
+  "action": "invoke_function",
+  "function_name": "troy-code-pusher",
+  "invocation_type": "RequestResponse",
+  "payload": {
+    "target": "TML-4PM/mcp-command-centre",
+    "mode": "execute",
+    "approval_required": false,
+    "artifact": "handoffs/EXEC_AutonomousGoldenLoop_GitHubBridge_20260428.md",
+    "create_files": [
+      "execution_registry/schema.json",
+      "execution_registry/seed_autonomous_golden_loop_20260428.json",
+      "reality_ledger/autonomous_golden_loop.receipt.schema.json",
+      "command_centre/widgets/execution_queue.md",
+      "command_centre/widgets/github_receipt_ledger.md",
+      "command_centre/widgets/bridge_invocation_ledger.md",
+      "ops/RUNBOOK_AutonomousGoldenLoop.md",
+      "ops/RECOVERY_AutonomousGoldenLoop.md",
+      "ops/MONETISATION_AutonomousExecutionOS.md"
+    ]
+  },
+  "metadata": {
+    "request_id": "exec-autonomous-golden-loop-20260428",
+    "source": "chatgpt-github-connector",
+    "timestamp_utc": "2026-04-28T00:00:00Z",
+    "auth_context": "no-hitl-session-approved"
+  }
+}
