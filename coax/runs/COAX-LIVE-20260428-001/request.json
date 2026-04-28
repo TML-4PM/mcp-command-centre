@@ -1,0 +1,58 @@
+{
+  "coax_thread_id": "COAX-LIVE-20260428-001",
+  "created_by": "COAX-G",
+  "created_at_utc": "2026-04-28T00:00:00Z",
+  "mode": "AUTONOMOUS_BRIDGE_HANDOFF",
+  "reality_status": "PARTIAL_UNTIL_EXTERNAL_APIS_EXECUTE",
+  "intent": "Deploy and run COAX Federated Execution via API + Bridge so Claude and Perplexity respond programmatically and all outputs are logged automatically.",
+  "hard_rules": {
+    "no_hitl_needed_to_prod": true,
+    "all_enhancements_approved": true,
+    "no_pretend": true,
+    "machine_created_receipt_required": true,
+    "completion_requires_github_receipt_supabase_logs_and_external_llm_responses": true
+  },
+  "tasks": [
+    {
+      "agent": "COAX-P",
+      "system": "perplexity",
+      "role": "external_signal_engine",
+      "prompt": "Market demand, competitors, risks, pricing signals, and proof sources for a federated COAX Chief of Staff system coordinating GPT, Claude, and Perplexity via API + Bridge. Return structured JSON with sources when available."
+    },
+    {
+      "agent": "COAX-C",
+      "system": "claude",
+      "role": "deep_synthesis_engine",
+      "prompt": "Design the COAX federated operating model, governance, message contracts, failure handling, and productisation path. Return structured JSON with decisions, actions, risks, and proof requirements."
+    },
+    {
+      "agent": "COAX-G",
+      "system": "gpt",
+      "role": "controller_normaliser_closer",
+      "prompt": "Normalise returned Claude and Perplexity outputs into one action register, Reality Ledger entry, GitHub proof file, and Command Centre status."
+    }
+  ],
+  "required_outputs": [
+    "coax/runs/COAX-LIVE-20260428-001/coax-p.json",
+    "coax/runs/COAX-LIVE-20260428-001/coax-c.json",
+    "coax/runs/COAX-LIVE-20260428-001/merged.json",
+    "coax/runs/COAX-LIVE-20260428-001/proof.md"
+  ],
+  "bridge_invocation": {
+    "action": "invoke_function",
+    "function_name": "coax_federated_runner",
+    "invocation_type": "Event",
+    "payload_ref": "coax/runs/COAX-LIVE-20260428-001/request.json",
+    "metadata": {
+      "source": "COAX-G",
+      "priority": "HIGH",
+      "autonomy": "AUTONOMOUS",
+      "request_id": "COAX-LIVE-20260428-001"
+    }
+  },
+  "proof_gate": {
+    "REAL": "Claude and Perplexity both respond through API, outputs are written to GitHub, Supabase rows exist, merged proof exists.",
+    "PARTIAL": "Handoff exists but one or more external execution proofs are missing.",
+    "PRETEND": "Claimed execution without machine receipts."
+  }
+}
