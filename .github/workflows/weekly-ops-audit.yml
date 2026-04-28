@@ -1,0 +1,13 @@
+name: Weekly Ops Audit
+on:
+  schedule:
+    - cron: '0 21 * * 0'
+  workflow_dispatch:
+
+jobs:
+  weekly-ops-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke Bridge weekly audit runner
+        run: |
+          echo "Invoking Bridge (placeholder)"
